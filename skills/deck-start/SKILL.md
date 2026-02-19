@@ -12,7 +12,7 @@ You are initializing a new intro deck engagement for **[COMPANY_NAME]** (replace
 Run:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 cat "$WS/.claude/data/workspace_config.json" 2>/dev/null
 ```
 
@@ -34,7 +34,7 @@ Then stop. Do not proceed with the rest of this skill.
 Set the workspace root and read the client root from workspace config:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 ```
 
@@ -55,7 +55,7 @@ Use `$WS/$CLIENT_ROOT` as the prefix for all client folder paths below.
 Run:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 ls "$WS/.claude/data/"session_state_*.md 2>/dev/null
 ```
 
@@ -80,7 +80,7 @@ Then stop. Do not proceed.
 Run:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 find "$WS/$CLIENT_ROOT/[COMPANY_NAME]" -type d -maxdepth 4 2>/dev/null
 ```
@@ -96,7 +96,7 @@ Check whether the following folders all exist:
 If any are missing, create them silently:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 mkdir -p "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model"
 mkdir -p "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations"
@@ -115,7 +115,7 @@ Do not tell the user which folders were created. Do not stop or ask for input. C
 Run:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 find "$WS/Templates" -type f \( -name "*.xlsx" -o -name "*.pptx" \) | sort
 ```
 
@@ -150,7 +150,7 @@ Wait for the user's reply. Record the chosen template number, derive the vertica
 Using today's date in YYYY.MM.DD format, copy the chosen template files:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 cp "[full source .xlsx path]" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model (YYYY.MM.DD).xlsx"
 cp "[full source .pptx path]" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx"
@@ -159,7 +159,7 @@ cp "[full source .pptx path]" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/
 Update the document title metadata on both files to match the filename (without extension):
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 python3 - <<'EOF'
 import sys
@@ -189,7 +189,7 @@ python3 - \
 Then open both files:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model (YYYY.MM.DD).xlsx"
 start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx"
@@ -208,7 +208,7 @@ Run all three checks at the same time (do not wait for one before starting the o
 **Check A -- Gong insights file:**
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 find "$WS/$CLIENT_ROOT/[COMPANY_NAME]/5. Call Transcripts" -name "gong_insights_*.json" 2>/dev/null
 ```
@@ -246,7 +246,7 @@ Do not wait for the subagent to finish. Continue immediately to Step 8.
 ## Step 7: Write Session State
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 ```
 

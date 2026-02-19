@@ -10,7 +10,7 @@ The company name is the argument the user passed to `/deck-auto`. Substitute [CO
 Set workspace root and client root at the start of every bash block:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 ```
 
@@ -23,7 +23,7 @@ Derive `company_slug` from [COMPANY_NAME]: lowercase, spaces replaced with under
 Run:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 cat "$WS/.claude/data/workspace_config.json" 2>/dev/null
 ```
 
@@ -49,7 +49,7 @@ Do not proceed past Phase 0 until workspace_config.json is confirmed valid. Once
 Scan for existing session state files:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 ls "$WS/.claude/data/session_state_"*.md 2>/dev/null | sort
 ```
 
@@ -113,7 +113,7 @@ Tell the user: "Phase 1: Start -- running."
 Run:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 find "$WS/$CLIENT_ROOT/[COMPANY_NAME]" -type d -maxdepth 4 2>/dev/null
 ```
@@ -129,7 +129,7 @@ Check whether the following folders all exist:
 If any are missing, create them silently:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 mkdir -p "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model"
 mkdir -p "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations"
@@ -146,7 +146,7 @@ Do not tell the user which folders were created. Do not stop or ask for input. C
 Run:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 find "$WS/Templates" -type f \( -name "*.xlsx" -o -name "*.pptx" \) | sort
 ```
 
@@ -177,7 +177,7 @@ Wait for the user's reply. Record: chosen template number, derive vertical from 
 Using today's date in YYYY.MM.DD format, copy the chosen templates:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 cp "[full source .xlsx path]" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model (YYYY.MM.DD).xlsx"
 cp "[full source .pptx path]" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx"
@@ -186,7 +186,7 @@ cp "[full source .pptx path]" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/
 Then open both files:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model (YYYY.MM.DD).xlsx"
 start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx"
@@ -195,7 +195,7 @@ start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro 
 Update document title metadata on both files to match the filename (without extension):
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 python3 - \
   "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model (YYYY.MM.DD).xlsx" \
@@ -219,7 +219,7 @@ Run all three checks simultaneously -- do not wait for one before starting the o
 **Check A -- Gong insights file:**
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 find "$WS/$CLIENT_ROOT/[COMPANY_NAME]/5. Call Transcripts" -name "gong_insights_*.json" 2>/dev/null
 ```
@@ -670,7 +670,7 @@ Write the file. Do not output a long summary -- just confirm the file path writt
 Do not proceed until all 4 Task calls have returned. Once all agents report completion, read all 4 output files:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 cat "$WS/.claude/data/ws_attio_gong_[company_slug].json"
 cat "$WS/.claude/data/ws_m365_[company_slug].json"
 cat "$WS/.claude/data/ws_slack_[company_slug].json"
@@ -829,7 +829,7 @@ Tell the user: "Phase 3: Model -- running."
 Read:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 cat "$WS/.claude/data/research_output_[company_slug].json"
 ```
 
@@ -840,7 +840,7 @@ Also read the model file path from the current session state file.
 ### 3.2 Open the Model File
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[model filename]"
 ```
@@ -852,7 +852,7 @@ Tell the user: "Model opened. Do not edit it yet -- I will show you the full pla
 Use `excel_editor.py` to scan the Assumptions and Campaigns sheets for row labels. Never hardcode row numbers -- always resolve them from the actual file at runtime:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 python3 "$WS/.claude/agents/excel_editor.py" \
   --file "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[model filename]" \
@@ -866,7 +866,7 @@ Build a label-to-cell map from the output. This map is required before computing
 Use `excel_editor.py` to identify all formula cells in the Campaigns and Sensitivities sheets:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 python3 "$WS/.claude/agents/excel_editor.py" \
   --file "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[model filename]" \
@@ -971,7 +971,7 @@ Wait for "approve". If the user requests changes, update the plan and re-present
 After "approve" is received, write all planned values using `excel_editor.py`:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 python3 "$WS/.claude/agents/excel_editor.py" \
   --file "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[model filename]" \
@@ -989,7 +989,7 @@ Read back each written cell and confirm the value matches the plan. Report any d
 Confirm formula cell counts are unchanged:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 python3 "$WS/.claude/agents/excel_editor.py" \
   --file "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[model filename]" \
@@ -1070,7 +1070,7 @@ Tell the user: "Phase 4: Format -- running."
 Run:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 find "$WS/$CLIENT_ROOT/[COMPANY_NAME]/3. Company Resources/Logos" -type f 2>/dev/null
 find "$WS/$CLIENT_ROOT/[COMPANY_NAME]/3. Company Resources/Swag" -type f 2>/dev/null
@@ -1081,7 +1081,7 @@ If logos are missing, tell the user: "Logo files not found. Asset gatherer may s
 ### 4.2 Open Source Deck
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx"
 ```
@@ -1126,7 +1126,7 @@ Wait for "done" or "skip" before proceeding.
 ### 4.6 Create vF Copy
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 cp "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx" \
    "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck vF.pptx"
@@ -1135,7 +1135,7 @@ cp "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (
 Then open the vF copy:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck vF.pptx"
 ```
@@ -1161,7 +1161,7 @@ Wait for "done" before proceeding.
 ### 4.8 Run deck_format.py
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 python3 "$WS/.claude/scripts/deck_format.py" --company "[COMPANY_NAME]"
 ```
 
@@ -1217,7 +1217,7 @@ Tell the user: "Phase 5: QA -- running."
 ### 5.1 Run the QA Script
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 python3 "$WS/.claude/scripts/qa_check.py" --company "[COMPANY_NAME]"
 ```
 
@@ -1228,7 +1228,7 @@ Read the script output. Report all failures -- do not silently skip any.
 Open the model:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[model filename]"
 ```
@@ -1270,7 +1270,7 @@ Spot-check 10 hard-coded cells across Assumptions and Campaigns sheets. Verify e
 Open the vF deck:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck vF.pptx"
 ```
@@ -1327,7 +1327,7 @@ Type "done":
 First, export the PDF:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 python3 "$WS/.claude/scripts/deck_format.py" --company "[COMPANY_NAME]" --step export-pdf
 ```
 
@@ -1336,7 +1336,7 @@ If the script fails, tell the user: "Automated PDF export failed. Please export 
 Then open the PDF:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/[COMPANY_NAME] Intro Deck vF.pdf"
 ```
@@ -1389,7 +1389,7 @@ If all checks pass (or user has confirmed all fixes), continue.
 ### 5.6 Delete Lock Files
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 find "$WS/$CLIENT_ROOT/[COMPANY_NAME]" -name "~$*" -delete 2>/dev/null
 echo "Lock file cleanup complete."
@@ -1398,7 +1398,7 @@ echo "Lock file cleanup complete."
 ### 5.7 Open Final Files
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck vF.pptx"
 start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[model filename]"

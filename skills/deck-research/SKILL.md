@@ -8,7 +8,7 @@ You are executing the `deck-research` phase of the Jolly intro deck workflow. Fo
 Set workspace root and client root:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 ```
 
@@ -21,7 +21,7 @@ If `workspace_config.json` does not exist, tell the user: "Workspace is not conf
 Scan for the most recent session state file:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 ls "$WS/.claude/data/session_state_"*.md 2>/dev/null | sort | tail -1
 ```
 
@@ -449,7 +449,7 @@ Write the file. Do not output a long summary -- just confirm the file path writt
 Do not proceed until all 4 Task calls have returned. Once all agents have completed, read all 4 output files:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 RESEARCH="$WS/$CLIENT_ROOT/[COMPANY_NAME]/reports/research"
 cat "$RESEARCH/ws_attio_gong_[company_slug].json"
 cat "$RESEARCH/ws_m365_[company_slug].json"
@@ -555,7 +555,7 @@ After user confirmation, write the research JSON.
 Create the output directory if it does not exist:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 mkdir -p "$WS/$CLIENT_ROOT/[COMPANY_NAME]/reports/research"
 # Write to: "$WS/$CLIENT_ROOT/[COMPANY_NAME]/reports/research/research_output_[company_slug].json"
 ```

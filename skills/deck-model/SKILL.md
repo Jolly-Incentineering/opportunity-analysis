@@ -8,7 +8,7 @@ You are executing the `deck-model` phase of the Jolly intro deck workflow. Follo
 Set workspace root and client root:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 ```
 
@@ -21,7 +21,7 @@ If `workspace_config.json` does not exist, tell the user: "Workspace is not conf
 Scan for the most recent session state file:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 ls "$WS/.claude/data/session_state_"*.md 2>/dev/null | sort | tail -1
 ```
 
@@ -47,7 +47,7 @@ Derive `company_slug` from company name: lowercase, spaces replaced with undersc
 Read the research output file:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 cat "$WS/.claude/data/research_output_[company_slug].json"
 ```
 
@@ -70,7 +70,7 @@ Campaigns approved: [N]
 Open the model file:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[model filename]"
 ```
@@ -194,7 +194,7 @@ Wait for the user to type "approve" before writing anything. If the user request
 After "approve" is received, write all planned values to the Excel file using `excel_editor.py`:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 python3 "$WS/.claude/agents/excel_editor.py" \
   --file "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[model filename]" \

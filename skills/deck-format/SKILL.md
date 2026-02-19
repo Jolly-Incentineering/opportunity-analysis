@@ -8,7 +8,7 @@ You are executing the `deck-format` phase of the Jolly intro deck workflow. Foll
 Set workspace root and client root:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 ```
 
@@ -21,7 +21,7 @@ If `workspace_config.json` does not exist, tell the user: "Workspace is not conf
 Scan for the most recent session state file:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 ls "$WS/.claude/data/session_state_"*.md 2>/dev/null | sort | tail -1
 ```
 
@@ -47,7 +47,7 @@ Derive `company_slug` from company name: lowercase, spaces replaced with undersc
 Read the research output:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 cat "$WS/.claude/data/research_output_[company_slug].json"
 ```
 
@@ -67,7 +67,7 @@ Deck file: [deck filename]
 Open both the deck and the model (model is read-only reference):
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[deck filename]"
 start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[model filename]"
@@ -108,7 +108,7 @@ Wait for "approve banners" before writing. If the user requests changes, update 
 Use `figma_editor.py` or `deck_format.py` to write banner values:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 python3 "$WS/.claude/scripts/deck_format.py" \
   --company "[COMPANY_NAME]" \
@@ -216,7 +216,7 @@ Final visual review -- complete each step, then type "done":
 Export the deck to PDF:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 python3 "$WS/.claude/scripts/deck_format.py" \
   --company "[COMPANY_NAME]" \
@@ -228,7 +228,7 @@ If the script fails, tell the user: "Automated PDF export failed. Please export 
 After the PDF is created, open it:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf"
 ```

@@ -8,7 +8,7 @@ You are performing one-time workspace setup for the Jolly deck workflow. This sk
 Set the workspace root:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 ```
 
 ---
@@ -18,7 +18,7 @@ WS="${JOLLY_WORKSPACE:-.}"
 Run:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 cat "$WS/.claude/data/workspace_config.json" 2>/dev/null
 ```
 
@@ -41,7 +41,7 @@ Then stop. Do not re-run setup or overwrite the config.
 If no config exists, scan the workspace root for candidate folders. Run:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 find "$WS" -maxdepth 1 -type d | sort
 ```
 
@@ -59,7 +59,7 @@ The remaining folders are candidates. For each candidate, check whether any of i
 Run this check for each candidate:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 # For each candidate [FOLDER], check:
 find "$WS/[FOLDER]" -maxdepth 2 -type d | sort
 ```
@@ -94,7 +94,7 @@ Using standard Clients/ setup instead.
 Create the folder:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 mkdir -p "$WS/Clients"
 ```
 
@@ -110,7 +110,7 @@ No existing client folders found. Creating standard Clients/ folder.
 Create the folder:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 mkdir -p "$WS/Clients"
 ```
 
@@ -125,7 +125,7 @@ Set `client_root` = "Clients". Set `structure_choice` = "new_folder".
 Write the config file:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 mkdir -p "$WS/.claude/data"
 ```
 

@@ -8,7 +8,7 @@ You are executing the `deck-qa` phase of the Jolly intro deck workflow. This is 
 Set workspace root and client root:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 ```
 
@@ -21,7 +21,7 @@ If `workspace_config.json` does not exist, tell the user: "Workspace is not conf
 Scan for the most recent session state file:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 ls "$WS/.claude/data/session_state_"*.md 2>/dev/null | sort | tail -1
 ```
 
@@ -60,7 +60,7 @@ Starting Phase 5: QA and delivery.
 Run the automated QA checklist:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 python3 "$WS/.claude/scripts/qa_check.py" --company "[COMPANY_NAME]"
 ```
 
@@ -73,7 +73,7 @@ Read the script output. If any check fails, report it to the user with the exact
 Open the model file:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[model filename]"
 ```
@@ -147,7 +147,7 @@ Report any cells missing comments or missing required fields.
 Open the deck file:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[deck filename]"
 ```
@@ -259,7 +259,7 @@ For each failure, walk the user through the fix:
 Clean up Office lock files before delivery:
 
 ```bash
-WS="${JOLLY_WORKSPACE:-.}"
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 find "$WS/$CLIENT_ROOT/[COMPANY_NAME]" -name "~$*" -delete 2>/dev/null
 ```
