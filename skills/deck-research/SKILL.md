@@ -355,11 +355,32 @@ Your job: run SEC filings, vertical benchmarks, and web research. Write a clean 
 Determine whether [COMPANY_NAME] is publicly traded (use your knowledge or do one WebSearch).
 
 If public:
-  Run: python "[WS]/.claude/scripts/sec_filings.py" --ticker [TICKER] --output "[WS]/[CLIENT_ROOT]/[COMPANY_NAME]/reports/research/sec_[TICKER].json"
+  Step 1 -- Run the filings script:
+    python "[WS]/.claude/scripts/sec_filings.py" --ticker [TICKER] --output "[WS]/[CLIENT_ROOT]/[COMPANY_NAME]/reports/research/sec_[TICKER].json"
   After the script completes, read the output JSON.
   For annual revenue, use only the 10-K value. Do not use 10-Q values for annual revenue.
-  Then perform one targeted WebFetch of the most recent filing_url from the output JSON.
-  Navigate to the MD&A section to extract unit count and employee count (not XBRL-tagged).
+
+  Step 2 -- Download the last 4 filing documents (10-K and 10-Q):
+    Create the filings directory: mkdir -p "[WS]/[CLIENT_ROOT]/[COMPANY_NAME]/reports/research/filings"
+
+    Using the EDGAR REST API (no auth required):
+    a) Resolve CIK: GET https://efts.sec.gov/LATEST/search-index?q=%22[TICKER]%22&dateRange=custom&startdt=2020-01-01&enddt=[TODAY]&forms=10-K,10-Q
+       Or use: GET https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&company=[COMPANY_NAME]&type=10-K&dateb=&owner=include&count=4&search_text=&output=atom
+       Or resolve via: GET https://data.sec.gov/submissions/CIK{zero-padded-10-digit-CIK}.json
+
+    b) From the submissions JSON, extract the last 4 filings of type 10-K or 10-Q (most recent first, regardless of mix).
+
+    c) For each of the 4 filings, fetch the filing index page:
+       GET https://www.sec.gov/Archives/edgar/data/{CIK}/{accession-number-no-dashes}/{accession-number}-index.htm
+       Find the primary document (htm or htm.gz). Prefer the full 10-K/10-Q document over exhibits.
+
+    d) Download each primary document and save to:
+       "[WS]/[CLIENT_ROOT]/[COMPANY_NAME]/reports/research/filings/[YYYY-MM-DD]_[FORM_TYPE]_[TICKER].[ext]"
+       Example: 2024-09-30_10-K_MCD.htm
+
+    e) After downloading, WebFetch the most recent 10-K's MD&A section to extract unit count and employee count (not XBRL-tagged). This counts as one of your web operations.
+
+  Record all downloaded file paths in sec_filing_files in the output schema.
 
 If private: note "private company -- no SEC filings" and set sec_used to false.
 
@@ -410,6 +431,7 @@ Schema:
     "sec_used": false,
     "sec_ticker": "",
     "sec_output_file": "",
+    "sec_filing_files": [],
     "benchmarks_used": false,
     "benchmarks_stale": false,
     "web_operations_used": 0,
