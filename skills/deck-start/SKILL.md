@@ -1,6 +1,6 @@
 ---
 name: deck-start
-description: Initialize a new intro deck engagement -- verify folder, copy templates, add to Notion pipeline, detect branch, and launch asset gathering.
+description: Initialize a new intro deck engagement -- verify folder, copy templates, detect branch, and launch asset gathering.
 ---
 
 You are initializing a new intro deck engagement for **[COMPANY_NAME]** (replace with the argument the user passed to `/deck-start`). Work through each step below in order. Stop and surface blockers to the user before proceeding past any gate.
@@ -150,24 +150,7 @@ Record both destination paths -- they will be written to session state.
 
 ---
 
-## Step 5: Add to Notion Pipeline
-
-Use `mcp__plugin_Notion_notion__notion-search` to search for an existing page with the title equal to [COMPANY_NAME] in database `4afe3d50-864d-8388-9b82-8119f374c573`.
-
-If a matching page already exists, tell the user: "Notion entry for [COMPANY_NAME] already exists -- skipping." and continue to Step 6.
-
-If no match is found, create a new page using `mcp__plugin_Notion_notion__notion-create-pages` with:
-- Parent database: `4afe3d50-864d-8388-9b82-8119f374c573`
-- Title (task name): [COMPANY_NAME] -- company name only, no prefix
-- Due date: today's date + 4 days
-- Vertical: the label confirmed in Step 3
-- Internal checkbox: unchecked (false)
-
-Tell the user: "Added [COMPANY_NAME] to Notion pipeline. Due: [due date]. Vertical: [vertical]."
-
----
-
-## Step 6: Detect Branch (Run All 3 Checks Simultaneously)
+## Step 5: Detect Branch (Run All 3 Checks Simultaneously)
 
 Run all three checks at the same time (do not wait for one before starting the others):
 
@@ -195,7 +178,7 @@ Record which checks had data -- this becomes the branch reason.
 
 ---
 
-## Step 7: Launch Asset Gatherer as Background Subagent
+## Step 6: Launch Asset Gatherer as Background Subagent
 
 Launch a background subagent using the Task tool with subagent_type `asset-gatherer`. Pass the following prompt, substituting [COMPANY_NAME] and [CLIENT_ROOT]:
 
@@ -209,7 +192,7 @@ Do not wait for the subagent to finish. Continue immediately to Step 8.
 
 ---
 
-## Step 8: Write Session State
+## Step 7: Write Session State
 
 ```bash
 WS="${JOLLY_WORKSPACE:-.}"
@@ -251,7 +234,7 @@ Run /deck-research
 
 ---
 
-## Step 9: Report to User
+## Step 8: Report to User
 
 Tell the user:
 
