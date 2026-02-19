@@ -77,20 +77,7 @@ Tell the user: "Both files opened. Do not edit the deck yet -- I will walk you t
 
 ---
 
-## Step 3: Run Figma Export (Brand Assets)
-
-Export company-branded frames from the Figma template:
-
-```bash
-WS="${JOLLY_WORKSPACE:-.}"
-python3 "$WS/.claude/export_company_frames.py" --company "[COMPANY_NAME]"
-```
-
-If the script fails or returns no frames, note it and continue. The deck can still be formatted; branded frames can be inserted manually later.
-
----
-
-## Step 4: Detect and Populate Banner Slides
+## Step 3: Detect and Populate Banner Slides
 
 Scan the deck for slides containing banner placeholder shapes. A shape is a banner if its text content matches any of these patterns (case-insensitive):
 - `$[ ]`
@@ -192,8 +179,14 @@ Brand asset checklist -- complete each step, then type "done":
 3. If swag images are available at [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/3. Company Resources/Swag/, insert the most relevant one on the swag/merchandise slide (if present).
    > [wait for "done"]
 
-4. If Figma export produced frames, insert them on the appropriate slides now.
-   > [wait for "done"]
+4. Open Figma and export the branded frames for [COMPANY_NAME]:
+   - Open the Jolly Figma template file
+   - Find the [COMPANY_NAME] brand frames (title slide background, section headers, etc.)
+   - Export them as PNG or copy-paste directly into the appropriate slides in the open deck
+   - Resize and position each frame to match the template layout
+   - Save the deck (Ctrl+S)
+   Type "skip" if no Figma frames are needed.
+   > [wait for "done" or "skip"]
 ```
 
 ---

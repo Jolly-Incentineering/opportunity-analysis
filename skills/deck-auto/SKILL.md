@@ -314,6 +314,10 @@ Confirm the recipe exists before proceeding to 2.2.
 
 Dispatch all 4 agents simultaneously using the Task tool. Issue all 4 Task calls in a single message. Do not wait for any one agent before dispatching the others. Compute today's date and 180 days ago before dispatching -- pass them as literal date strings in each prompt.
 
+Use `model: "haiku"` for all 4 agents. Each agent prompt should begin with: "Think step by step before acting. Reason carefully about what data is available and what each tool call will return before making it."
+
+Target: all 4 agents complete within 5 minutes total. Each agent should make only the tool calls listed -- do not expand scope.
+
 Output path for all agents: `$WS/.claude/data/ws_[workstream]_[company_slug].json`
 
 ---
@@ -322,9 +326,11 @@ Output path for all agents: `$WS/.claude/data/ws_[workstream]_[company_slug].jso
 
 Output file: `$WS/.claude/data/ws_attio_gong_[company_slug].json`
 
-Pass this prompt (substitute all bracketed values):
+Pass this prompt (substitute all bracketed values), using `model: "haiku"`:
 
 ```
+Think step by step before acting. Reason carefully about what data is available and what each tool call will return before making it.
+
 You are the ws-attio-gong research agent for the Jolly deck workflow.
 
 Company: [COMPANY_NAME]
@@ -429,9 +435,11 @@ Populate all fields from your research. If branch is B, set attio_used and gong_
 
 Output file: `$WS/.claude/data/ws_m365_[company_slug].json`
 
-Pass this prompt (substitute all bracketed values):
+Pass this prompt (substitute all bracketed values), using `model: "haiku"`:
 
 ```
+Think step by step before acting. Reason carefully about what data is available and what each tool call will return before making it.
+
 You are the ws-m365 research agent for the Jolly deck workflow.
 
 Company: [COMPANY_NAME]
@@ -494,9 +502,11 @@ Write the file. Do not output a long summary -- just confirm the file path writt
 
 Output file: `$WS/.claude/data/ws_slack_[company_slug].json`
 
-Pass this prompt (substitute all bracketed values):
+Pass this prompt (substitute all bracketed values), using `model: "haiku"`:
 
 ```
+Think step by step before acting. Reason carefully about what data is available and what each tool call will return before making it.
+
 You are the ws-slack research agent for the Jolly deck workflow.
 
 Company: [COMPANY_NAME]
@@ -555,9 +565,11 @@ Write the file. Do not output a long summary -- just confirm the file path writt
 
 Output file: `$WS/.claude/data/ws_public_[company_slug].json`
 
-Pass this prompt (substitute all bracketed values):
+Pass this prompt (substitute all bracketed values), using `model: "haiku"`:
 
 ```
+Think step by step before acting. Reason carefully about what data is available and what each tool call will return before making it.
+
 You are the ws-public research agent for the Jolly deck workflow.
 
 Company: [COMPANY_NAME]
@@ -1049,16 +1061,7 @@ find "$WS/$CLIENT_ROOT/[COMPANY_NAME]/3. Company Resources/Swag" -type f 2>/dev/
 
 If logos are missing, tell the user: "Logo files not found. Asset gatherer may still be running or may have failed. Continuing -- logos can be inserted manually in the brand step." Continue regardless.
 
-### 4.2 Run Figma Export
-
-```bash
-WS="${JOLLY_WORKSPACE:-.}"
-python3 "$WS/.claude/export_company_frames.py" --company "[COMPANY_NAME]"
-```
-
-If the script fails or returns no frames, note it and continue. Branded frames can be inserted manually.
-
-### 4.3 Open Source Deck
+### 4.2 Open Source Deck
 
 ```bash
 WS="${JOLLY_WORKSPACE:-.}"
@@ -1084,22 +1087,21 @@ Type "done" when complete:
 
 Wait for "done" before proceeding.
 
-### 4.5 GATE Manual Step 2: Figma Paste
+### 4.5 GATE Manual Step 2: Figma Brand Frames
 
 Tell the user:
 
 ```
-Manual step 2 of 3 -- Figma frame paste.
+Manual step 2 of 3 -- Figma brand frames.
 
-If the Figma export produced frames:
-1. Open Figma (or the exported frames folder).
-2. Copy the branded frames for [COMPANY_NAME].
-3. Paste them onto the appropriate slides in the open deck (title slide, section headers, etc.).
-4. Resize and position each frame to match the template layout.
-5. Save the file (Ctrl+S).
+Open Figma and export the branded frames for [COMPANY_NAME]:
+  1. Open the Jolly Figma template file.
+  2. Find the [COMPANY_NAME] brand frames (title background, section headers, etc.).
+  3. Export as PNG or copy-paste directly into the appropriate slides in the open deck.
+  4. Resize and position each frame to match the template layout.
+  5. Save the file (Ctrl+S).
 
-If no Figma frames were exported, type "skip".
-Type "done" when complete, or "skip" to continue without Figma frames:
+Type "done" when complete, or "skip" if no Figma frames are needed:
 ```
 
 Wait for "done" or "skip" before proceeding.
