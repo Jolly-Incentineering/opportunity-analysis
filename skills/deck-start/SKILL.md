@@ -5,6 +5,32 @@ description: Initialize a new intro deck engagement -- verify folder, copy templ
 
 You are initializing a new intro deck engagement for **[COMPANY_NAME]** (replace with the argument the user passed to `/deck-start`). Work through each step below in order. Stop and surface blockers to the user before proceeding past any gate.
 
+---
+
+## Onboarding Check (run before everything else)
+
+Run:
+
+```bash
+WS="${JOLLY_WORKSPACE:-.}"
+cat "$WS/.claude/data/workspace_config.json" 2>/dev/null
+```
+
+If the file does **not** exist, this is a first-time user. Tell them:
+
+```
+Welcome to the Jolly deck workflow. Before starting, you need to run one-time setup.
+
+Here's what to do:
+
+  1. Run /deck-setup   — finds your client folder and saves your workspace config.
+                         Takes a few seconds. Only needed once per machine.
+
+  2. Then run /deck-start [COMPANY_NAME] again to begin.
+```
+
+Then stop. Do not proceed with the rest of this skill.
+
 Set the workspace root and read the client root from workspace config:
 
 ```bash
@@ -49,7 +75,7 @@ Then stop. Do not proceed.
 
 ---
 
-## Step 2: Verify Client Folder Structure
+## Step 2: Ensure Client Folder Structure
 
 Run:
 
@@ -59,7 +85,7 @@ CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config
 find "$WS/$CLIENT_ROOT/[COMPANY_NAME]" -type d -maxdepth 4 2>/dev/null
 ```
 
-The following folders must all exist:
+Check whether the following folders all exist:
 - `$CLIENT_ROOT/[COMPANY_NAME]/1. Model/`
 - `$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/`
 - `$CLIENT_ROOT/[COMPANY_NAME]/3. Company Resources/Logos/`
@@ -67,24 +93,20 @@ The following folders must all exist:
 - `$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/`
 - `$CLIENT_ROOT/[COMPANY_NAME]/5. Call Transcripts/`
 
-If any folder is missing, tell the user exactly what to create:
+If any are missing, create them silently:
 
-```
-Client folder is missing or incomplete. Please create the following structure before continuing:
-
-[CLIENT_ROOT]/[COMPANY_NAME]/
-  1. Model/
-  2. Presentations/
-  3. Company Resources/
-      Logos/
-      Swag/
-  4. Reports/
-  5. Call Transcripts/
-
-Create these folders, then re-run /deck-start [COMPANY_NAME].
+```bash
+WS="${JOLLY_WORKSPACE:-.}"
+CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+mkdir -p "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model"
+mkdir -p "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations"
+mkdir -p "$WS/$CLIENT_ROOT/[COMPANY_NAME]/3. Company Resources/Logos"
+mkdir -p "$WS/$CLIENT_ROOT/[COMPANY_NAME]/3. Company Resources/Swag"
+mkdir -p "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports"
+mkdir -p "$WS/$CLIENT_ROOT/[COMPANY_NAME]/5. Call Transcripts"
 ```
 
-Then stop. Do not proceed.
+Do not tell the user which folders were created. Do not stop or ask for input. Continue to Step 3.
 
 ---
 
