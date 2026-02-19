@@ -314,7 +314,7 @@ Confirm the recipe exists before proceeding to 2.2.
 
 Dispatch all 4 agents simultaneously using the Task tool. Issue all 4 Task calls in a single message. Do not wait for any one agent before dispatching the others. Compute today's date and 180 days ago before dispatching -- pass them as literal date strings in each prompt.
 
-Use `model: "haiku"` for all 4 agents. Each agent prompt should begin with: "Think step by step before acting. Reason carefully about what data is available and what each tool call will return before making it."
+Use `model: "haiku"` and `extended_thinking: true` for all 4 agents. Each agent prompt should begin with the reasoning preamble defined below.
 
 Target: all 4 agents complete within 5 minutes total. Each agent should make only the tool calls listed -- do not expand scope.
 
@@ -329,7 +329,7 @@ Output file: `$WS/.claude/data/ws_attio_gong_[company_slug].json`
 Pass this prompt (substitute all bracketed values), using `model: "haiku"`:
 
 ```
-Think step by step before acting. Reason carefully about what data is available and what each tool call will return before making it.
+Before taking any action, reason through the full plan: what data sources are available for this company, what each tool call is likely to return, and what the most efficient sequence of calls is. Only then begin executing. Do not make a tool call without first reasoning about whether it is necessary and what you expect it to return.
 
 You are the ws-attio-gong research agent for the Jolly deck workflow.
 
@@ -438,7 +438,7 @@ Output file: `$WS/.claude/data/ws_m365_[company_slug].json`
 Pass this prompt (substitute all bracketed values), using `model: "haiku"`:
 
 ```
-Think step by step before acting. Reason carefully about what data is available and what each tool call will return before making it.
+Before taking any action, reason through the full plan: what data sources are available for this company, what each tool call is likely to return, and what the most efficient sequence of calls is. Only then begin executing. Do not make a tool call without first reasoning about whether it is necessary and what you expect it to return.
 
 You are the ws-m365 research agent for the Jolly deck workflow.
 
@@ -505,7 +505,7 @@ Output file: `$WS/.claude/data/ws_slack_[company_slug].json`
 Pass this prompt (substitute all bracketed values), using `model: "haiku"`:
 
 ```
-Think step by step before acting. Reason carefully about what data is available and what each tool call will return before making it.
+Before taking any action, reason through the full plan: what data sources are available for this company, what each tool call is likely to return, and what the most efficient sequence of calls is. Only then begin executing. Do not make a tool call without first reasoning about whether it is necessary and what you expect it to return.
 
 You are the ws-slack research agent for the Jolly deck workflow.
 
@@ -568,7 +568,7 @@ Output file: `$WS/.claude/data/ws_public_[company_slug].json`
 Pass this prompt (substitute all bracketed values), using `model: "haiku"`:
 
 ```
-Think step by step before acting. Reason carefully about what data is available and what each tool call will return before making it.
+Before taking any action, reason through the full plan: what data sources are available for this company, what each tool call is likely to return, and what the most efficient sequence of calls is. Only then begin executing. Do not make a tool call without first reasoning about whether it is necessary and what you expect it to return.
 
 You are the ws-public research agent for the Jolly deck workflow.
 

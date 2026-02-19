@@ -130,7 +130,37 @@ After each "done", re-run that specific check to confirm the connection is now w
 
 ---
 
-## Step 3: Install opportunity-analysis Plugin for This Project
+## Step 3: Verify Current Directory Before Installing
+
+Run:
+
+```bash
+pwd
+echo "$JOLLY_WORKSPACE"
+```
+
+If `JOLLY_WORKSPACE` is not set yet, skip this check and continue — it will be caught in Step 6.
+
+If `JOLLY_WORKSPACE` is set and the current directory does NOT match it, stop and tell the user:
+
+```
+Hold on — you're in the wrong folder.
+
+Current folder:    [pwd output]
+Jolly workspace:   [JOLLY_WORKSPACE]
+
+The plugin and MCP settings need to be installed into your Jolly - Documents folder,
+not the current one. Please reopen Claude Code from your Jolly - Documents folder
+and run /jolly-onboarding again.
+```
+
+Then stop. Do not install anything.
+
+If the current directory matches `JOLLY_WORKSPACE`, continue.
+
+---
+
+## Step 4: Install opportunity-analysis Plugin for This Project
 
 Run:
 
@@ -157,7 +187,7 @@ If it fails with "already installed", that is fine — continue.
 
 ---
 
-## Step 4: Scope MCPs to This Project
+## Step 5: Scope MCPs to This Project
 
 The Jolly integrations (Slack, Attio, M365, Notion, Linear) should only be active when you're working in this folder. This keeps them from loading in every other Claude session and saves tokens.
 
@@ -201,7 +231,7 @@ Tell the user: "MCP integrations and plugins scoped to this project folder. They
 
 ---
 
-## Step 6: Set JOLLY_WORKSPACE Environment Variable
+## Step 6: Set JOLLY_WORKSPACE Environment Variable (if not already set)
 
 Run:
 
@@ -233,6 +263,7 @@ Then stop. Do not proceed until JOLLY_WORKSPACE is confirmed set.
 ---
 
 ## Step 7: Run Workspace Setup
+
 
 Tell the user: "Now running /deck-setup to configure your workspace..."
 
