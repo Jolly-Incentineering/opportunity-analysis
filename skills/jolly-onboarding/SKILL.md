@@ -1,6 +1,6 @@
 ---
 name: jolly-onboarding
-description: First-time setup for the Jolly deck workflow. Checks all required MCP integrations are connected, runs /deck-setup, and confirms the workspace is ready. Run this once when you first install the plugin.
+description: First-time setup for the Jolly deck workflow. Checks all required MCP integrations are connected, installs the opportunity-analysis plugin for this project, scopes MCPs to this folder, runs /deck-setup, and confirms the workspace is ready. Run this once per machine from your Jolly - Documents folder.
 ---
 
 You are the onboarding guide for the Jolly deck workflow. Walk the user through setup step by step. Be friendly and clear. Do not move to the next step until the current one is confirmed.
@@ -130,7 +130,78 @@ After each "done", re-run that specific check to confirm the connection is now w
 
 ---
 
-## Step 3: Set JOLLY_WORKSPACE Environment Variable
+## Step 3: Install opportunity-analysis Plugin for This Project
+
+Run:
+
+```bash
+claude plugin install opportunity-analysis@nishant-jolly --scope local
+```
+
+If the install succeeds, tell the user: "opportunity-analysis plugin installed for this project." and continue.
+
+If it fails with an auth error, tell the user:
+
+```
+Plugin install failed — GitHub authentication required.
+
+Run this in your terminal:
+  gh auth login
+
+Then run /jolly-onboarding again to retry from this step.
+```
+
+Then stop.
+
+If it fails with "already installed", that is fine — continue.
+
+---
+
+## Step 4: Scope MCPs to This Project
+
+The Jolly integrations (Slack, Attio, M365, Notion, Linear) should only be active when you're working in this folder. This keeps them from loading in every other Claude session and saves tokens.
+
+Detect the current working directory:
+
+```bash
+pwd
+```
+
+Read the existing `.claude/settings.json` in that directory if it exists:
+
+```bash
+cat "$(pwd)/.claude/settings.json" 2>/dev/null
+```
+
+If the file does not exist, create `.claude/` directory:
+
+```bash
+mkdir -p "$(pwd)/.claude"
+```
+
+Now write or merge the following into `$(pwd)/.claude/settings.json`. Preserve any existing keys (like `permissions`) — only add the new top-level keys if they are not already present:
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "nishant-jolly": {
+      "source": {
+        "source": "github",
+        "repo": "nishant-jolly/jolly-marketplace"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "opportunity-analysis@nishant-jolly": true
+  }
+}
+```
+
+Tell the user: "MCP integrations and plugins scoped to this project folder. They will only be active when Claude is opened here."
+
+---
+
+## Step 6: Set JOLLY_WORKSPACE Environment Variable
 
 Run:
 
@@ -154,14 +225,14 @@ To set it:
   5. Click OK on all dialogs
   6. Fully restart Claude Code (close and reopen)
 
-Once restarted, run /deck-onboarding again to continue from this step.
+Once restarted, run /jolly-onboarding again to continue from this step.
 ```
 
 Then stop. Do not proceed until JOLLY_WORKSPACE is confirmed set.
 
 ---
 
-## Step 4: Run Workspace Setup
+## Step 7: Run Workspace Setup
 
 Tell the user: "Now running /deck-setup to configure your workspace..."
 
@@ -171,7 +242,7 @@ Do not tell the user to run `/deck-setup` separately. Run it now as part of onbo
 
 ---
 
-## Step 5: Final Summary
+## Step 8: Final Summary
 
 Tell the user:
 
