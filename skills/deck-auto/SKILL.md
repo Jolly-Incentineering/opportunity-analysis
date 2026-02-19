@@ -180,8 +180,8 @@ Using today's date in YYYY.MM.DD format, copy the chosen templates:
 ```bash
 WS="${JOLLY_WORKSPACE:-.}"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-cp "[full source .xlsx path]" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model YYYY.MM.DD.xlsx"
-cp "[full source .pptx path]" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck YYYY.MM.DD.pptx"
+cp "[full source .xlsx path]" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model (YYYY.MM.DD).xlsx"
+cp "[full source .pptx path]" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx"
 ```
 
 Then open both files:
@@ -189,8 +189,26 @@ Then open both files:
 ```bash
 WS="${JOLLY_WORKSPACE:-.}"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model YYYY.MM.DD.xlsx"
-start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck YYYY.MM.DD.pptx"
+start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model (YYYY.MM.DD).xlsx"
+start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx"
+```
+
+Update document title metadata on both files to match the filename (without extension):
+
+```bash
+WS="${JOLLY_WORKSPACE:-.}"
+CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+python3 - \
+  "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model (YYYY.MM.DD).xlsx" \
+  "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx" \
+  "[COMPANY_NAME] Intro Model (YYYY.MM.DD)" \
+  "[COMPANY_NAME] Intro Deck (YYYY.MM.DD)" <<'EOF'
+import sys
+from openpyxl import load_workbook
+from pptx import Presentation
+wb = load_workbook(sys.argv[1]); wb.properties.title = sys.argv[3]; wb.save(sys.argv[1])
+prs = Presentation(sys.argv[2]); prs.core_properties.title = sys.argv[4]; prs.save(sys.argv[2])
+EOF
 ```
 
 Record both destination paths. They will be written to session state.
@@ -257,8 +275,8 @@ Mode: auto
 [vertical label]
 
 ## Template Paths
-- Model: [CLIENT_ROOT]/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model YYYY.MM.DD.xlsx
-- Deck: [CLIENT_ROOT]/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck YYYY.MM.DD.pptx
+- Model: [CLIENT_ROOT]/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model (YYYY.MM.DD).xlsx
+- Deck: [CLIENT_ROOT]/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx
 
 ## Phase Checklist
 - Phase 0: Workspace check -- complete
@@ -1066,7 +1084,7 @@ If logos are missing, tell the user: "Logo files not found. Asset gatherer may s
 ```bash
 WS="${JOLLY_WORKSPACE:-.}"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck YYYY.MM.DD.pptx"
+start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx"
 ```
 
 ### 4.4 GATE Manual Step 1: Macabacus Refresh
@@ -1076,7 +1094,7 @@ Tell the user:
 ```
 Manual step 1 of 3 -- Macabacus refresh.
 
-In the open deck ([COMPANY_NAME] Intro Deck YYYY.MM.DD.pptx):
+In the open deck ([COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx):
 1. Click the Macabacus tab in the PowerPoint ribbon.
 2. Click "Refresh Linked Data" (or equivalent Macabacus sync command).
 3. Wait for the refresh to complete and all linked values to update.
@@ -1111,7 +1129,7 @@ Wait for "done" or "skip" before proceeding.
 ```bash
 WS="${JOLLY_WORKSPACE:-.}"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-cp "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck YYYY.MM.DD.pptx" \
+cp "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx" \
    "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck vF.pptx"
 ```
 

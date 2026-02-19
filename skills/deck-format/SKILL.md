@@ -223,14 +223,14 @@ python3 "$WS/.claude/scripts/deck_format.py" \
   --step export-pdf
 ```
 
-If the script fails, tell the user: "Automated PDF export failed. Please export manually: File > Export > Create PDF/XPS. Save to: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/[COMPANY_NAME] Intro Deck [YYYY.MM.DD].pdf"
+If the script fails, tell the user: "Automated PDF export failed. Please export manually: File > Export > Create PDF/XPS. Save to: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf"
 
 After the PDF is created, open it:
 
 ```bash
 WS="${JOLLY_WORKSPACE:-.}"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/[COMPANY_NAME] Intro Deck [YYYY.MM.DD].pdf"
+start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf"
 ```
 
 ---

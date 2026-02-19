@@ -153,8 +153,38 @@ Using today's date in YYYY.MM.DD format, copy the chosen template files:
 ```bash
 WS="${JOLLY_WORKSPACE:-.}"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-cp "[full source .xlsx path]" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model YYYY.MM.DD.xlsx"
-cp "[full source .pptx path]" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck YYYY.MM.DD.pptx"
+cp "[full source .xlsx path]" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model (YYYY.MM.DD).xlsx"
+cp "[full source .pptx path]" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx"
+```
+
+Update the document title metadata on both files to match the filename (without extension):
+
+```bash
+WS="${JOLLY_WORKSPACE:-.}"
+CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+python3 - <<'EOF'
+import sys
+from openpyxl import load_workbook
+from pptx import Presentation
+
+model_path = f"{sys.argv[1]}"
+deck_path = f"{sys.argv[2]}"
+model_title = f"{sys.argv[3]}"
+deck_title = f"{sys.argv[4]}"
+
+wb = load_workbook(model_path)
+wb.properties.title = model_title
+wb.save(model_path)
+
+prs = Presentation(deck_path)
+prs.core_properties.title = deck_title
+prs.save(deck_path)
+EOF
+python3 - \
+  "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model (YYYY.MM.DD).xlsx" \
+  "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx" \
+  "[COMPANY_NAME] Intro Model (YYYY.MM.DD)" \
+  "[COMPANY_NAME] Intro Deck (YYYY.MM.DD)"
 ```
 
 Then open both files:
@@ -162,8 +192,8 @@ Then open both files:
 ```bash
 WS="${JOLLY_WORKSPACE:-.}"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model YYYY.MM.DD.xlsx"
-start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck YYYY.MM.DD.pptx"
+start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model (YYYY.MM.DD).xlsx"
+start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx"
 ```
 
 Tell the user: "Templates copied and opened. Model: [filename]. Deck: [filename]."
@@ -240,8 +270,8 @@ Date: YYYY-MM-DD
 [vertical label from Step 3]
 
 ## Template Paths
-- Model: [CLIENT_ROOT]/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model YYYY.MM.DD.xlsx
-- Deck: [CLIENT_ROOT]/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck YYYY.MM.DD.pptx
+- Model: [CLIENT_ROOT]/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model (YYYY.MM.DD).xlsx
+- Deck: [CLIENT_ROOT]/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx
 
 ## Phase Checklist
 - Phase 1: Initialization -- complete
