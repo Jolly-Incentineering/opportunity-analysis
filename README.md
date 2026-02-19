@@ -1,8 +1,8 @@
-# jolly-deck
+# opportunity-analysis
 
 The Jolly intro deck plugin for Claude. Give it a company name and it handles the research, builds the financial model, and formats the deck — start to finish.
 
-> **Internal tool.** Requires access to the private `nishant-jolly/jolly-deck` repo and the Jolly shared workspace.
+> **Internal tool.** Requires access to the private `nishant-jolly/opportunity-analysis` repo and the Jolly shared workspace.
 
 **Two ways to use it:** run the whole workflow automatically with `/deck-auto [Company]`, or run each step yourself one at a time. Both are covered below.
 
@@ -76,7 +76,7 @@ Run each command yourself in order: `/deck-start`, then `/deck-research`, then `
 Open Claude Code (the chat interface you use for Claude) and type:
 
 ```
-/plugin install nishant-jolly/jolly-deck --scope user
+/plugin install nishant-jolly/opportunity-analysis --scope user
 ```
 
 You need access to the private Jolly GitHub repo for this to work. If you get an error, ask the ops team.
@@ -293,7 +293,7 @@ Set `JOLLY_WORKSPACE` as a system environment variable (not just in `.env`) so i
 When a new version is available, run:
 
 ```
-/plugin update jolly-deck
+/plugin update opportunity-analysis
 ```
 
 ---

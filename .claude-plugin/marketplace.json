@@ -1,0 +1,20 @@
+{
+  "name": "nishant-jolly",
+  "description": "Jolly internal plugins marketplace",
+  "owner": {
+    "name": "Jolly",
+    "email": "nishant@jolly.com"
+  },
+  "plugins": [
+    {
+      "name": "opportunity-analysis",
+      "description": "Opportunity Analysis workflow for Jolly — research, model, and format a client deck from start to finish.",
+      "version": "1.0.0",
+      "source": "./",
+      "author": {
+        "name": "Jolly",
+        "email": "nishant@jolly.com"
+      }
+    }
+  ]
+}

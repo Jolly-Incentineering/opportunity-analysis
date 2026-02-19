@@ -1,11 +1,11 @@
 {
-  "name": "jolly-deck",
-  "description": "Intro deck workflow for Jolly — 5 slash commands that take a company from zero to a formatted, QA'd deck package.",
+  "name": "opportunity-analysis",
+  "description": "Opportunity Analysis workflow for Jolly — research, model, and format a client deck from start to finish.",
   "version": "1.0.0",
   "author": {
     "name": "Jolly"
   },
-  "repository": "https://github.com/nishant-jolly/jolly-deck",
+  "repository": "https://github.com/nishant-jolly/opportunity-analysis",
   "license": "UNLICENSED",
   "keywords": ["jolly", "deck", "qsr", "manufacturing", "workflow"]
 }
