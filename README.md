@@ -1,4 +1,4 @@
-# opportunity-analysis
+# Opportunity Analysis
 
 The Jolly Opportunity Analysis plugin for Claude. Give it a company name and it handles the research, builds the financial model, and formats the presentation — start to finish.
 
