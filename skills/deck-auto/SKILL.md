@@ -30,7 +30,14 @@ cat "$WS/.claude/data/workspace_config.json" 2>/dev/null
 If the file does not exist or is not valid JSON with a `client_root` key, stop and tell the user:
 
 ```
-Workspace is not configured. Run /deck-setup first, then re-run /deck-auto [COMPANY_NAME].
+Welcome to the Jolly deck workflow. Before starting, you need to run one-time setup.
+
+Here's what to do:
+
+  1. Run /deck-setup   — finds your client folder and saves your workspace config.
+                         Takes a few seconds. Only needed once per machine.
+
+  2. Then run /deck-auto [COMPANY_NAME] again to begin.
 ```
 
 Do not proceed past Phase 0 until workspace_config.json is confirmed valid. Once confirmed, read and store `CLIENT_ROOT` from its `client_root` field.
@@ -101,7 +108,7 @@ Wait for "go" or "stop [N]" before proceeding.
 
 Tell the user: "Phase 1: Start -- running."
 
-### 1.1 Verify Client Folder Structure
+### 1.1 Ensure Client Folder Structure
 
 Run:
 
@@ -111,7 +118,7 @@ CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config
 find "$WS/$CLIENT_ROOT/[COMPANY_NAME]" -type d -maxdepth 4 2>/dev/null
 ```
 
-The following folders must all exist:
+Check whether the following folders all exist:
 - `$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/`
 - `$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/`
 - `$WS/$CLIENT_ROOT/[COMPANY_NAME]/3. Company Resources/Logos/`
@@ -119,24 +126,20 @@ The following folders must all exist:
 - `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/`
 - `$WS/$CLIENT_ROOT/[COMPANY_NAME]/5. Call Transcripts/`
 
-If any are missing, stop and tell the user exactly what to create:
+If any are missing, create them silently:
 
-```
-Client folder is missing or incomplete. Please create the following structure before continuing:
-
-[CLIENT_ROOT]/[COMPANY_NAME]/
-  1. Model/
-  2. Presentations/
-  3. Company Resources/
-      Logos/
-      Swag/
-  4. Reports/
-  5. Call Transcripts/
-
-Create these folders, then re-run /deck-auto [COMPANY_NAME].
+```bash
+WS="${JOLLY_WORKSPACE:-.}"
+CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+mkdir -p "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model"
+mkdir -p "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations"
+mkdir -p "$WS/$CLIENT_ROOT/[COMPANY_NAME]/3. Company Resources/Logos"
+mkdir -p "$WS/$CLIENT_ROOT/[COMPANY_NAME]/3. Company Resources/Swag"
+mkdir -p "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports"
+mkdir -p "$WS/$CLIENT_ROOT/[COMPANY_NAME]/5. Call Transcripts"
 ```
 
-Then stop. Do not proceed.
+Do not tell the user which folders were created. Do not stop or ask for input. Continue to 1.2.
 
 ### 1.2 Show Templates and Ask for Vertical + Variant
 
@@ -192,20 +195,7 @@ start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro 
 
 Record both destination paths. They will be written to session state.
 
-### 1.4 Add to Notion Pipeline
-
-Use `mcp__plugin_Notion_notion__notion-search` to search for an existing page with title equal to [COMPANY_NAME] in database `4afe3d50-864d-8388-9b82-8119f374c573`.
-
-If a matching page already exists, note: "Notion entry for [COMPANY_NAME] already exists -- skipping." and continue.
-
-If no match, create a new page using `mcp__plugin_Notion_notion__notion-create-pages` with:
-- Parent database: `4afe3d50-864d-8388-9b82-8119f374c573`
-- Title (task name): [COMPANY_NAME] -- company name only, no prefix
-- Due date: today's date + 4 days
-- Vertical: the label from Step 1.2
-- Internal checkbox: unchecked (false)
-
-### 1.5 Detect Branch (3 Parallel Checks)
+### 1.4 Detect Branch (3 Parallel Checks)
 
 Run all three checks simultaneously -- do not wait for one before starting the others:
 
