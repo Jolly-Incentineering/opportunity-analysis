@@ -1,5 +1,5 @@
 ---
-name: deck-onboarding
+name: jolly-onboarding
 description: First-time setup for the Jolly deck workflow. Checks all required MCP integrations are connected, runs /deck-setup, and confirms the workspace is ready. Run this once when you first install the plugin.
 ---
 
