@@ -85,7 +85,7 @@ Tell the user:
 No existing session found for [COMPANY_NAME]. Starting from Phase 1.
 
 Phases to run:
-  Phase 1: Start               -- initialize folder, templates, Notion, branch detection
+  Phase 1: Start               -- initialize folder, templates, branch detection
   Phase 2: Research            -- 4 parallel research agents, merge, campaign selection
   Phase 3: Model               -- dry-run plan, Excel population, formula verification
   Phase 4: Format              -- Macabacus refresh, Figma paste, link-break, deck_format.py
@@ -141,7 +141,7 @@ mkdir -p "$WS/$CLIENT_ROOT/[COMPANY_NAME]/5. Call Transcripts"
 
 Do not tell the user which folders were created. Do not stop or ask for input. Continue to 1.2.
 
-### 1.2 Show Templates and Ask for Vertical + Variant
+### 1.2 Show Templates and Ask for Template
 
 Run:
 
@@ -168,10 +168,9 @@ Available templates:
     6. Automotive Services Intro Template
 
 Which template should I use for [COMPANY_NAME]? Reply with the number.
-Also confirm the Notion vertical label (e.g., QSR, Manufacturing, Automotive, Other).
 ```
 
-Wait for the user's reply. Record: chosen template number, vertical label, full paths to both template files.
+Wait for the user's reply. Record: chosen template number, derive vertical from the chosen template's folder name, and full paths to both template files.
 
 ### 1.3 Copy Templates to Client Folder
 

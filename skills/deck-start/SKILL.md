@@ -110,7 +110,7 @@ Do not tell the user which folders were created. Do not stop or ask for input. C
 
 ---
 
-## Step 3: Show Templates and Ask for Vertical + Variant
+## Step 3: Show Templates and Ask for Template
 
 Run:
 
@@ -139,10 +139,9 @@ Available templates:
     6. Automotive Services Intro Template
 
 Which template should I use for [COMPANY_NAME]? Reply with the number.
-Also confirm the Notion vertical label (e.g., QSR, Manufacturing, Automotive, Other).
 ```
 
-Wait for the user's reply. Record the chosen template number, the vertical label, and the full paths to both files.
+Wait for the user's reply. Record the chosen template number, derive the vertical from the chosen template's folder name, and record the full paths to both files.
 
 ---
 
