@@ -1,6 +1,6 @@
 # opportunity-analysis
 
-The Jolly intro deck plugin for Claude. Give it a company name and it handles the research, builds the financial model, and formats the deck — start to finish.
+The Jolly Opportunity Analysis plugin for Claude. Give it a company name and it handles the research, builds the financial model, and formats the presentation — start to finish.
 
 > **Internal tool.** Requires access to the private `nishant-jolly/opportunity-analysis` repo and the Jolly shared workspace.
 
@@ -12,13 +12,13 @@ The Jolly intro deck plugin for Claude. Give it a company name and it handles th
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────┐
-│                           JOLLY INTRO DECK PIPELINE                                 │
+│                      JOLLY OPPORTUNITY ANALYSIS PIPELINE                            │
 ├────────────────┬───────────────────────────────────────────┬────────────────────────┤
 │   Command      │  What it does                             │  Output                │
 ├────────────────┼───────────────────────────────────────────┼────────────────────────┤
-│ /deck-auto     │  Runs the whole workflow automatically,   │  Completed deck        │
-│  [Company]     │  pausing only when it needs your input.   │  package ready to send │
-│                │  Saves progress so you can stop and       │                        │
+│ /deck-auto     │  Runs the whole workflow automatically,   │  Completed Opportunity │
+│  [Company]     │  pausing only when it needs your input.   │  Analysis package      │
+│                │  Saves progress so you can stop and       │  ready to send         │
 │                │  resume any time.                         │                        │
 ├────────────────┼───────────────────────────────────────────┼────────────────────────┤
 │ /deck-setup    │  First-time setup. Finds your Jolly       │  Saved workspace       │
@@ -42,15 +42,16 @@ The Jolly intro deck plugin for Claude. Give it a company name and it handles th
 │                │  anything.                                │                        │
 ├────────────────┼───────────────────────────────────────────┼────────────────────────┤
 │ /deck-format   │  Pulls in brand assets, fills in the      │  Formatted PowerPoint, │
-│                │  deck with the right numbers, walks you   │  exported PDF          │
-│                │  through manual brand steps, exports PDF. │                        │
+│                │  presentation with the right numbers,     │  exported PDF          │
+│                │  walks you through manual brand steps,    │                        │
+│                │  exports PDF.                             │                        │
 ├────────────────┼───────────────────────────────────────────┼────────────────────────┤
 │ /deck-qa       │  Runs a full quality check across the     │  QA report,            │
-│                │  model and deck before delivery. Flags    │  delivery-ready files  │
-│                │  anything that needs fixing.              │                        │
+│                │  model and presentation before delivery.  │  delivery-ready files  │
+│                │  Flags anything that needs fixing.        │                        │
 └────────────────┴───────────────────────────────────────────┴────────────────────────┘
 
-Total time: ~30–45 minutes per deck.
+Total time: ~30–45 minutes per Opportunity Analysis.
 ```
 
 ---
@@ -68,6 +69,69 @@ When it stops, it saves your progress automatically. Think of this like a bookma
 ### Step-by-step mode
 
 Run each command yourself in order: `/deck-start`, then `/deck-research`, then `/deck-model`, then `/deck-format`, then `/deck-qa`. This gives you more control and lets you review each phase before moving to the next. The rest of this guide covers each command in detail.
+
+---
+
+## How the workflow flows
+
+```mermaid
+flowchart TD
+    AUTO["<b>/deck-auto [Company]</b>\nRuns the entire flow below automatically\nPauses only at gates and manual steps\nSaves progress after every phase"]
+    AUTO -. "wraps" .-> SETUP
+
+    SETUP["/deck-setup\nOne time per machine"] --> START
+
+    START["/deck-start [Company]\nCreate folder, copy templates,\nadd to Notion, download assets"] --> DETECT
+
+    DETECT{Branch detection\nDoes prior data exist?}
+
+    DETECT -->|"Branch A — Existing client\nGong calls + Attio + Slack data found"| RA
+    DETECT -->|"Branch B — Cold prospect\nNo prior data"| RB
+
+    subgraph branchA ["Branch A — Existing Client"]
+        RA["/deck-research\nAttio + Gong calls\nMicrosoft 365 emails\nSlack messages\nPublic data\nAll 4 run in parallel"]
+        RA --> GA
+        GA{{"Gate: Confirm\ncampaign list"}}
+        GA --> MA
+        MA["/deck-model\nFill Excel model\nwith research-backed values"]
+        MA --> GB
+        GB{{"Gate: Approve values\nbefore writing"}}
+        GB --> FA
+        FA["/deck-format\nApply brand assets\nFill presentation with numbers\nExport PDF"]
+        FA --> GC
+        GC{{"Gate: 3 manual steps\nMacabacus refresh\nFigma frame placement\nLink-break in PowerPoint"}}
+        GC --> QA_A
+        QA_A["/deck-qa\nRun 13 quality checks"]
+        QA_A --> DA["Delivery-ready\nOpportunity Analysis"]
+    end
+
+    subgraph branchB ["Branch B — Cold Prospect"]
+        RB["/deck-research\nPublic sources only\nSEC filings, web, LinkedIn"]
+        RB --> GD
+        GD{{"Gate: Confirm\nstandard campaign list"}}
+        GD --> MB
+        MB["/deck-model\nFill Excel model\nwith illustrative numbers"]
+        MB --> GE
+        GE{{"Gate: Approve values\nbefore writing"}}
+        GE --> FB
+        FB["/deck-format\nApply brand assets\nFill presentation with numbers\nExport PDF"]
+        FB --> QA_B
+        QA_B["/deck-qa\nRun 13 quality checks"]
+        QA_B --> DB["Delivery-ready\nOpportunity Analysis"]
+    end
+
+    style AUTO fill:#f0f4ff,stroke:#4a6fa5,stroke-width:2px,color:#1a1a2e
+    style DETECT fill:#fff8e1,stroke:#f0a500,stroke-width:2px
+    style GA fill:#ffe0b2,stroke:#e65100,stroke-width:2px
+    style GB fill:#ffe0b2,stroke:#e65100,stroke-width:2px
+    style GC fill:#ffe0b2,stroke:#e65100,stroke-width:2px
+    style GD fill:#ffe0b2,stroke:#e65100,stroke-width:2px
+    style GE fill:#ffe0b2,stroke:#e65100,stroke-width:2px
+    style DA fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    style DB fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+```
+
+The diagram shows how an Opportunity Analysis moves from setup through research, modeling, formatting, and QA — with two paths depending on whether the company is an existing client or a brand-new prospect. The orange diamond shapes are gates where the workflow pauses and waits for your input before continuing. `/deck-auto` is a wrapper that drives through the entire flow for you, so you only have to respond at those gate points rather than kick off each step manually.
 
 ---
 
@@ -131,14 +195,14 @@ Claude will find your client folder, confirm the location, and save it so all fu
 
 ### `/deck-start [Company Name]`
 
-**What it does:** Gets everything ready to start a new deck. Creates the folder structure, copies the right template files, opens them on your screen, adds the company to the Notion pipeline, and starts downloading logos and brand assets in the background while you move on.
+**What it does:** Gets everything ready to start a new Opportunity Analysis. Creates the folder structure, copies the right template files, opens them on your screen, adds the company to the Notion pipeline, and starts downloading logos and brand assets in the background while you move on.
 
 **What you do:** Provide the company name. Claude will ask you two questions before starting: which template to use, and which vertical (industry) the company is in.
 
 **What Claude does:**
 - Checks whether you already have an active session for this company (and stops if you do, to avoid duplicates)
 - Lists available templates grouped by industry — you pick the number
-- Copies the Excel model and PowerPoint deck to the right client folder, named with today's date
+- Copies the Excel model and PowerPoint presentation to the right client folder, named with today's date
 - Opens both files on your screen
 - Adds the company to the Notion "Opportunity Analysis Deck Pipeline" with a due date 4 days out
 - Figures out whether this is an existing client (has prior calls, emails, or CRM records) or a brand-new prospect — this affects how research runs later
@@ -155,7 +219,7 @@ Claude will find your client folder, confirm the location, and save it so all fu
 
 ### `/deck-research`
 
-**What it does:** Pulls together everything Claude can find about the company from your tools — CRM records, past emails, Slack conversations, and public information. Then it proposes a list of campaigns to include in the deck and asks you to confirm before moving on.
+**What it does:** Pulls together everything Claude can find about the company from your tools — CRM records, past emails, Slack conversations, and public information. Then it proposes a list of campaigns to include in the Opportunity Analysis and asks you to confirm before moving on.
 
 **What you do:** Review the proposed campaign list and type "confirm" to proceed. If anything looks off — a campaign is missing, or one shouldn't be included — say so before confirming.
 
@@ -196,7 +260,7 @@ All four run in parallel and report back with their findings. Claude then combin
 
 ### `/deck-format`
 
-**What it does:** Takes the branded assets and model outputs and puts them into the PowerPoint deck. Walks you through any manual steps one at a time. Exports the final PDF when done.
+**What it does:** Takes the branded assets and model outputs and puts them into the PowerPoint presentation. Walks you through any manual steps one at a time. Exports the final PDF when done.
 
 **What you do:** There are a few manual steps only you can do in PowerPoint (like refreshing a data link). Claude will stop at each one, give you clear step-by-step instructions, and wait for you to type "done" before moving on.
 
@@ -216,7 +280,7 @@ All four run in parallel and report back with their findings. Claude then combin
 
 ### `/deck-qa`
 
-**What it does:** Runs a full quality check on the model and deck before you send anything. Catches formatting issues, missing data, out-of-range numbers, and anything else that would be embarrassing to send to a client.
+**What it does:** Runs a full quality check on the model and presentation before you send anything. Catches formatting issues, missing data, out-of-range numbers, and anything else that would be embarrassing to send to a client.
 
 **What you do:** Review any flagged issues and fix them. Claude walks through each one interactively and re-runs the check after you confirm it is fixed.
 
@@ -230,17 +294,17 @@ All four run in parallel and report back with their findings. Claude then combin
 | M4 | Total EBITDA impact is within the 15% ceiling |
 | M5 | Hiring cost is not above $3,500 (QSR models) |
 | M6 | Source notes present on all hard-coded cells |
-| D1 | No placeholder text remaining in the deck (e.g., `[Company Name]`) |
+| D1 | No placeholder text remaining in the presentation (e.g., `[Company Name]`) |
 | D2 | All dollar amounts formatted correctly |
-| D3 | Banner numbers on the deck match the model output |
+| D3 | Banner numbers on the presentation match the model output |
 | D4 | Campaign slides match the approved campaign list |
 | D5 | Logo and brand assets are placed |
-| D6 | Return-on-spend values are hidden on prospect decks (not shown to new clients) |
-| D7 | The exported PDF matches the current state of the deck |
+| D6 | Return-on-spend values are hidden on prospect presentations (not shown to new clients) |
+| D7 | The exported PDF matches the current state of the presentation |
 
 After all checks pass, Claude cleans up any temporary lock files and gives you the final list of delivery-ready files.
 
-**Gate:** Claude will not mark the deck as complete until all failing checks are resolved.
+**Gate:** Claude will not mark the Opportunity Analysis as complete until all failing checks are resolved.
 
 ---
 
@@ -304,7 +368,7 @@ When a new version is available, run:
 Run `/deck-setup` first. This is the one-time setup that tells Claude where your Jolly folder is. You need to do it before any other command will work.
 
 **"Claude says a session already exists for this company"**
-This means you already started a deck for this company. You have two options: continue from where you left off by running `/deck-auto [Company]` (or the next step command), or delete the session file if you want to start over from scratch. To start over, ask the ops team to delete the session state file for that company.
+This means you already started an Opportunity Analysis for this company. You have two options: continue from where you left off by running `/deck-auto [Company]` (or the next step command), or delete the session file if you want to start over from scratch. To start over, ask the ops team to delete the session state file for that company.
 
 **"I closed Claude and lost my progress"**
 You did not lose anything. Run `/deck-auto [Company]` again (or the specific step command you were on) and Claude will read the saved bookmark and resume from where it stopped.
@@ -326,6 +390,6 @@ The research step pulls from multiple sources at once and can take 2–5 minutes
 
 **New computer or new team member?** Ask the ops team to configure your workspace path when you first install. Do not skip this — nothing else will work without it.
 
-**Existing client vs. new prospect matters.** Claude detects this automatically during `/deck-start` by checking whether any prior calls, emails, or CRM records exist for the company. Existing clients (Branch A) get a research-backed deck using all internal data. New prospects (Branch B) get an illustrative deck using public data only. Claude will tell you which branch it detected.
+**Existing client vs. new prospect matters.** Claude detects this automatically during `/deck-start` by checking whether any prior calls, emails, or CRM records exist for the company. Existing clients (Branch A) get a research-backed Opportunity Analysis using all internal data. New prospects (Branch B) get an illustrative Opportunity Analysis using public data only. Claude will tell you which branch it detected.
 
 **If something seems wrong mid-workflow,** the session state file (your progress bookmark) in `.claude/data/` shows exactly what phase last completed and what Claude was about to do next. This is the first place to check. Ask the ops team if you need help reading it.
