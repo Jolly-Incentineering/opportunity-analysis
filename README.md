@@ -76,48 +76,48 @@ Run each command yourself in order: `/deck-start`, then `/deck-research`, then `
 
 ```mermaid
 flowchart TD
-    AUTO["<b>/deck-auto [Company]</b>\nRuns the entire flow below automatically\nPauses only at gates and manual steps\nSaves progress after every phase"]
+    AUTO["<b>/deck-auto [Company]</b><br/>Runs the entire flow below automatically<br/>Pauses only at gates and manual steps<br/>Saves progress after every phase"]
     AUTO -. "wraps" .-> SETUP
 
-    SETUP["/deck-setup\nOne time per machine"] --> START
+    SETUP["<b>/deck-setup</b><br/>One time per machine"] --> START
 
-    START["/deck-start [Company]\nCreate folder, copy templates,\nadd to Notion, download assets"] --> DETECT
+    START["<b>/deck-start [Company]</b><br/>Create folder, copy templates,<br/>add to Notion, download assets"] --> DETECT
 
-    DETECT{Branch detection\nDoes prior data exist?}
+    DETECT{"Branch detection<br/>Does prior data exist?"}
 
-    DETECT -->|"Branch A — Existing client\nGong calls + Attio + Slack data found"| RA
-    DETECT -->|"Branch B — Cold prospect\nNo prior data"| RB
+    DETECT -->|"Branch A — Existing client<br/>Gong calls + Attio + Slack data found"| RA
+    DETECT -->|"Branch B — Cold prospect<br/>No prior data"| RB
 
     subgraph branchA ["Branch A — Existing Client"]
-        RA["/deck-research\nAttio + Gong calls\nMicrosoft 365 emails\nSlack messages\nPublic data\nAll 4 run in parallel"]
+        RA["<b>/deck-research</b><br/>Attio + Gong calls<br/>Microsoft 365 emails<br/>Slack messages<br/>Public data<br/>All 4 run in parallel"]
         RA --> GA
-        GA{{"Gate: Confirm\ncampaign list"}}
+        GA{{"Gate: Confirm<br/>campaign list"}}
         GA --> MA
-        MA["/deck-model\nFill Excel model\nwith research-backed values"]
+        MA["<b>/deck-model</b><br/>Fill Excel model<br/>with research-backed values"]
         MA --> GB
-        GB{{"Gate: Approve values\nbefore writing"}}
+        GB{{"Gate: Approve values<br/>before writing"}}
         GB --> FA
-        FA["/deck-format\nApply brand assets\nFill presentation with numbers\nExport PDF"]
+        FA["<b>/deck-format</b><br/>Apply brand assets<br/>Fill presentation with numbers<br/>Export PDF"]
         FA --> GC
-        GC{{"Gate: 3 manual steps\nMacabacus refresh\nFigma frame placement\nLink-break in PowerPoint"}}
+        GC{{"Gate: 3 manual steps<br/>Macabacus refresh<br/>Figma frame placement<br/>Link-break in PowerPoint"}}
         GC --> QA_A
-        QA_A["/deck-qa\nRun 13 quality checks"]
-        QA_A --> DA["Delivery-ready\nOpportunity Analysis"]
+        QA_A["<b>/deck-qa</b><br/>Run 13 quality checks"]
+        QA_A --> DA["Delivery-ready<br/>Opportunity Analysis"]
     end
 
     subgraph branchB ["Branch B — Cold Prospect"]
-        RB["/deck-research\nPublic sources only\nSEC filings, web, LinkedIn"]
+        RB["<b>/deck-research</b><br/>Public sources only<br/>SEC filings, web, LinkedIn"]
         RB --> GD
-        GD{{"Gate: Confirm\nstandard campaign list"}}
+        GD{{"Gate: Confirm<br/>standard campaign list"}}
         GD --> MB
-        MB["/deck-model\nFill Excel model\nwith illustrative numbers"]
+        MB["<b>/deck-model</b><br/>Fill Excel model<br/>with illustrative numbers"]
         MB --> GE
-        GE{{"Gate: Approve values\nbefore writing"}}
+        GE{{"Gate: Approve values<br/>before writing"}}
         GE --> FB
-        FB["/deck-format\nApply brand assets\nFill presentation with numbers\nExport PDF"]
+        FB["<b>/deck-format</b><br/>Apply brand assets<br/>Fill presentation with numbers<br/>Export PDF"]
         FB --> QA_B
-        QA_B["/deck-qa\nRun 13 quality checks"]
-        QA_B --> DB["Delivery-ready\nOpportunity Analysis"]
+        QA_B["<b>/deck-qa</b><br/>Run 13 quality checks"]
+        QA_B --> DB["Delivery-ready<br/>Opportunity Analysis"]
     end
 
     style AUTO fill:#f0f4ff,stroke:#4a6fa5,stroke-width:2px,color:#1a1a2e
