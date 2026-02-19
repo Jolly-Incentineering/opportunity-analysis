@@ -512,11 +512,14 @@ Type "confirm" to proceed with all campaigns, or remove any you do not want:
 
 ## Step 7: Save Research Outputs
 
-After user confirmation, write the research JSON:
+After user confirmation, write the research JSON.
+
+Create the output directory if it does not exist:
 
 ```bash
 WS="${JOLLY_WORKSPACE:-.}"
-# Write to: "$WS/.claude/data/research_output_[company_slug].json"
+mkdir -p "$WS/$CLIENT_ROOT/[COMPANY_NAME]/reports/research"
+# Write to: "$WS/$CLIENT_ROOT/[COMPANY_NAME]/reports/research/research_output_[company_slug].json"
 ```
 
 The JSON must conform to this schema:
@@ -593,5 +596,6 @@ Approved campaigns ([N] total):
 2. [Campaign Name]
 ...
 
+Research file saved to: [CLIENT_ROOT]/[COMPANY_NAME]/reports/research/research_output_[company_slug].json
 Session state saved. Next: run /deck-model to populate the Excel model.
 ```
