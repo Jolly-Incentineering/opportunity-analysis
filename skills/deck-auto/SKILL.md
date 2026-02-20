@@ -331,7 +331,7 @@ Confirm the recipe exists before proceeding to 2.2.
 
 Dispatch all 4 agents simultaneously using the Task tool. Issue all 4 Task calls in a single message. Do not wait for any one agent before dispatching the others. Compute today's date and 180 days ago before dispatching -- pass them as literal date strings in each prompt.
 
-Use `model: "haiku"` and `extended_thinking: true` for all 4 agents. Each agent prompt should begin with the reasoning preamble defined below.
+Use `model: "sonnet"` for all 4 agents. Each agent prompt should begin with the reasoning preamble defined below.
 
 Target: all 4 agents complete within 5 minutes total. Each agent should make only the tool calls listed -- do not expand scope.
 
@@ -341,9 +341,9 @@ Output path for all agents: `$WS/.claude/data/ws_[workstream]_[company_slug].jso
 
 **Agent 1: ws-attio-gong**
 
-Output file: `$WS/.claude/data/ws_attio_gong_[company_slug].json`
+Output file: `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research/ws_attio_gong_[company_slug].json`
 
-Pass this prompt (substitute all bracketed values), using `model: "haiku"`:
+Pass this prompt (substitute all bracketed values), using `model: "sonnet"`:
 
 ```
 Before taking any action, reason through the full plan: what data sources are available for this company, what each tool call is likely to return, and what the most efficient sequence of calls is. Only then begin executing. Do not make a tool call without first reasoning about whether it is necessary and what you expect it to return.
@@ -412,7 +412,7 @@ The gong_insights JSON schema:
 
 --- OUTPUT ---
 
-Write your output to: [WS]/.claude/data/ws_attio_gong_[company_slug].json
+Write your output to: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/research/ws_attio_gong_[company_slug].json
 
 Schema:
 {
@@ -450,9 +450,9 @@ Populate all fields from your research. If branch is B, set attio_used and gong_
 
 **Agent 2: ws-m365**
 
-Output file: `$WS/.claude/data/ws_m365_[company_slug].json`
+Output file: `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research/ws_m365_[company_slug].json`
 
-Pass this prompt (substitute all bracketed values), using `model: "haiku"`:
+Pass this prompt (substitute all bracketed values), using `model: "sonnet"`:
 
 ```
 Before taking any action, reason through the full plan: what data sources are available for this company, what each tool call is likely to return, and what the most efficient sequence of calls is. Only then begin executing. Do not make a tool call without first reasoning about whether it is necessary and what you expect it to return.
@@ -482,7 +482,7 @@ If the Microsoft 365 integration is not available or returns an auth error, skip
 
 Extract from results: revenue figures, headcount, location counts, pricing signals, any campaign mentions.
 
-Write output to: [WS]/.claude/data/ws_m365_[company_slug].json
+Write output to: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/research/ws_m365_[company_slug].json
 
 Schema:
 {
@@ -517,9 +517,9 @@ Write the file. Do not output a long summary -- just confirm the file path writt
 
 **Agent 3: ws-slack**
 
-Output file: `$WS/.claude/data/ws_slack_[company_slug].json`
+Output file: `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research/ws_slack_[company_slug].json`
 
-Pass this prompt (substitute all bracketed values), using `model: "haiku"`:
+Pass this prompt (substitute all bracketed values), using `model: "sonnet"`:
 
 ```
 Before taking any action, reason through the full plan: what data sources are available for this company, what each tool call is likely to return, and what the most efficient sequence of calls is. Only then begin executing. Do not make a tool call without first reasoning about whether it is necessary and what you expect it to return.
@@ -546,7 +546,7 @@ Do not read the channel if keyword searches return useful results.
 
 Extract from results: revenue figures, headcount, location counts, pricing signals, pain points, campaign mentions.
 
-Write output to: [WS]/.claude/data/ws_slack_[company_slug].json
+Write output to: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/research/ws_slack_[company_slug].json
 
 Schema:
 {
@@ -580,9 +580,9 @@ Write the file. Do not output a long summary -- just confirm the file path writt
 
 **Agent 4: ws-public**
 
-Output file: `$WS/.claude/data/ws_public_[company_slug].json`
+Output file: `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research/ws_public_[company_slug].json`
 
-Pass this prompt (substitute all bracketed values), using `model: "haiku"`:
+Pass this prompt (substitute all bracketed values), using `model: "sonnet"`:
 
 ```
 Before taking any action, reason through the full plan: what data sources are available for this company, what each tool call is likely to return, and what the most efficient sequence of calls is. Only then begin executing. Do not make a tool call without first reasoning about whether it is necessary and what you expect it to return.
@@ -632,7 +632,7 @@ Use remaining slots (up to 3 more) to fill whichever of these fields are still m
 
 Use WebSearch or WebFetch for each. Stop at 4 total operations.
 
-Write output to: [WS]/.claude/data/ws_public_[company_slug].json
+Write output to: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/research/ws_public_[company_slug].json
 
 Schema:
 {
@@ -671,10 +671,10 @@ Do not proceed until all 4 Task calls have returned. Once all agents report comp
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-cat "$WS/.claude/data/ws_attio_gong_[company_slug].json"
-cat "$WS/.claude/data/ws_m365_[company_slug].json"
-cat "$WS/.claude/data/ws_slack_[company_slug].json"
-cat "$WS/.claude/data/ws_public_[company_slug].json"
+cat "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research/ws_attio_gong_[company_slug].json"
+cat "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research/ws_m365_[company_slug].json"
+cat "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research/ws_slack_[company_slug].json"
+cat "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research/ws_public_[company_slug].json"
 ```
 
 If any file is missing or invalid JSON, note it as a failed workstream and continue with the remaining data.
@@ -764,7 +764,13 @@ If the user requests changes, apply them and re-present. Repeat until "confirm" 
 
 ### 2.6 Save Research Output and Update State
 
-Write `$WS/.claude/data/research_output_[company_slug].json`:
+First create the directory:
+
+```bash
+mkdir -p "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research"
+```
+
+Write `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research/research_output_[company_slug].json`:
 
 ```json
 {
@@ -830,7 +836,7 @@ Read:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-cat "$WS/.claude/data/research_output_[company_slug].json"
+cat "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research/research_output_[company_slug].json"
 ```
 
 Extract: `company_basics`, `campaigns_selected`, `campaign_inputs`, `comps_benchmarks`, `model_population` (should be empty at this stage), and branch.
