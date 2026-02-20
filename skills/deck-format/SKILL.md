@@ -49,7 +49,7 @@ Read the research output:
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-cat "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research/research_output_[company_slug].json"
+cat "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/Research/research_output_[company_slug].json"
 ```
 
 Tell the user:
@@ -88,7 +88,7 @@ Scan the deck for slides containing banner placeholder shapes. A shape is a bann
 
 For each banner shape found, report its slide number and current text.
 
-Map each banner to the corresponding campaign output value from the model population data in `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research/research_output_[company_slug].json`. Apply dollar formatting:
+Map each banner to the corresponding campaign output value from the model population data in `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/Research/research_output_[company_slug].json`. Apply dollar formatting:
 - Under $1M: `$XXXk` (lowercase k, no space, e.g. `$516k`)
 - $1M and above: `$X.XXMM` (uppercase MM, no space, e.g. `$1.96MM`)
 
@@ -207,7 +207,7 @@ Continuing with manual checklist steps...
 
 Scan all slides for text placeholders that contain template tokens (e.g., `[Company Name]`, `[Revenue]`, `[Unit Count]`, `[Year]`, `[Vertical]`).
 
-For each placeholder found, map it to the correct value from `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research/research_output_[company_slug].json`. Apply dollar formatting where applicable.
+For each placeholder found, map it to the correct value from `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/Research/research_output_[company_slug].json`. Apply dollar formatting where applicable.
 
 Present the text replacement plan to the user:
 

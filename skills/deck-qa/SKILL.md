@@ -171,6 +171,29 @@ Report any incorrectly formatted values.
 Type "done":
 ```
 
+**Check D2b -- Unfilled Macabacus range blanks:**
+
+```
+Check D2b: Search the deck for unfilled Macabacus range links.
+In PowerPoint, press Ctrl+F and search for "  to  " (two spaces, "to", two spaces).
+Also search for "ranges from" to find any "ranges from [blank] to [blank]" patterns.
+These appear where Macabacus linked a range value that was never populated.
+Report any matches found -- each one needs a manual value entered.
+Type "done" if no matches:
+```
+
+**Check D2c -- Raw integers in narrative text:**
+
+```
+Check D2c: Scroll through all commentary and body text on campaign slides.
+Look for bare integers >= 1,000 (e.g., 234,000 / 374,400 / 93,600) that appear
+without a $ prefix and are not in a table or formula row.
+These are numbers that should be contextually reviewed -- confirm they are
+intentionally presented as counts (not dollar amounts that need $MM formatting).
+Report any that look incorrect.
+Type "done":
+```
+
 **Check D3 -- Banner values match model:**
 
 ```
@@ -234,13 +257,15 @@ MODEL CHECKS:
   M6 Comment coverage:     [PASS / FAIL / [N] missing]
 
 DECK CHECKS:
-  D1 No template tokens:   [PASS / FAIL]
-  D2 Dollar formatting:    [PASS / FAIL]
-  D3 Banner values:        [PASS / FAIL]
-  D4 Campaign list:        [PASS / FAIL]
-  D5 Logo/brand assets:    [PASS / FAIL]
-  D6 ROPS hidden (B only): [PASS / FAIL / N/A]
-  D7 PDF matches deck:     [PASS / FAIL]
+  D1  No template tokens:      [PASS / FAIL]
+  D2  Dollar formatting:       [PASS / FAIL]
+  D2b Macabacus range blanks:  [PASS / FAIL]
+  D2c Raw integers in text:    [PASS / FAIL]
+  D3  Banner values:           [PASS / FAIL]
+  D4  Campaign list:           [PASS / FAIL]
+  D5  Logo/brand assets:       [PASS / FAIL]
+  D6  ROPS hidden (B only):    [PASS / FAIL / N/A]
+  D7  PDF matches deck:        [PASS / FAIL]
 
 Overall: [PASS -- ready for delivery / FAIL -- [N] issues require attention]
 ```

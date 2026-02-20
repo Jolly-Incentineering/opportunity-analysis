@@ -130,14 +130,18 @@ Dispatch all 4 agents simultaneously using the Task tool. Do not wait for any on
 
 Each agent is fully self-contained. Each reads what it needs, does its work, and writes a JSON output file. The main skill does not do any inline research -- only dispatching and merging.
 
-The output path format for all agents:
-- `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research/ws_[workstream]_[company_slug].json`
+Each agent writes to its own named subfolder under `4. Reports/`:
+- Agent 1 (attio-gong) → `4. Reports/CRM & Calls/`
+- Agent 2 (m365)       → `4. Reports/Email & SharePoint/`
+- Agent 3 (slack)      → `4. Reports/Slack/`
+- Agent 4 (public)     → `4. Reports/Public Research/`
+- Merged output        → `4. Reports/Research/`
 
 ---
 
 ### Agent 1: ws-attio-gong
 
-**Output file:** `$WS/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/research/ws_attio_gong_[company_slug].json`
+**Output file:** `$WS/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/CRM & Calls/ws_attio_gong_[company_slug].json`
 
 Pass this prompt to the agent (substitute actual values):
 
@@ -192,7 +196,7 @@ IF gong_integration = "manual" or "none":
   If not found, set gong_used = false and continue with empty Gong data.
 
 After all transcripts are saved (or if no Gong data), write a consolidated insights file to:
-[WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/research/gong_insights_[today YYYY-MM-DD].json
+[WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/CRM & Calls/gong_insights_[today YYYY-MM-DD].json
 
 The gong_insights JSON schema:
 {
@@ -220,13 +224,12 @@ The gong_insights JSON schema:
 
 --- OUTPUT ---
 
-Create output directories before writing (run immediately, before any research):
-  mkdir -p [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/reports/research
-  mkdir -p [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/reports/transcripts
+Create output directory before writing (run immediately, before any research):
+  mkdir -p "[WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/CRM & Calls"
 
 Save findings immediately after each source completes -- do not wait until all sources are done.
 
-Write your output to: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/research/ws_attio_gong_[company_slug].json
+Write your output to: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/CRM & Calls/ws_attio_gong_[company_slug].json
 
 Schema:
 {
@@ -264,7 +267,7 @@ Populate all fields from your research. If branch is B, set attio_used and gong_
 
 ### Agent 2: ws-m365
 
-**Output file:** `$WS/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/research/ws_m365_[company_slug].json`
+**Output file:** `$WS/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/Email & SharePoint/ws_m365_[company_slug].json`
 
 Pass this prompt to the agent (substitute actual values):
 
@@ -295,9 +298,9 @@ If the Microsoft 365 integration is not available or returns an auth error, skip
 
 Extract from results: revenue figures, headcount, location counts, pricing signals, any campaign mentions.
 
-Create output directory before writing: mkdir -p [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/reports/research
+Create output directory before writing: mkdir -p "[WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/Email & SharePoint"
 Save findings immediately after each source completes -- do not wait until all sources are done.
-Write output to: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/research/ws_m365_[company_slug].json
+Write output to: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/Email & SharePoint/ws_m365_[company_slug].json
 
 Schema:
 {
@@ -332,7 +335,7 @@ Write the file. Do not output a long summary -- just confirm the file path writt
 
 ### Agent 3: ws-slack
 
-**Output file:** `$WS/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/research/ws_slack_[company_slug].json`
+**Output file:** `$WS/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/Slack/ws_slack_[company_slug].json`
 
 Pass this prompt to the agent (substitute actual values):
 
@@ -360,9 +363,9 @@ Do not read the channel if keyword searches return useful results.
 
 Extract from results: revenue figures, headcount, location counts, pricing signals, pain points, campaign mentions.
 
-Create output directory before writing: mkdir -p [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/reports/research
+Create output directory before writing: mkdir -p "[WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/Slack"
 Save findings immediately after each source completes -- do not wait until all sources are done.
-Write output to: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/research/ws_slack_[company_slug].json
+Write output to: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/Slack/ws_slack_[company_slug].json
 
 Schema:
 {
@@ -396,7 +399,7 @@ Write the file. Do not output a long summary -- just confirm the file path writt
 
 ### Agent 4: ws-public
 
-**Output file:** `$WS/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/research/ws_public_[company_slug].json`
+**Output file:** `$WS/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/Public Research/ws_public_[company_slug].json`
 
 Pass this prompt to the agent (substitute actual values):
 
@@ -418,12 +421,12 @@ Determine whether [COMPANY_NAME] is publicly traded (use your knowledge or do on
 
 If public:
   Step 1 -- Run the filings script:
-    python "[WS]/.claude/scripts/sec_filings.py" --ticker [TICKER] --output "[WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/research/sec_[TICKER].json"
+    python "[WS]/.claude/scripts/sec_filings.py" --ticker [TICKER] --output "[WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/Public Research/sec_[TICKER].json"
   After the script completes, read the output JSON.
   For annual revenue, use only the 10-K value. Do not use 10-Q values for annual revenue.
 
   Step 2 -- Download the last 4 filing documents (10-K and 10-Q):
-    Create the filings directory: mkdir -p "[WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/research/filings"
+    Create the filings directory: mkdir -p "[WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/Public Research/Filings"
 
     Using the EDGAR REST API (no auth required):
     a) Resolve CIK: GET https://efts.sec.gov/LATEST/search-index?q=%22[TICKER]%22&dateRange=custom&startdt=2020-01-01&enddt=[TODAY]&forms=10-K,10-Q
@@ -437,7 +440,7 @@ If public:
        Find the primary document (htm or htm.gz). Prefer the full 10-K/10-Q document over exhibits.
 
     d) Download each primary document and save to:
-       "[WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/research/filings/[YYYY-MM-DD]_[FORM_TYPE]_[TICKER].[ext]"
+       "[WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/Public Research/Filings/[YYYY-MM-DD]_[FORM_TYPE]_[TICKER].[ext]"
        Example: 2024-09-30_10-K_MCD.htm
 
     e) After downloading, WebFetch the most recent 10-K's MD&A section to extract unit count and employee count (not XBRL-tagged). This counts as one of your web operations.
@@ -468,9 +471,9 @@ Use remaining slots (up to 3 more) to fill whichever of these fields are still m
 
 Use WebSearch or WebFetch for each. Stop at 4 total operations.
 
-Create output directory before writing: mkdir -p [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/reports/research
+Create output directory before writing: mkdir -p "[WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/Public Research"
 Save findings immediately after each source completes -- do not wait until all sources are done.
-Write output to: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/research/ws_public_[company_slug].json
+Write output to: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/Public Research/ws_public_[company_slug].json
 
 Schema:
 {
@@ -512,11 +515,10 @@ Do not proceed until all 4 Task calls have returned. Once all agents have comple
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-RESEARCH="$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research"
-cat "$RESEARCH/ws_attio_gong_[company_slug].json"
-cat "$RESEARCH/ws_m365_[company_slug].json"
-cat "$RESEARCH/ws_slack_[company_slug].json"
-cat "$RESEARCH/ws_public_[company_slug].json"
+cat "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/CRM & Calls/ws_attio_gong_[company_slug].json"
+cat "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/Email & SharePoint/ws_m365_[company_slug].json"
+cat "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/Slack/ws_slack_[company_slug].json"
+cat "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/Public Research/ws_public_[company_slug].json"
 ```
 
 If any file is missing or invalid JSON, note it as a failed workstream and continue with the remaining data.
@@ -618,8 +620,8 @@ Create the output directory if it does not exist:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-mkdir -p "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research"
-# Write to: "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research/research_output_[company_slug].json"
+mkdir -p "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/Research"
+# Write to: "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/Research/research_output_[company_slug].json"
 ```
 
 The JSON must conform to this schema:
@@ -696,6 +698,6 @@ Approved campaigns ([N] total):
 2. [Campaign Name]
 ...
 
-Research file saved to: [CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/research/research_output_[company_slug].json
+Research file saved to: [CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/Research/research_output_[company_slug].json
 Session state saved. Next: run /deck-model to populate the Excel model.
 ```
