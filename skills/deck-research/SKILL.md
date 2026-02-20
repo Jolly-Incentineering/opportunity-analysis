@@ -124,17 +124,16 @@ If no file exists, note "Gong: no transcript file found — continuing without c
 
 ---
 
-## Step 3: Dispatch 4 Research Agents in Parallel
+## Step 3: Dispatch 3 Research Agents in Parallel
 
-Dispatch all 4 agents simultaneously using the Task tool. Do not wait for any one agent to finish before dispatching the others. All 4 Task calls must be issued in a single message.
+Dispatch all 3 agents simultaneously using the Task tool. Do not wait for any one agent to finish before dispatching the others. All 3 Task calls must be issued in a single message.
 
 Each agent is fully self-contained. Each reads what it needs, does its work, and writes a JSON output file. The main skill does not do any inline research -- only dispatching and merging.
 
 Each agent writes to its own named subfolder under `4. Reports/`:
 - Agent 1 (attio-gong) → `4. Reports/CRM & Calls/`
-- Agent 2 (m365)       → `4. Reports/Email & SharePoint/`
-- Agent 3 (slack)      → `4. Reports/Slack/`
-- Agent 4 (public)     → `4. Reports/Public Research/`
+- Agent 2 (slack)      → `4. Reports/Slack/`
+- Agent 3 (public)     → `4. Reports/Public Research/`
 - Merged output        → `4. Reports/Research/`
 
 ---
@@ -265,77 +264,10 @@ Populate all fields from your research. If branch is B, set attio_used and gong_
 
 ---
 
-### Agent 2: ws-m365
-
-**Output file:** `$WS/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/Email & SharePoint/ws_m365_[company_slug].json`
-
-Pass this prompt to the agent (substitute actual values):
-
-```
-You are the ws-m365 research agent for the Jolly deck workflow.
-
-Company: [COMPANY_NAME]
-Company slug: [company_slug]
-Branch: [A or B]
-Workspace root (WS): [WS]
-Client root (CLIENT_ROOT): [CLIENT_ROOT]
-Today's date: [YYYY-MM-DD]
-180 days ago: [YYYY-MM-DD]
-
-Your job: run Microsoft 365 research (Outlook + SharePoint) and write a clean JSON output.
-
-If Branch B, skip all M365 calls and write an empty findings output.
-
-Fire both calls in parallel:
-1. mcp__claude_ai_Microsoft_365__outlook_email_search: query="[COMPANY_NAME]", afterDateTime=[180 days ago ISO 8601], limit=20
-2. mcp__claude_ai_Microsoft_365__sharepoint_search: query="[COMPANY_NAME]", limit=10
-
-After results return, read the full email body only for emails whose subject line contains any of these keywords (case-insensitive): revenue, headcount, locations, turnover, pricing, contract, or $.
-
-Use mcp__claude_ai_Microsoft_365__read_resource to fetch full body for qualifying emails.
-
-If the Microsoft 365 integration is not available or returns an auth error, skip all calls silently and set m365_available to false in output.
-
-Extract from results: revenue figures, headcount, location counts, pricing signals, any campaign mentions.
-
-Create output directory before writing: mkdir -p "[WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/Email & SharePoint"
-Save findings immediately after each source completes -- do not wait until all sources are done.
-Write output to: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/Email & SharePoint/ws_m365_[company_slug].json
-
-Schema:
-{
-  "workstream": "m365",
-  "company": "[COMPANY_NAME]",
-  "findings": {
-    "emails_found": 0,
-    "emails_read_full": 0,
-    "sharepoint_results": 0,
-    "revenue": null,
-    "revenue_source": "",
-    "unit_count": null,
-    "unit_count_source": "",
-    "employee_count": null,
-    "employee_count_source": "",
-    "pain_points": [],
-    "campaigns_mentioned": [],
-    "other_data_points": {}
-  },
-  "source_summary": {
-    "m365_available": true,
-    "outlook_used": false,
-    "sharepoint_used": false,
-    "skip_reason": ""
-  }
-}
-
-Write the file. Do not output a long summary -- just confirm the file path written.
-```
-
----
-
-### Agent 3: ws-slack
+### Agent 2: ws-slack
 
 **Output file:** `$WS/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/Slack/ws_slack_[company_slug].json`
+
 
 Pass this prompt to the agent (substitute actual values):
 
@@ -397,7 +329,7 @@ Write the file. Do not output a long summary -- just confirm the file path writt
 
 ---
 
-### Agent 4: ws-public
+### Agent 3: ws-public
 
 **Output file:** `$WS/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/Public Research/ws_public_[company_slug].json`
 
@@ -509,14 +441,13 @@ Write the file. Do not output a long summary -- just confirm the file path writt
 
 ---
 
-## Step 4: Wait for All 4 Agents to Complete
+## Step 4: Wait for All 3 Agents to Complete
 
-Do not proceed until all 4 Task calls have returned. Once all agents have completed, read all 4 output files:
+Do not proceed until all 3 Task calls have returned. Once all agents have completed, read all 3 output files:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 cat "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/CRM & Calls/ws_attio_gong_[company_slug].json"
-cat "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/Email & SharePoint/ws_m365_[company_slug].json"
 cat "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/Slack/ws_slack_[company_slug].json"
 cat "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/Public Research/ws_public_[company_slug].json"
 ```
@@ -531,11 +462,10 @@ Consolidate all data from the 4 agent output files into a single field map. Appl
 
 1. Gong transcript (1st party)
 2. Attio note (1st party)
-3. Microsoft 365 Outlook / SharePoint (1st party)
-4. Slack (1st party)
-5. SEC filing (2nd party)
-6. Comp benchmark (2nd party)
-7. Online estimate (3rd party)
+3. Slack (1st party)
+4. SEC filing (2nd party)
+5. Comp benchmark (2nd party)
+6. Online estimate (3rd party)
 
 For each field, use the highest-priority source that has a value. Record the source name and tier alongside each value.
 
@@ -637,7 +567,6 @@ The JSON must conform to this schema:
     "gong_calls_transcribed": 0,
     "attio_records": 0,
     "attio_notes": 0,
-    "m365_emails": 0,
     "slack_messages": 0,
     "sec_filings": false,
     "comp_benchmarks_used": false,
@@ -687,7 +616,6 @@ Research complete for [COMPANY NAME].
 Source breakdown:
 - Gong: [N] calls found, [N] transcribed
 - Attio: [N] records, [N] notes
-- Microsoft 365: [N] emails read (or: skipped)
 - Slack: [N] messages
 - SEC filings: [used / not applicable]
 - Comp benchmarks: [used / stale -- flag for refresh]

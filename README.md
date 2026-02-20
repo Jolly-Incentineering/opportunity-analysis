@@ -26,8 +26,9 @@ The Jolly Opportunity Analysis plugin for Claude. Give it a company name and it 
 │                │  other commands know where to look.       │                        │
 ├────────────────┼───────────────────────────────────────────┼────────────────────────┤
 │ /deck-start    │  Creates the client folder, copies the    │  Templates in place,   │
-│  [Company]     │  right template files, opens them,        │  company added to      │
-│                │  adds the company to Notion, and starts   │  Notion pipeline,      │
+│  [Company]     │  right template files, opens them,        │  branch detected       │
+│                │  detects whether this is an existing      │  (existing client or   │
+│                │  client or new prospect, and starts       │  new prospect),        │
 │                │  downloading logos and brand assets       │  assets downloading    │
 │                │  in the background.                       │  in background         │
 ├────────────────┼───────────────────────────────────────────┼────────────────────────┤
@@ -161,7 +162,7 @@ Claude will find your client folder, confirm the location, and save it so all fu
 
 ### `/deck-start [Company Name]`
 
-**What it does:** Gets everything ready to start a new Opportunity Analysis. Creates the folder structure, copies the right template files, opens them on your screen, adds the company to the Notion pipeline, and starts downloading logos and brand assets in the background while you move on.
+**What it does:** Gets everything ready to start a new Opportunity Analysis. Creates the folder structure, copies the right template files, opens them on your screen, and starts downloading logos and brand assets in the background while you move on.
 
 **What you do:** Provide the company name. Claude will ask you two questions before starting: which template to use, and which vertical (industry) the company is in.
 
@@ -170,11 +171,10 @@ Claude will find your client folder, confirm the location, and save it so all fu
 - Lists available templates grouped by industry — you pick the number
 - Copies the Excel model and PowerPoint presentation to the right client folder, named with today's date
 - Opens both files on your screen
-- Adds the company to the Notion "Opportunity Analysis Deck Pipeline" with a due date 4 days out
 - Figures out whether this is an existing client (has prior calls, emails, or CRM records) or a brand-new prospect — this affects how research runs later
 - Starts downloading logos, swag images, and branded slide frames in the background
 
-**Output:** Templates in the client folder, company in Notion, assets downloading in the background.
+**Output:** Templates in the client folder, assets downloading in the background.
 
 **Example:**
 ```
@@ -189,10 +189,9 @@ Claude will find your client folder, confirm the location, and save it so all fu
 
 **What you do:** Review the proposed campaign list and type "confirm" to proceed. If anything looks off — a campaign is missing, or one shouldn't be included — say so before confirming.
 
-**What Claude does:** Runs four research tasks at the same time (so it is faster than doing them one by one):
+**What Claude does:** Runs three research tasks at the same time (so it is faster than doing them one by one):
 
 - **CRM and call research** — checks Attio for records, notes, and emails; pulls transcripts from past calls if this is an existing client
-- **Email and file research** — searches Outlook and SharePoint for relevant emails and documents
 - **Slack research** — searches Slack for messages about the company
 - **Public research** — looks up SEC filings (for public companies), industry benchmarks, LinkedIn headcount, and other public sources
 
@@ -293,8 +292,6 @@ Go to Claude.ai Settings > Integrations and make sure these are all connected be
 | Slack | Searching messages and channels |
 | Attio | CRM records, contact notes, email history |
 | Linear | Issue tracking |
-| Notion | Adding companies to the pipeline database |
-| Microsoft 365 | Searching Outlook emails and SharePoint files |
 
 If any of these are not connected, Claude will not be able to pull data from that source and will tell you what is missing.
 
