@@ -51,13 +51,22 @@ Derive `company_slug` from company name: lowercase, spaces replaced with undersc
 
 ---
 
-## Step 2: Check and Ensure Gong Recipe Exists (Branch A only)
+## Step 2: Prepare Gong Integration (Branch A only)
 
 Skip this step entirely if branch is B.
 
+Read `gong_integration` from workspace config:
+
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+python3 -c "import json; c=json.load(open('$WS/.claude/data/workspace_config.json')); print(c.get('gong_integration','none'))"
+```
+
+**If `gong_integration = "rube"`:**
+
 Call `RUBE_FIND_RECIPE` with `name: "gong_company_search"`.
 
-If the recipe is NOT found, create it immediately using `RUBE_CREATE_UPDATE_RECIPE` with the following definition:
+If the recipe is NOT found, create it using `RUBE_CREATE_UPDATE_RECIPE`:
 
 - Recipe name: `gong_company_search`
 - Description: "Search Gong calls by date range and retrieve transcripts for matched calls."
@@ -72,7 +81,46 @@ If the recipe is NOT found, create it immediately using `RUBE_CREATE_UPDATE_RECI
   - Pass 2: Call `GONG_GET_CALL_TRANSCRIPT` with parameters:
     - `filter.callIds`: `["{{matched_call_ids}}"]`
 
-Confirm the recipe exists before proceeding.
+Confirm the recipe exists before proceeding to Step 3.
+
+**If `gong_integration = "zapier"`:**
+
+Read `gong_webhook_url` from workspace config. Tell the user:
+
+```
+Gong: triggering Zapier webhook for [COMPANY_NAME]...
+```
+
+Trigger the webhook:
+
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+WEBHOOK_URL=$(python3 -c "import json; c=json.load(open('$WS/.claude/data/workspace_config.json')); print(c.get('gong_webhook_url',''))")
+curl -s -X POST "$WEBHOOK_URL" \
+  -H "Content-Type: application/json" \
+  -d "{\"company\": \"[COMPANY_NAME]\", \"from_date\": \"[180 days ago YYYY-MM-DD]\", \"to_date\": \"[today YYYY-MM-DD]\"}"
+```
+
+Then tell the user:
+
+```
+Gong webhook triggered. Waiting up to 3 minutes for transcript file to appear...
+```
+
+Poll every 15 seconds (up to 12 attempts) for a new `gong_insights_*.json` file in `$WS/$CLIENT_ROOT/[COMPANY_NAME]/5. Call Transcripts/`. If found, continue. If not found after 3 minutes, note "Gong: no transcript file received — continuing without call data" and proceed to Step 3.
+
+**If `gong_integration = "manual"` or `"none"`:**
+
+Check whether a recent `gong_insights_*.json` file already exists:
+
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+CLIENT_ROOT=$(python3 -c "import json; c=json.load(open('$WS/.claude/data/workspace_config.json')); print(c['client_root'])" 2>/dev/null || echo "Clients")
+find "$WS/$CLIENT_ROOT/[COMPANY_NAME]/5. Call Transcripts" -name "gong_insights_*.json" 2>/dev/null
+```
+
+If a file exists and is ≤30 days old, note "Gong: using existing transcript file." Proceed to Step 3.
+If no file exists, note "Gong: no transcript file found — continuing without call data." Proceed to Step 3.
 
 ---
 
@@ -119,17 +167,31 @@ Extract from results: revenue mentions, headcount mentions, location counts, pai
 
 --- GONG (Branch A only -- if Branch B, skip and set all Gong fields to empty) ---
 
-Run RUBE recipe "gong_company_search" (it already exists -- do not recreate it):
-- from_date: [180 days ago YYYY-MM-DD]
-- to_date: [today YYYY-MM-DD]
+First, read gong_integration from workspace config:
+  python3 -c "import json; c=json.load(open('[WS]/.claude/data/workspace_config.json')); print(c.get('gong_integration','none'))"
 
-From Pass 1 results, identify matched call IDs. Take the 6 most recent. Fire GONG_GET_CALL_TRANSCRIPT for each matched call ID in parallel (up to 6 simultaneous calls).
+IF gong_integration = "rube":
+  Run RUBE recipe "gong_company_search" (it already exists -- do not recreate it):
+  - from_date: [180 days ago YYYY-MM-DD]
+  - to_date: [today YYYY-MM-DD]
+  From Pass 1 results, identify matched call IDs. Take the 6 most recent. Fire GONG_GET_CALL_TRANSCRIPT for each matched call ID in parallel (up to 6 simultaneous calls).
+  For each transcript retrieved:
+  - Extract: call date, call title, participants, key topics, verbatim quotes relevant to revenue, headcount, locations, turnover, pricing, and pain points.
+  - Write the transcript to: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/5. Call Transcripts/[YYYY-MM-DD]_[Call Title].md
+  After all transcripts are saved, write a consolidated insights file.
 
-For each transcript retrieved:
-- Extract: call date, call title, participants, key topics, verbatim quotes relevant to revenue, headcount, locations, turnover, pricing, and pain points.
-- Write the transcript to: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/5. Call Transcripts/[YYYY-MM-DD]_[Call Title].md
+IF gong_integration = "zapier":
+  The main skill already triggered the Zapier webhook and waited for the file.
+  Check for an existing gong_insights_*.json in [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/5. Call Transcripts/.
+  If found, read it and use the data in your output. Set gong_used = true.
+  If not found, set gong_used = false and continue.
 
-After all transcripts are saved, write a consolidated insights file to:
+IF gong_integration = "manual" or "none":
+  Check for an existing gong_insights_*.json in [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/5. Call Transcripts/.
+  If found and ≤30 days old, read it and use the data. Set gong_used = true.
+  If not found, set gong_used = false and continue with empty Gong data.
+
+After all transcripts are saved (or if no Gong data), write a consolidated insights file to:
 [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/research/gong_insights_[today YYYY-MM-DD].json
 
 The gong_insights JSON schema:

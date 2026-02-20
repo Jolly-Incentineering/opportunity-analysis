@@ -29,9 +29,10 @@ Workspace already configured.
   clients:   [client_root]/
   templates: [templates_root or "Templates (default)"]/
   tools:     [tools_root or "Tools (default)"]/
+  gong:      [gong_integration or "none"]
   setup_date: [setup_date from file]
 
-To change paths, edit .claude/data/workspace_config.json directly.
+To change any setting, edit .claude/data/workspace_config.json directly.
 Run /deck-start [Company] to begin.
 ```
 
@@ -160,7 +161,37 @@ Apply silently:
 - If `$WS/Tools/` exists → `tools_root = "Tools"`
 - Else → `tools_root = "Tools"` (no folder creation needed — tools are optional)
 
-Do not tell the user. Continue to Step 6.
+Do not tell the user. Continue to Step 5.5.
+
+---
+
+## Step 5.5: Configure Gong Integration
+
+Ask the user:
+
+```
+How do you pull Gong call data into the research workflow?
+
+  1. Rube (rube.app) — Claude creates and runs the Gong recipe automatically via MCP
+  2. Zapier — provide a webhook URL that Claude will POST to on each research run
+  3. Manual — transcripts will already be in the 5. Call Transcripts/ folder
+  4. Not set up yet — skip for now
+
+Reply with 1, 2, 3, or 4.
+```
+
+Wait for the user's reply.
+
+- If **1 (Rube)**: set `gong_integration = "rube"`, `gong_webhook_url = null`
+- If **2 (Zapier)**: ask:
+  ```
+  Paste your Zapier webhook URL (from your Zap's "Catch Hook" trigger):
+  ```
+  Wait for the URL. Set `gong_integration = "zapier"`, `gong_webhook_url = "[URL they paste]"`
+- If **3 (Manual)**: set `gong_integration = "manual"`, `gong_webhook_url = null`
+- If **4 (Skip)**: set `gong_integration = "none"`, `gong_webhook_url = null`
+
+Continue to Step 6.
 
 ---
 
@@ -180,6 +211,8 @@ Write to `$WS/.claude/data/workspace_config.json` with the following content (su
   "client_root": "[relative path decided in Step 3]",
   "templates_root": "[templates_root from Step 4]",
   "tools_root": "[tools_root from Step 5]",
+  "gong_integration": "[rube | zapier | manual | none]",
+  "gong_webhook_url": "[URL or null]",
   "setup_date": "[today YYYY-MM-DD]",
   "structure_choice": "[existing | new_folder]"
 }
@@ -198,6 +231,7 @@ Workspace layout detected:
   clients:   [client_root]/
   templates: [templates_root]/
   tools:     [tools_root]/
+  gong:      [gong_integration]
 
 These paths are saved to .claude/data/workspace_config.json. If your folders
 are named differently, edit that file to match.
