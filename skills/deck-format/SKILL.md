@@ -150,6 +150,7 @@ CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config
 python3 - <<'EOF'
 import sys, shutil
 from pathlib import Path
+from pptx import Presentation
 
 ws          = sys.argv[1]
 client_root = sys.argv[2]
@@ -160,6 +161,11 @@ src  = Path(ws) / client_root / company / "2. Presentations" / f"{company} Intro
 dest = Path(ws) / client_root / company / "2. Presentations" / f"{company} Intro Deck ({date_str}) - vF.pptx"
 
 shutil.copy2(src, dest)
+
+prs = Presentation(dest)
+prs.core_properties.title = f"{company} Intro Deck ({date_str}) - vF"
+prs.save(dest)
+
 print(f"vF copy created: {dest}")
 EOF
 python3 - "$WS" "$CLIENT_ROOT" "[COMPANY_NAME]" "[YYYY.MM.DD]"
