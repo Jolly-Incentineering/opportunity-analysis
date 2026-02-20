@@ -2,7 +2,7 @@
 
 The Jolly Opportunity Analysis plugin for Claude. Give it a company name and it handles the research, builds the financial model, and formats the presentation — start to finish.
 
-> **Internal tool.** Requires access to the private `nishant-jolly/opportunity-analysis` repo and the Jolly shared workspace.
+> **Internal tool.** Maintained by the Incentineering team. Requires access to the private `nishant-jolly/opportunity-analysis` repo and the Jolly shared workspace.
 
 **Two ways to use it:** run the whole workflow automatically with `/deck-auto [Company]`, or run each step yourself one at a time. Both are covered below.
 
@@ -110,7 +110,7 @@ Open Claude Code (the chat interface you use for Claude) and type:
 /plugin install nishant-jolly/opportunity-analysis --scope user
 ```
 
-You need access to the private Jolly GitHub repo for this to work. If you get an error, ask the ops team.
+You need access to the private Jolly GitHub repo for this to work. If you get an error, ask Incentineering.
 
 ---
 
@@ -122,7 +122,7 @@ You only need to do this once, on each computer you use.
 
 Claude needs to know where the Jolly shared folder lives on your computer. This is called your "workspace path" — it is just the folder location.
 
-Ask the ops team to set this up for you when you first install the plugin. They will point Claude to the right folder (something like `Jolly - Documents` in your OneDrive).
+Ask Incentineering to set this up for you when you first install the plugin. They will point Claude to the right folder (something like `Jolly - Documents` in your OneDrive).
 
 If you are already set up and want to check, the path looks like:
 
@@ -130,7 +130,7 @@ If you are already set up and want to check, the path looks like:
 /c/Users/YourName/OneDrive - Default Directory/Jolly - Documents
 ```
 
-Not sure where your Jolly folder is? Ask the ops team.
+Not sure where your Jolly folder is? Ask Incentineering.
 
 ### Step 2 — Run setup
 
@@ -295,7 +295,7 @@ Go to Claude.ai Settings > Integrations and make sure these are all connected be
 
 If any of these are not connected, Claude will not be able to pull data from that source and will tell you what is missing.
 
-### For the ops team
+### For the Incentineering team
 
 <details>
 <summary>Python packages (technical setup — AEs do not need this)</summary>
@@ -331,19 +331,19 @@ When a new version is available, run:
 Run `/deck-setup` first. This is the one-time setup that tells Claude where your Jolly folder is. You need to do it before any other command will work.
 
 **"Claude says a session already exists for this company"**
-This means you already started an Opportunity Analysis for this company. You have two options: continue from where you left off by running `/deck-auto [Company]` (or the next step command), or delete the session file if you want to start over from scratch. To start over, ask the ops team to delete the session state file for that company.
+This means you already started an Opportunity Analysis for this company. You have two options: continue from where you left off by running `/deck-auto [Company]` (or the next step command), or delete the session file if you want to start over from scratch. To start over, ask Incentineering to delete the session state file for that company.
 
 **"I closed Claude and lost my progress"**
 You did not lose anything. Run `/deck-auto [Company]` again (or the specific step command you were on) and Claude will read the saved bookmark and resume from where it stopped.
 
 **"The logos or swag images are missing"**
-The asset download runs in the background during `/deck-start`. It sometimes finishes after you have already moved on. Check the `3. Company Resources/Logos` and `3. Company Resources/Swag` folders — the files may already be there. If not, ask the ops team to run the asset gatherer manually.
+The asset download runs in the background during `/deck-start`. It sometimes finishes after you have already moved on. Check the `3. Company Resources/Logos` and `3. Company Resources/Swag` folders — the files may already be there. If not, ask Incentineering to run the asset gatherer manually.
 
 **"A manual step in `/deck-format` is confusing"**
 Each manual step comes with detailed instructions in the chat. Read them carefully, complete the step in PowerPoint, then come back to Claude and type "done" to continue.
 
 **"A command is taking a long time"**
-The research step pulls from multiple sources at once and can take 2–5 minutes depending on how much data exists. The model step can also take a minute or two if there are many campaigns. If it has been more than 10 minutes with no response, something may have gone wrong — ask the ops team.
+The research step pulls from multiple sources at once and can take 2–5 minutes depending on how much data exists. The model step can also take a minute or two if there are many campaigns. If it has been more than 10 minutes with no response, something may have gone wrong — ask Incentineering.
 
 ---
 
@@ -351,8 +351,8 @@ The research step pulls from multiple sources at once and can take 2–5 minutes
 
 **Run commands from anywhere in your Jolly workspace.** Claude resolves all file paths from the saved workspace config, so you do not need to be in any specific folder.
 
-**New computer or new team member?** Ask the ops team to configure your workspace path when you first install. Do not skip this — nothing else will work without it.
+**New computer or new team member?** Ask Incentineering to configure your workspace path when you first install. Do not skip this — nothing else will work without it.
 
 **Existing client vs. new prospect matters.** Claude detects this automatically during `/deck-start` by checking whether any prior calls, emails, or CRM records exist for the company. Existing clients (Branch A) get a research-backed Opportunity Analysis using all internal data. New prospects (Branch B) get an illustrative Opportunity Analysis using public data only. Claude will tell you which branch it detected.
 
-**If something seems wrong mid-workflow,** the session state file (your progress bookmark) in `.claude/data/` shows exactly what phase last completed and what Claude was about to do next. This is the first place to check. Ask the ops team if you need help reading it.
+**If something seems wrong mid-workflow,** the session state file (your progress bookmark) in `.claude/data/` shows exactly what phase last completed and what Claude was about to do next. This is the first place to check. Ask Incentineering if you need help reading it.
