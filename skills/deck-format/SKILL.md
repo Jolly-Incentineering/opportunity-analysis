@@ -48,7 +48,8 @@ Read the research output:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-cat "$WS/.claude/data/research_output_[company_slug].json"
+CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+cat "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research/research_output_[company_slug].json"
 ```
 
 Tell the user:
@@ -87,7 +88,7 @@ Scan the deck for slides containing banner placeholder shapes. A shape is a bann
 
 For each banner shape found, report its slide number and current text.
 
-Map each banner to the corresponding campaign output value from the model population data in `research_output_[company_slug].json`. Apply dollar formatting:
+Map each banner to the corresponding campaign output value from the model population data in `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research/research_output_[company_slug].json`. Apply dollar formatting:
 - Under $1M: `$XXXk` (lowercase k, no space, e.g. `$516k`)
 - $1M and above: `$X.XXMM` (uppercase MM, no space, e.g. `$1.96MM`)
 
@@ -117,11 +118,96 @@ python3 "$WS/.claude/scripts/deck_format.py" \
 
 ---
 
+## Step 4: Refresh Macabacus Links — Manual Step
+
+The deck contains live Macabacus links to the Excel model. Refresh them now so all values are current before creating the delivery copy.
+
+Tell the user:
+
+```
+Macabacus refresh — complete this step in the open PowerPoint deck, then type "done":
+
+1. Click the Macabacus tab in the PowerPoint ribbon
+2. Click Refresh All (or Refresh)
+3. Wait for all slides to update — values should pull in from the populated model
+4. Confirm the key banner numbers look correct at a glance
+5. Save the deck (Ctrl+S)
+```
+
+Wait for "done" before continuing.
+
+---
+
+## Step 4b: Create vF File and Run Deck Formatter
+
+After Macabacus links are refreshed, create a static delivery copy (vF) and run the automated formatter on it.
+
+**Create the vF copy:**
+
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+python3 - <<'EOF'
+import sys, shutil
+from pathlib import Path
+
+ws          = sys.argv[1]
+client_root = sys.argv[2]
+company     = sys.argv[3]
+date_str    = sys.argv[4]   # YYYY.MM.DD
+
+src  = Path(ws) / client_root / company / "2. Presentations" / f"{company} Intro Deck ({date_str}).pptx"
+dest = Path(ws) / client_root / company / "2. Presentations" / f"{company} Intro Deck ({date_str}) - vF.pptx"
+
+shutil.copy2(src, dest)
+print(f"vF copy created: {dest}")
+EOF
+python3 - "$WS" "$CLIENT_ROOT" "[COMPANY_NAME]" "[YYYY.MM.DD]"
+```
+
+Record the vF file path and PDF output path:
+- vF file: `$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD) - vF.pptx`
+- PDF output: `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf`
+
+**Launch the deck-formatter subagent in the background:**
+
+```
+Task tool — subagent_type: deck-formatter
+
+Prompt (substitute actual values):
+
+  Format the vF delivery deck for [COMPANY_NAME].
+
+  company:        [COMPANY_NAME]
+  vf_deck_path:   [full vF .pptx path]
+  model_path:     [full .xlsx model path]
+  pdf_output:     [full PDF output path]
+  research_json:  [full path to research_output_[company_slug].json]
+
+  Apply dollar formatting to all value placeholders (under $1M → $XXXk, $1M+ → $X.XXMM).
+  Fill banner shapes from model campaign output values.
+  Export the finished deck as PDF to pdf_output.
+  Return: PDF path if successful, or error details.
+```
+
+Do not wait for the subagent to complete. Continue immediately to Step 5. The vF formatting and PDF export happen in the background while the user completes the remaining manual checklist steps.
+
+Tell the user:
+
+```
+vF copy created: [vF filename]
+Deck formatter running in background — dollar formatting, banner fill, and PDF export.
+
+Continuing with manual checklist steps...
+```
+
+---
+
 ## Step 5: Populate Text Placeholders
 
 Scan all slides for text placeholders that contain template tokens (e.g., `[Company Name]`, `[Revenue]`, `[Unit Count]`, `[Year]`, `[Vertical]`).
 
-For each placeholder found, map it to the correct value from `research_output_[company_slug].json`. Apply dollar formatting where applicable.
+For each placeholder found, map it to the correct value from `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research/research_output_[company_slug].json`. Apply dollar formatting where applicable.
 
 Present the text replacement plan to the user:
 
@@ -211,21 +297,17 @@ Final visual review -- complete each step, then type "done":
 
 ---
 
-## Step 9: Export PDF
+## Step 9: Verify PDF from Deck Formatter
 
-Export the deck to PDF:
+The deck-formatter subagent launched in Step 4b is handling PDF export from the vF file. Check whether it has completed:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-python3 "$WS/.claude/scripts/deck_format.py" \
-  --company "[COMPANY_NAME]" \
-  --step export-pdf
+ls "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/[COMPANY_NAME] Intro Deck"*.pdf 2>/dev/null
 ```
 
-If the script fails, tell the user: "Automated PDF export failed. Please export manually: File > Export > Create PDF/XPS. Save to: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf"
-
-After the PDF is created, open it:
+If the PDF exists, open it:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
@@ -233,13 +315,66 @@ CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config
 start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf"
 ```
 
+If the PDF does not exist yet (subagent still running), tell the user:
+
+```
+PDF not ready yet — deck formatter is still running. You can continue to the cheat sheet
+step and check back, or wait and press Enter when ready.
+```
+
+If the PDF is still missing after the user confirms, fall back to manual export:
+
+```
+PDF export fallback: in PowerPoint, go to File → Export → Create PDF/XPS.
+Save to: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf
+```
+
+Once the PDF exists, open the vF deck for a final visual QC before moving on:
+
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD) - vF.pptx"
+```
+
+Tell the user:
+
+```
+vF deck opened. Quick QC before continuing:
+
+1. Scroll through every slide — confirm no [placeholder] tokens remain
+2. Check banner values are formatted correctly ($XXXk or $X.XXMM)
+3. Confirm dollar amounts match the approved model values
+4. Save (Ctrl+S) if you make any corrections
+
+Type "done" when the vF looks good.
+```
+
+Wait for "done" before continuing to Step 10.
+
 ---
 
-## Step 10: Cheat Sheet (Skipped)
+## Step 10: Generate Cheat Sheets
 
-The cheat sheet generation script is under development as of 2026-02-18. Skip this step and note it for the user.
+Run the cheat sheet generator for this company:
 
-Tell the user: "Cheat sheet generation skipped -- script under development. Will be available in a future update."
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+cd "$WS" && python3 ".claude/scripts/cheatsheet_gen.py" --company "[COMPANY_NAME]"
+```
+
+This produces two PDFs in `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/`:
+- `[COMPANY_NAME] Company Cheat Sheet.pdf` — key metrics, pain points, Gong quotes
+- `[COMPANY_NAME] Campaign Cheat Sheet.pdf` — campaign rationale and evidence
+
+If the script fails (missing packages or no research data), tell the user:
+
+```
+Cheat sheet generation failed: [error].
+You can run it manually later: python3 .claude/scripts/cheatsheet_gen.py --company "[COMPANY_NAME]"
+```
+
+Do not stop the workflow if this step fails — continue to Step 11.
 
 ---
 
@@ -262,9 +397,11 @@ Tell the user:
 ```
 Deck formatting complete for [COMPANY NAME].
 
-Deck file: [deck filename]
-PDF exported: [PDF filename]
-Cheat sheet: skipped (script under development)
+Working deck:  [COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx
+vF (delivery): [COMPANY_NAME] Intro Deck (YYYY.MM.DD) - vF.pptx
+PDF:           [COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf
+Cheat sheets:  [COMPANY_NAME] Company Cheat Sheet.pdf
+               [COMPANY_NAME] Campaign Cheat Sheet.pdf
 
 Session state saved. Next: run /deck-qa for final quality check before delivery.
 ```
