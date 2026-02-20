@@ -240,7 +240,7 @@ Client folder: [CLIENT_ROOT]/[COMPANY_NAME]/3. Company Resources/
 Skip banner step entirely -- do not ask for or mention a banner.
 ```
 
-Do not wait for the subagent to finish. Continue immediately to Step 8.
+Do not wait for the subagent to finish. Continue immediately to Step 7.
 
 ---
 

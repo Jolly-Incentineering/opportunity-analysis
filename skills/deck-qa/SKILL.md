@@ -144,13 +144,15 @@ Report any cells missing comments or missing required fields.
 
 ## Step 4: Deck QA Checks
 
-Open the deck file:
+Open the vF file (the delivery copy — this is what gets sent to the client):
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[deck filename]"
+start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[vF deck filename]"
 ```
+
+The vF file is the delivery copy with static values (Macabacus links broken). Do NOT open the master deck for QA — the master has live Macabacus links and is not for delivery.
 
 Walk through each deck check. Instruct the user to check manually in the open file, and wait for "done" after each item.
 
@@ -166,7 +168,8 @@ Type "done" when complete (or report any tokens found):
 
 ```
 Check D2: Scroll through all slides with dollar values.
-Confirm: under $1M shows as $XXXk (lowercase k), $1M+ shows as $X.XXMM (uppercase MM).
+Confirm: under $1M shows as $X.Xk (one decimal, drop if zero — e.g. $2.4k, $2k, $516k),
+         $1M+ shows as $X.XXMM (uppercase MM, e.g. $1.96MM).
 Report any incorrectly formatted values.
 Type "done":
 ```
@@ -178,7 +181,8 @@ Check D2b: Search the deck for unfilled Macabacus range links.
 In PowerPoint, press Ctrl+F and search for "  to  " (two spaces, "to", two spaces).
 Also search for "ranges from" to find any "ranges from [blank] to [blank]" patterns.
 These appear where Macabacus linked a range value that was never populated.
-Report any matches found -- each one needs a manual value entered.
+Report any matches found -- each one needs a manual value entered from the Sensitivities sheet
+(Downside Net EBITDA → Upside Net EBITDA for the relevant campaign).
 Type "done" if no matches:
 ```
 
@@ -303,8 +307,9 @@ Write a new session state file at `$WS/.claude/data/session_state_[YYYY-MM-DD].m
 - QA results summary (pass/fail for each check)
 - Delivery-ready files:
   - Model: [model filename]
-  - Deck: [deck filename]
+  - vF deck (delivery): [vF deck filename]
   - PDF: [PDF filename]
+  - Cheat sheet: [COMPANY_NAME] Cheat Sheet.pdf
 - Next action: "Deliver to client"
 
 ---
@@ -317,9 +322,10 @@ Tell the user:
 QA complete for [COMPANY NAME].
 
 Delivery-ready files:
-  Model: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/1. Model/[model filename]
-  Deck:  [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/2. Presentations/[deck filename]
-  PDF:   [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/[PDF filename]
+  Model:       [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/1. Model/[model filename]
+  vF (deck):   [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/2. Presentations/[vF deck filename]
+  PDF:         [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/[PDF filename]
+  Cheat sheet: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/[COMPANY_NAME] Cheat Sheet.pdf
 
 QA result: [PASS / PASS with notes / FAIL -- resolved]
 

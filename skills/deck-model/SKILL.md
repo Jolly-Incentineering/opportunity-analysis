@@ -48,7 +48,8 @@ Read the research output file:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-cat "$WS/.claude/data/research_output_[company_slug].json"
+CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+cat "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/Research/research_output_[company_slug].json"
 ```
 
 If the file does not exist, tell the user: "Research output not found. Run /deck-research first." Then stop.

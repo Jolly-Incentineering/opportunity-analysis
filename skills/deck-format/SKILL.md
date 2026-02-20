@@ -418,9 +418,8 @@ WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 cd "$WS" && python3 ".claude/scripts/cheatsheet_gen.py" --company "[COMPANY_NAME]"
 ```
 
-This produces two PDFs in `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/`:
-- `[COMPANY_NAME] Company Cheat Sheet.pdf` — key metrics, pain points, Gong quotes
-- `[COMPANY_NAME] Campaign Cheat Sheet.pdf` — campaign rationale and evidence
+This produces a single combined PDF in `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/`:
+- `[COMPANY_NAME] Cheat Sheet.pdf` — company profile, meeting intelligence, and campaign breakdowns
 
 If the script fails (missing packages or no research data), tell the user:
 
@@ -440,7 +439,10 @@ Write a new session state file at `$WS/.claude/data/session_state_[YYYY-MM-DD].m
 - Client root
 - Current phase: Phase 4 complete
 - Phase 1, 2, 3, 4 marked complete; Phase 5 pending
-- Deck filename and PDF path
+- Master deck path: `[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx` (retains live Macabacus links)
+- vF deck path: `[COMPANY_NAME] Intro Deck (YYYY.MM.DD) - vF.pptx` (delivery copy, links broken)
+- PDF path: `[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf`
+- Cheat sheet path: `[COMPANY_NAME] Cheat Sheet.pdf`
 - Next action: "Run /deck-qa"
 
 ---
@@ -452,11 +454,10 @@ Tell the user:
 ```
 Deck formatting complete for [COMPANY NAME].
 
-Working deck:  [COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx
-vF (delivery): [COMPANY_NAME] Intro Deck (YYYY.MM.DD) - vF.pptx
+Working deck:  [COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx  (master, retains live Macabacus links)
+vF (delivery): [COMPANY_NAME] Intro Deck (YYYY.MM.DD) - vF.pptx  (static delivery copy)
 PDF:           [COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf
-Cheat sheets:  [COMPANY_NAME] Company Cheat Sheet.pdf
-               [COMPANY_NAME] Campaign Cheat Sheet.pdf
+Cheat sheet:   [COMPANY_NAME] Cheat Sheet.pdf
 
 Session state saved. Next: run /deck-qa for final quality check before delivery.
 ```
