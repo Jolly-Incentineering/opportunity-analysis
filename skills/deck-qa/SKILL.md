@@ -174,28 +174,80 @@ Report any incorrectly formatted values.
 Type "done":
 ```
 
-**Check D2b -- Unfilled Macabacus range blanks:**
+**Check D2b -- Macabacus range blanks:**
 
-```
-Check D2b: Search the deck for unfilled Macabacus range links.
-In PowerPoint, press Ctrl+F and search for "  to  " (two spaces, "to", two spaces).
-Also search for "ranges from" to find any "ranges from [blank] to [blank]" patterns.
-These appear where Macabacus linked a range value that was never populated.
-Report any matches found -- each one needs a manual value entered from the Sensitivities sheet
-(Downside Net EBITDA → Upside Net EBITDA for the relevant campaign).
-Type "done" if no matches:
+Run programmatically against the vF:
+
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+python3 - <<'EOF'
+import sys
+from pptx import Presentation
+
+vf_path = sys.argv[1]
+prs = Presentation(vf_path)
+found = []
+for slide_num, slide in enumerate(prs.slides, 1):
+    for shape in slide.shapes:
+        if not shape.has_text_frame:
+            continue
+        for para in shape.text_frame.paragraphs:
+            text = "".join(run.text for run in para.runs)
+            if "  to  " in text:
+                found.append((slide_num, shape.name, text.strip()))
+
+if found:
+    print(f"FAIL D2b: {len(found)} Macabacus range blank(s) found.")
+    for slide_num, shape_name, text in found:
+        print(f"  Slide {slide_num} | Shape \"{shape_name}\": \"{text}\"")
+    print("Fix: refresh Macabacus on the master deck, recreate the vF (Steps 8a-8d), and re-run deck-qa.")
+else:
+    print("PASS D2b")
+EOF
+python3 - "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[vF deck filename]"
 ```
 
 **Check D2c -- Raw integers in narrative text:**
 
-```
-Check D2c: Scroll through all commentary and body text on campaign slides.
-Look for bare integers >= 1,000 (e.g., 234,000 / 374,400 / 93,600) that appear
-without a $ prefix and are not in a table or formula row.
-These are numbers that should be contextually reviewed -- confirm they are
-intentionally presented as counts (not dollar amounts that need $MM formatting).
-Report any that look incorrect.
-Type "done":
+Run programmatically against the vF:
+
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+python3 - <<'EOF'
+import sys, re
+from pptx import Presentation
+
+vf_path = sys.argv[1]
+prs = Presentation(vf_path)
+
+INTEGER_RE = re.compile(r'(?<!\$)\b(\d{1,3}(?:,\d{3})+)\b')
+YEAR_RE    = re.compile(r'\b20[0-9]{2}\b')
+
+found = []
+for slide_num, slide in enumerate(prs.slides, 1):
+    for shape in slide.shapes:
+        if not shape.has_text_frame:
+            continue
+        for para in shape.text_frame.paragraphs:
+            text = "".join(run.text for run in para.runs)
+            scrubbed = YEAR_RE.sub('', text)
+            for m in INTEGER_RE.finditer(scrubbed):
+                val = int(m.group(1).replace(',', ''))
+                if val >= 1000:
+                    found.append((slide_num, shape.name, text.strip()))
+                    break  # one flag per paragraph is enough
+
+if found:
+    print(f"FAIL D2c: {len(found)} raw integer(s) found in narrative text.")
+    for slide_num, shape_name, text in found:
+        print(f"  Slide {slide_num} | Shape \"{shape_name}\": \"{text[:120]}\"")
+    print("Review each: confirm it is intentionally a count, not a dollar amount needing $MM formatting.")
+else:
+    print("PASS D2c")
+EOF
+python3 - "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[vF deck filename]"
 ```
 
 **Check D3 -- Banner values match model:**

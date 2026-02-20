@@ -218,18 +218,20 @@ Refresh all live Macabacus links in the master deck so values are current before
 Tell the user:
 
 ```
-Macabacus refresh — complete this step in the master deck, then type "done":
+Macabacus refresh — complete these steps in the master deck, then type "ready":
 
 1. Click the Macabacus tab in the PowerPoint ribbon
 2. Click Refresh All (or Refresh)
 3. Wait for all slides to update — values should pull in from the populated model
 4. Confirm the key banner numbers look correct at a glance
 5. Save the master deck (Ctrl+S)
+6. Close the master deck
 
 The master will keep its live Macabacus links. Do NOT break links here.
+The master must be saved and closed before the vF copy is created.
 ```
 
-Wait for "done" before continuing.
+Wait for "ready" before continuing.
 
 ---
 
@@ -267,19 +269,11 @@ python3 - "$WS" "$CLIENT_ROOT" "[COMPANY_NAME]" "[YYYY.MM.DD]"
 Record the vF file path:
 - vF file: `$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD) - vF.pptx`
 
-Open the vF file:
-
-```bash
-WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD) - vF.pptx"
-```
-
 Tell the user:
 
 ```
 vF copy created: [vF filename]
-The vF is now open. The master deck retains all live Macabacus links — do not modify it.
+The master deck retains all live Macabacus links — do not modify it.
 ```
 
 ---
@@ -291,18 +285,20 @@ The delivery copy (vF) must have all Macabacus links converted to static values.
 Tell the user:
 
 ```
-Break Macabacus links in the vF — complete this step in the vF deck (NOT the master), then type "done":
+Break Macabacus links in the vF — complete these steps, then type "ready":
 
-1. Make sure you are in the vF file: [COMPANY_NAME] Intro Deck (YYYY.MM.DD) - vF.pptx
+1. Open the vF file in PowerPoint:
+   [vF file path]
 2. Click the Macabacus tab in the PowerPoint ribbon
 3. Click Break Links → confirm the dialog
-4. Verify the values on key slides still look correct (they should be identical to the master)
+4. Spot-check 2-3 key banner slides — values should be identical to the master
 5. Save the vF (Ctrl+S)
+6. Close the vF
 
-Do NOT break links in the master deck.
+Do NOT break links in the master deck. The master always retains live links.
 ```
 
-Wait for "done" before continuing.
+Wait for "ready" before continuing.
 
 ---
 
