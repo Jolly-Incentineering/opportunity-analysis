@@ -188,11 +188,16 @@ Prompt (substitute actual values):
   vf_deck_path:   [full vF .pptx path]
   model_path:     [full .xlsx model path]
   pdf_output:     [full PDF output path]
+  pdf_title:      [COMPANY_NAME] Intro Deck (YYYY.MM.DD)
   research_json:  [full path to research_output_[company_slug].json]
 
   Apply dollar formatting to all value placeholders (under $1M → $XXXk, $1M+ → $X.XXMM).
   Fill banner shapes from model campaign output values.
   Export the finished deck as PDF to pdf_output.
+  After export, set the PDF /Title metadata to pdf_title using pypdf:
+    import pypdf; writer = pypdf.PdfWriter(clone_from=pdf_output)
+    writer.add_metadata({"/Title": pdf_title})
+    writer.write(pdf_output)
   Return: PDF path if successful, or error details.
 ```
 
@@ -331,8 +336,26 @@ step and check back, or wait and press Enter when ready.
 If the PDF is still missing after the user confirms, fall back to manual export:
 
 ```
-PDF export fallback: in PowerPoint, go to File → Export → Create PDF/XPS.
-Save to: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf
+PDF export fallback:
+1. In PowerPoint, go to File → Export → Create PDF/XPS.
+   Save to: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf
+
+2. Then run this to set the PDF title metadata to match the filename:
+```
+
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+python3 -c "
+import pypdf, sys
+pdf_path = sys.argv[1]
+pdf_title = sys.argv[2]
+writer = pypdf.PdfWriter(clone_from=pdf_path)
+writer.add_metadata({'/Title': pdf_title})
+writer.write(pdf_path)
+print(f'PDF title set: {pdf_title}')
+" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf" \
+  "[COMPANY_NAME] Intro Deck (YYYY.MM.DD)"
 ```
 
 Once the PDF exists, open the vF deck for a final visual QC before moving on:
