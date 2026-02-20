@@ -157,9 +157,6 @@ Campaign slide checklist -- complete each step in the open deck, then type "done
 
 3. For any campaigns in the EXCLUDE list, confirm their slides are hidden or removed from the deck.
    > [wait for "done"]
-
-4. Check all campaign slide headlines. Replace any remaining "[Campaign Name]" tokens with the actual campaign name.
-   > [wait for "done"]
 ```
 
 ---
@@ -311,7 +308,7 @@ Wait for "done" before continuing.
 
 ## Step 8d: Run Deck Formatter -- Automated
 
-Launch the deck-formatter subagent to apply dollar formatting, fill any remaining banner shapes, and export to PDF.
+Launch the deck-formatter subagent to scan for any remaining unfilled placeholders, apply dollar formatting, and export to PDF. Banners were already filled in Step 3 and carried over to the vF via the copy in Step 8b — the formatter is a cleanup pass and PDF export, not a primary fill.
 
 Record the paths:
 - vF file: `$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD) - vF.pptx`
@@ -331,12 +328,15 @@ Prompt (substitute actual values):
   pdf_title:      [COMPANY_NAME] Intro Deck (YYYY.MM.DD)
   research_json:  [full path to research_output_[company_slug].json]
 
-  Dollar formatting rules:
+  Scan for any remaining unfilled placeholders (text matching patterns like $[ ], [ ] quantified,
+  [Company Name], [Revenue], etc.) and fill them from model and research data. If none are found,
+  skip silently.
+
+  Apply dollar formatting to all numeric values:
   - Under $1M: $X.Xk — one decimal place, drop the decimal only if it is exactly zero
     (e.g. $2,400 → $2.4k, $2,000 → $2k, $516,000 → $516k)
   - $1M and above: $X.XXMM (e.g. $1,960,000 → $1.96MM)
 
-  Fill banner shapes from model campaign output values.
   Export the finished deck as PDF to pdf_output.
   After export, set the PDF /Title metadata to pdf_title using pypdf:
     import pypdf; writer = pypdf.PdfWriter(clone_from=pdf_output)
@@ -396,11 +396,11 @@ print(f'PDF title set: {pdf_title}')
 Tell the user:
 
 ```
-PDF opened. Quick review:
+PDF opened. Confirm the export is clean:
 
-1. Scroll through every page — confirm no [placeholder] tokens remain
-2. Check banner values are formatted correctly ($X.Xk or $X.XXMM)
-3. Confirm dollar amounts match the approved model values
+1. Correct number of pages (matches slide count)
+2. No blank or corrupted slides
+3. Banner values are readable and not cut off
 
 Type "done" when the PDF looks good.
 ```
