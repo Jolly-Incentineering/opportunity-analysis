@@ -26,9 +26,12 @@ If the file exists and is valid JSON with a `client_root` key, tell the user:
 
 ```
 Workspace already configured.
-client_root: [client_root value from file]
-setup_date: [setup_date from file]
+  clients:   [client_root]/
+  templates: [templates_root or "Templates (default)"]/
+  tools:     [tools_root or "Tools (default)"]/
+  setup_date: [setup_date from file]
 
+To change paths, edit .claude/data/workspace_config.json directly.
 Run /deck-start [Company] to begin.
 ```
 
@@ -120,7 +123,48 @@ Set `client_root` = "Clients". Set `structure_choice` = "new_folder".
 
 ---
 
-## Step 4: Write workspace_config.json
+## Step 4: Detect Templates Folder
+
+Run:
+
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+find "$WS/Templates" -maxdepth 1 -type d 2>/dev/null | head -1
+find "$WS" -maxdepth 2 -name "*.pptx" 2>/dev/null | head -3
+```
+
+Apply this logic silently (no user prompt):
+1. If `$WS/Templates/` exists → `templates_root = "Templates"`
+2. Else if any top-level folder at `$WS` contains `.pptx` files → `templates_root` = that folder name
+3. Else → `templates_root = "Templates"`, create it:
+
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+mkdir -p "$WS/Templates"
+```
+
+Do not tell the user. Continue to Step 5.
+
+---
+
+## Step 5: Detect Tools Folder
+
+Run:
+
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+find "$WS/Tools" -maxdepth 1 -type d 2>/dev/null | head -1
+```
+
+Apply silently:
+- If `$WS/Tools/` exists → `tools_root = "Tools"`
+- Else → `tools_root = "Tools"` (no folder creation needed — tools are optional)
+
+Do not tell the user. Continue to Step 6.
+
+---
+
+## Step 6: Write workspace_config.json
 
 Write the config file:
 
@@ -134,6 +178,8 @@ Write to `$WS/.claude/data/workspace_config.json` with the following content (su
 ```json
 {
   "client_root": "[relative path decided in Step 3]",
+  "templates_root": "[templates_root from Step 4]",
+  "tools_root": "[tools_root from Step 5]",
   "setup_date": "[today YYYY-MM-DD]",
   "structure_choice": "[existing | new_folder]"
 }
@@ -141,14 +187,41 @@ Write to `$WS/.claude/data/workspace_config.json` with the following content (su
 
 ---
 
-## Step 5: Report to User
+## Step 7: Report to User
 
 Tell the user:
 
 ```
 Setup complete.
-client_root: [client_root]
-structure_choice: [existing | new_folder]
+
+Workspace layout detected:
+  clients:   [client_root]/
+  templates: [templates_root]/
+  tools:     [tools_root]/
+
+These paths are saved to .claude/data/workspace_config.json. If your folders
+are named differently, edit that file to match.
+
+Expected workspace structure:
+  [WORKSPACE ROOT]/
+  ├── [templates_root]/           ← Intro deck and model templates (grouped by vertical)
+  │     └── QSR/
+  │           ├── QSR Intro Template.pptx
+  │           └── QSR Intro Template.xlsx
+  ├── [client_root]/              ← One subfolder per company
+  │     └── Acme Corp/
+  │           ├── 1. Model/
+  │           ├── 2. Presentations/
+  │           ├── 3. Company Resources/
+  │           │     ├── Logos/
+  │           │     └── Swag/
+  │           ├── 4. Reports/
+  │           │     └── research/
+  │           └── 5. Call Transcripts/
+  ├── [tools_root]/               ← Optional: scripts, cheatsheet_gen.py, etc.
+  └── .claude/
+        └── data/
+              └── workspace_config.json
 
 Run /deck-start [Company] to begin a new engagement.
 ```

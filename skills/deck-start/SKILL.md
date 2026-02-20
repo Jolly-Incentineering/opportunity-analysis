@@ -116,7 +116,8 @@ Run:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-find "$WS/Templates" -type f \( -name "*.xlsx" -o -name "*.pptx" \) | sort
+TEMPLATES_ROOT=$(python3 -c "import json; c=json.load(open('$WS/.claude/data/workspace_config.json')); print(c.get('templates_root', 'Templates'))" 2>/dev/null || echo "Templates")
+find "$WS/$TEMPLATES_ROOT" -type f \( -name "*.xlsx" -o -name "*.pptx" \) | sort
 ```
 
 From the output, build a numbered list of available template pairs grouped by vertical. Each pair is one `.xlsx` and one `.pptx` with matching names. Present only template pairs (both files exist). Show the vertical folder name and the template display name.
