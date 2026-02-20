@@ -89,7 +89,7 @@ Scan the deck for slides containing banner placeholder shapes. A shape is a bann
 For each banner shape found, report its slide number and current text.
 
 Map each banner to the corresponding campaign output value from the model population data in `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/Research/research_output_[company_slug].json`. Apply dollar formatting:
-- Under $1M: `$XXXk` (lowercase k, no space, e.g. `$516k`)
+- Under $1M: `$X.Xk` (one decimal, lowercase k, drop decimal if zero — e.g. `$2.4k`, `$2k`, `$516k`)
 - $1M and above: `$X.XXMM` (uppercase MM, no space, e.g. `$1.96MM`)
 
 Present the banner replacement plan to the user before writing anything:
@@ -118,31 +118,127 @@ python3 "$WS/.claude/scripts/deck_format.py" \
 
 ---
 
-## Step 4: Refresh Macabacus Links — Manual Step
+## Step 4: Populate Text Placeholders
 
-The deck contains live Macabacus links to the Excel model. Refresh them now so all values are current before creating the delivery copy.
+Scan all slides for text placeholders that contain template tokens (e.g., `[Company Name]`, `[Revenue]`, `[Unit Count]`, `[Year]`, `[Vertical]`).
+
+For each placeholder found, map it to the correct value from `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/Research/research_output_[company_slug].json`. Apply dollar formatting where applicable.
+
+Present the text replacement plan to the user:
+
+```
+TEXT REPLACEMENT PLAN -- [COMPANY NAME]
+
+Slide [N] | "[Company Name]" -> "[COMPANY_NAME]"
+Slide [N] | "[Revenue]" -> "$X.XXMM"
+Slide [N] | "[Unit Count]" -> "XXX locations"
+...
+
+Type "approve text" to apply, or tell me what to change:
+```
+
+Wait for "approve text" before writing.
+
+---
+
+## Step 5: Campaign Slides -- Manual Step Checklist
+
+Campaign slide population requires the user to do manual formatting steps in the open deck. Walk through each step and wait for "done" before presenting the next.
+
+```
+Campaign slide checklist -- complete each step in the open deck, then type "done":
+
+1. Navigate to the Campaign Summary slide. Confirm the approved campaigns ([list]) are shown and in the correct order.
+   > [wait for "done"]
+
+2. For each RECOMMENDED campaign (highlighted evidence from Gong/Attio):
+   Add the verbatim quote or evidence callout to the speaker notes or evidence text box on that slide.
+   > [wait for "done"]
+
+3. For any campaigns in the EXCLUDE list, confirm their slides are hidden or removed from the deck.
+   > [wait for "done"]
+
+4. Check all campaign slide headlines. Replace any remaining "[Campaign Name]" tokens with the actual campaign name.
+   > [wait for "done"]
+```
+
+---
+
+## Step 6: Brand Assets -- Manual Step Checklist
+
+```
+Brand asset checklist -- complete each step, then type "done":
+
+1. Navigate to the title slide. Confirm the company logo is placed correctly. If not, find the logo at:
+   [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/3. Company Resources/Logos/
+   and insert it.
+   > [wait for "done"]
+
+2. Check the color scheme. If the template colors do not match [COMPANY_NAME]'s brand colors (check brand_info.json in the Logos folder), update the theme colors manually.
+   > [wait for "done"]
+
+3. If swag images are available at [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/3. Company Resources/Swag/, insert the most relevant one on the swag/merchandise slide (if present).
+   > [wait for "done"]
+
+4. Open Figma and export the branded frames for [COMPANY_NAME]:
+   - Open the Jolly Figma template file
+   - Find the [COMPANY_NAME] brand frames (title slide background, section headers, etc.)
+   - Export them as PNG or copy-paste directly into the appropriate slides in the open deck
+   - Resize and position each frame to match the template layout
+   - Save the deck (Ctrl+S)
+   Type "skip" if no Figma frames are needed.
+   > [wait for "done" or "skip"]
+```
+
+---
+
+## Step 7: Final Visual Review -- Manual Step Checklist
+
+Walk through each item in the open master deck and wait for "done" before presenting the next.
+
+```
+Final visual review -- complete each step in the master deck, then type "done":
+
+1. Run Slide Show from the beginning (F5). Check that no template tokens ([...]) remain on any slide.
+   > [wait for "done"]
+
+2. Check all dollar values in the deck. Confirm formatting: under $1M = $X.Xk (one decimal, drop if zero), $1M+ = $X.XXMM.
+   > [wait for "done"]
+
+3. Check that ROPS values are not shown on prospect slides (Branch B). ROPS is internal only.
+   > [wait for "done"]
+
+4. Save the master deck (Ctrl+S).
+   > [wait for "done"]
+```
+
+---
+
+## Step 8a: Refresh Macabacus on Master -- Manual Step
+
+Refresh all live Macabacus links in the master deck so values are current before creating the delivery copy.
 
 Tell the user:
 
 ```
-Macabacus refresh — complete this step in the open PowerPoint deck, then type "done":
+Macabacus refresh — complete this step in the master deck, then type "done":
 
 1. Click the Macabacus tab in the PowerPoint ribbon
 2. Click Refresh All (or Refresh)
 3. Wait for all slides to update — values should pull in from the populated model
 4. Confirm the key banner numbers look correct at a glance
-5. Save the deck (Ctrl+S)
+5. Save the master deck (Ctrl+S)
+
+The master will keep its live Macabacus links. Do NOT break links here.
 ```
 
 Wait for "done" before continuing.
 
 ---
 
-## Step 4b: Create vF File and Run Deck Formatter
+## Step 8b: Create vF Copy -- Automated
 
-After Macabacus links are refreshed, create a static delivery copy (vF) and run the automated formatter on it.
-
-**Create the vF copy:**
+Tell the user: "Creating vF delivery copy from refreshed master..."
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
@@ -171,11 +267,55 @@ EOF
 python3 - "$WS" "$CLIENT_ROOT" "[COMPANY_NAME]" "[YYYY.MM.DD]"
 ```
 
-Record the vF file path and PDF output path:
+Record the vF file path:
+- vF file: `$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD) - vF.pptx`
+
+Open the vF file:
+
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD) - vF.pptx"
+```
+
+Tell the user:
+
+```
+vF copy created: [vF filename]
+The vF is now open. The master deck retains all live Macabacus links — do not modify it.
+```
+
+---
+
+## Step 8c: Break Links in vF -- Manual Step
+
+The delivery copy (vF) must have all Macabacus links converted to static values. Break links in the vF only — never in the master.
+
+Tell the user:
+
+```
+Break Macabacus links in the vF — complete this step in the vF deck (NOT the master), then type "done":
+
+1. Make sure you are in the vF file: [COMPANY_NAME] Intro Deck (YYYY.MM.DD) - vF.pptx
+2. Click the Macabacus tab in the PowerPoint ribbon
+3. Click Break Links → confirm the dialog
+4. Verify the values on key slides still look correct (they should be identical to the master)
+5. Save the vF (Ctrl+S)
+
+Do NOT break links in the master deck.
+```
+
+Wait for "done" before continuing.
+
+---
+
+## Step 8d: Run Deck Formatter -- Automated
+
+Launch the deck-formatter subagent to apply dollar formatting, fill any remaining banner shapes, and export to PDF.
+
+Record the paths:
 - vF file: `$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD) - vF.pptx`
 - PDF output: `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf`
-
-**Launch the deck-formatter subagent in the background:**
 
 ```
 Task tool — subagent_type: deck-formatter
@@ -191,7 +331,11 @@ Prompt (substitute actual values):
   pdf_title:      [COMPANY_NAME] Intro Deck (YYYY.MM.DD)
   research_json:  [full path to research_output_[company_slug].json]
 
-  Apply dollar formatting to all value placeholders (under $1M → $XXXk, $1M+ → $X.XXMM).
+  Dollar formatting rules:
+  - Under $1M: $X.Xk — one decimal place, drop the decimal only if it is exactly zero
+    (e.g. $2,400 → $2.4k, $2,000 → $2k, $516,000 → $516k)
+  - $1M and above: $X.XXMM (e.g. $1,960,000 → $1.96MM)
+
   Fill banner shapes from model campaign output values.
   Export the finished deck as PDF to pdf_output.
   After export, set the PDF /Title metadata to pdf_title using pypdf:
@@ -201,124 +345,22 @@ Prompt (substitute actual values):
   Return: PDF path if successful, or error details.
 ```
 
-Do not wait for the subagent to complete. Continue immediately to Step 5. The vF formatting and PDF export happen in the background while the user completes the remaining manual checklist steps.
+Wait for the subagent to complete. Report its output (replacements made, banner values, PDF path).
 
 Tell the user:
 
 ```
-vF copy created: [vF filename]
-Deck formatter running in background — dollar formatting, banner fill, and PDF export.
+vF formatted and exported to PDF: [PDF filename]
 
-Continuing with manual checklist steps...
+Master deck retains live Macabacus links for future refreshes.
+Do not edit the vF directly — make changes in the master, re-run Steps 8a–8d.
 ```
 
 ---
 
-## Step 5: Populate Text Placeholders
+## Step 9: Verify PDF
 
-Scan all slides for text placeholders that contain template tokens (e.g., `[Company Name]`, `[Revenue]`, `[Unit Count]`, `[Year]`, `[Vertical]`).
-
-For each placeholder found, map it to the correct value from `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/Research/research_output_[company_slug].json`. Apply dollar formatting where applicable.
-
-Present the text replacement plan to the user:
-
-```
-TEXT REPLACEMENT PLAN -- [COMPANY NAME]
-
-Slide [N] | "[Company Name]" -> "[COMPANY_NAME]"
-Slide [N] | "[Revenue]" -> "$X.XXMM"
-Slide [N] | "[Unit Count]" -> "XXX locations"
-...
-
-Type "approve text" to apply, or tell me what to change:
-```
-
-Wait for "approve text" before writing.
-
----
-
-## Step 6: Campaign Slides -- Manual Step Checklist
-
-Campaign slide population requires the user to do manual formatting steps in the open deck. Walk through each step and wait for "done" before presenting the next.
-
-```
-Campaign slide checklist -- complete each step in the open deck, then type "done":
-
-1. Navigate to the Campaign Summary slide. Confirm the approved campaigns ([list]) are shown and in the correct order.
-   > [wait for "done"]
-
-2. For each RECOMMENDED campaign (highlighted evidence from Gong/Attio):
-   Add the verbatim quote or evidence callout to the speaker notes or evidence text box on that slide.
-   > [wait for "done"]
-
-3. For any campaigns in the EXCLUDE list, confirm their slides are hidden or removed from the deck.
-   > [wait for "done"]
-
-4. Check all campaign slide headlines. Replace any remaining "[Campaign Name]" tokens with the actual campaign name.
-   > [wait for "done"]
-```
-
----
-
-## Step 7: Brand Assets -- Manual Step Checklist
-
-```
-Brand asset checklist -- complete each step, then type "done":
-
-1. Navigate to the title slide. Confirm the company logo is placed correctly. If not, find the logo at:
-   [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/3. Company Resources/Logos/
-   and insert it.
-   > [wait for "done"]
-
-2. Check the color scheme. If the template colors do not match [COMPANY_NAME]'s brand colors (check brand_info.json in the Logos folder), update the theme colors manually.
-   > [wait for "done"]
-
-3. If swag images are available at [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/3. Company Resources/Swag/, insert the most relevant one on the swag/merchandise slide (if present).
-   > [wait for "done"]
-
-4. Open Figma and export the branded frames for [COMPANY_NAME]:
-   - Open the Jolly Figma template file
-   - Find the [COMPANY_NAME] brand frames (title slide background, section headers, etc.)
-   - Export them as PNG or copy-paste directly into the appropriate slides in the open deck
-   - Resize and position each frame to match the template layout
-   - Save the deck (Ctrl+S)
-   Type "skip" if no Figma frames are needed.
-   > [wait for "done" or "skip"]
-```
-
----
-
-## Step 8: Final Visual Review -- Manual Step Checklist
-
-```
-Final visual review -- complete each step, then type "done":
-
-1. Run Slide Show from the beginning (F5). Check that no template tokens ([...]) remain on any slide.
-   > [wait for "done"]
-
-2. Check all dollar values in the deck. Confirm formatting: under $1M = $XXXk, $1M+ = $X.XXMM.
-   > [wait for "done"]
-
-3. Check that ROPS values are not shown on prospect slides (Branch B). ROPS is internal only.
-   > [wait for "done"]
-
-4. Save the deck (Ctrl+S).
-   > [wait for "done"]
-```
-
----
-
-## Step 9: Verify PDF from Deck Formatter
-
-The deck-formatter subagent launched in Step 4b is handling PDF export from the vF file. Check whether it has completed:
-
-```bash
-WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-ls "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/[COMPANY_NAME] Intro Deck"*.pdf 2>/dev/null
-```
-
-If the PDF exists, open it:
+The deck-formatter subagent in Step 8d produced the PDF. Open it for review:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
@@ -326,21 +368,14 @@ CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config
 start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf"
 ```
 
-If the PDF does not exist yet (subagent still running), tell the user:
-
-```
-PDF not ready yet — deck formatter is still running. You can continue to the cheat sheet
-step and check back, or wait and press Enter when ready.
-```
-
-If the PDF is still missing after the user confirms, fall back to manual export:
+If the PDF does not exist (formatter failed), fall back to manual export:
 
 ```
 PDF export fallback:
-1. In PowerPoint, go to File → Export → Create PDF/XPS.
+1. In PowerPoint, open the vF file and go to File → Export → Create PDF/XPS.
    Save to: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf
 
-2. Then run this to set the PDF title metadata to match the filename:
+2. Then run this to set the PDF title metadata:
 ```
 
 ```bash
@@ -358,25 +393,16 @@ print(f'PDF title set: {pdf_title}')
   "[COMPANY_NAME] Intro Deck (YYYY.MM.DD)"
 ```
 
-Once the PDF exists, open the vF deck for a final visual QC before moving on:
-
-```bash
-WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD) - vF.pptx"
-```
-
 Tell the user:
 
 ```
-vF deck opened. Quick QC before continuing:
+PDF opened. Quick review:
 
-1. Scroll through every slide — confirm no [placeholder] tokens remain
-2. Check banner values are formatted correctly ($XXXk or $X.XXMM)
+1. Scroll through every page — confirm no [placeholder] tokens remain
+2. Check banner values are formatted correctly ($X.Xk or $X.XXMM)
 3. Confirm dollar amounts match the approved model values
-4. Save (Ctrl+S) if you make any corrections
 
-Type "done" when the vF looks good.
+Type "done" when the PDF looks good.
 ```
 
 Wait for "done" before continuing to Step 10.
