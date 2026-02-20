@@ -290,7 +290,7 @@ Go to Claude.ai Settings > Integrations and make sure these are all connected be
 | Tool | What it is used for |
 |------|---------------------|
 | Slack | Searching messages and channels |
-| Attio | CRM records, contact notes, email history |
+| Attio / Gong | CRM records, contact notes, call transcripts |
 | Linear | Issue tracking |
 
 If any of these are not connected, Claude will not be able to pull data from that source and will tell you what is missing.
