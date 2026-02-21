@@ -235,9 +235,9 @@ All four run in parallel and report back with their findings. Claude then combin
 - Formats all dollar amounts correctly — under $1M shows as `$516K`, $1M and above shows as `$1.96MM`
 - Presents the replacement plan for each section and waits for your approval before writing
 - Walks through placing logos, swag images, and banner graphics
-- Exports the final PDF to the Reports folder and opens it for your review
+- Exports the final PDF to the Presentations folder and opens it for your review
 
-**Output:** A formatted PowerPoint file and an exported PDF in the `4. Reports` folder.
+**Output:** A formatted PowerPoint file and an exported PDF in the `2. Presentations` folder.
 
 **Gates:** Claude will pause for approval before replacing banner values, before replacing text values, and at each manual step.
 

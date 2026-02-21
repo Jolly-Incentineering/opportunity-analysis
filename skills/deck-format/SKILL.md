@@ -308,7 +308,7 @@ Launch the deck-formatter subagent to scan for any remaining unfilled placeholde
 
 Record the paths:
 - vF file: `$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD) - vF.pptx`
-- PDF output: `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf`
+- PDF output: `$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf`
 
 ```
 Task tool — subagent_type: deck-formatter
@@ -361,7 +361,7 @@ The deck-formatter subagent in Step 8d produced the PDF. Open it for review:
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf"
+start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf"
 ```
 
 If the PDF does not exist (formatter failed), fall back to manual export:
@@ -369,7 +369,7 @@ If the PDF does not exist (formatter failed), fall back to manual export:
 ```
 PDF export fallback:
 1. In PowerPoint, open the vF file and go to File → Export → Create PDF/XPS.
-   Save to: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf
+   Save to: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf
 
 2. Then run this to set the PDF title metadata:
 ```
@@ -385,7 +385,7 @@ writer = pypdf.PdfWriter(clone_from=pdf_path)
 writer.add_metadata({'/Title': pdf_title})
 writer.write(pdf_path)
 print(f'PDF title set: {pdf_title}')
-" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf" \
+" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf" \
   "[COMPANY_NAME] Intro Deck (YYYY.MM.DD)"
 ```
 
