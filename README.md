@@ -6,6 +6,11 @@ The Jolly Opportunity Analysis plugin for Claude. Give it a company name and it 
 
 **Two deck types:** "With Commentary" (after a call, ~20–25 min) or "Without Commentary" (before a call, ~10–15 min). Claude asks which type at the start. **Two ways to run it:** automatically with `/deck-auto [Company]`, or step-by-step yourself. Both are covered below.
 
+**Latest features (v1.1.1):**
+- Optimized cold prospect workflow: fast-path "Without Commentary" decks now target ~10–15 minutes with streamlined QA (6 focused checks)
+- Standardized cheat sheet generation to single combined PDF per company in `4. Reports/Cheat Sheets/`
+- Support for nested sub-brand folder structures with `--client-path` flag
+
 ---
 
 ## Workflow at a glance
