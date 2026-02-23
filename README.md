@@ -7,11 +7,15 @@ The Jolly Opportunity Analysis plugin for Claude. Give it a company name and it 
 **Simplified single template approach:** "Quick Deck" — a streamlined template that works for both pre-call and post-call contexts. Claude captures whether it's pre-call or post-call to inform the research phase, but uses the same workflow and template throughout (~10–15 min). **Two ways to run it:** automatically with `/deck-auto [Company]`, or step-by-step yourself. Both are covered below.
 
 **Latest features (v1.2.0):**
-- Simplified single-template workflow: "Quick Deck" template works for all contexts (~10–15 minutes)
-- Pre-call/post-call context captured for research phase without affecting template
+- Simplified single-template workflow: "Quick Deck" template works for all contexts
+- Pre-call context: Slack + Public data only (~8–12 min) — no Attio/Gong searches
+- Post-call context: Full Attio/Gong research with transcripts (~14–20 min)
+- Research agents default to Haiku; Sonnet available for complex scenarios
 - Streamlined QA checks (11 focused checks)
 - Standardized cheat sheet generation to single combined PDF per company in `4. Reports/Cheat Sheets/`
 - Support for nested sub-brand folder structures with `--client-path` flag
+
+**[→ See full v1.2.0 release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v1.2.0)**
 
 ---
 
@@ -408,3 +412,35 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 - **Pre-call context + Branch A** → Slack + Public (even with internal data available, skips transcripts for pre-call speed)
 
 **If something seems wrong mid-workflow,** the session state file (your progress bookmark) in `.claude/data/` shows exactly what phase last completed and what Claude was about to do next. This is the first place to check. Ask Incentineering if you need help reading it.
+
+---
+
+## Changelog
+
+### v1.2.0 (Feb 23, 2025)
+
+**Simplified single-template workflow**
+
+- Removed "With Commentary" / "Without Commentary" dual-template branching
+- Single "Quick Deck" template for all contexts (template selection by vertical unchanged)
+- Pre-call/post-call context selection now determines research scope only:
+  - Pre-call: Slack + Public data (~8–12 min)
+  - Post-call: Attio + Gong + Slack + Public (~14–20 min)
+- Research agents use Haiku by default; Sonnet available for complex scenarios
+- Updated all skill workflows to match new logic
+- Simplified README with clearer explanations and timing
+- Session state format updated: `deck_type` → `context`
+
+### v1.1.1 (Feb 22, 2025)
+
+- Optimized cold prospect workflow: "Without Commentary" decks target ~10–15 min
+- Standardized cheat sheet generation to single PDF per company
+- Support for nested sub-brand folder structures with `--client-path` flag
+
+### v1.1.0 and earlier
+
+- Initial plugin release
+- Support for "With Commentary" and "Without Commentary" dual-template workflow
+- Branch detection (existing client vs. prospect)
+- Gong integration via Rube or Zapier
+- Full QA workflow
