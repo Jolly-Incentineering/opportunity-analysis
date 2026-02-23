@@ -84,21 +84,19 @@ Tell the user:
 ```
 No existing session found for [COMPANY_NAME]. Starting from Phase 1.
 
-First, I'll ask you which deck type you need:
-  • Without Commentary (before a call) — ~10-15 minutes, numbers only
-  • With Commentary (after a call) — ~20-25 minutes, includes narrative
+First, I'll ask you about your context:
+  • Pre-call (before a call) — ~8-12 minutes, Slack + Public data only
+  • Post-call (after a call) — ~14-20 minutes, includes Attio/Gong research with transcripts
 
 Then I'll run these phases:
-  Phase 1: Start               -- folder structure, templates, deck type question, branch detection
-  Phase 2: Research            -- 3 parallel research agents, merge, campaign selection
+  Phase 1: Start               -- folder structure, templates, context question, branch detection
+  Phase 2: Research            -- 3-4 parallel research agents (scope varies by context), merge, campaign selection
   Phase 3: Model               -- dry-run plan, Excel population, formula verification, scenario sensitivity checks
-  Phase 4: Format              -- Macabacus refresh, text replacement*, Figma paste, link-break, deck_format.py
-  Phase 5: QA                  -- 11-13 checks depending on deck type, open final files
-
-* Text replacement skipped for "Without Commentary" decks
+  Phase 4: Format              -- Macabacus refresh, text replacement, Figma paste, link-break, deck_format.py
+  Phase 5: QA                  -- 11 focused checks, open final files
 
 Human gates (will pause for your input):
-  - Phase 1: deck type selection
+  - Phase 1: context selection (pre-call or post-call)
   - End of Phase 2: campaign selection confirmation
   - Start of Phase 3 writes: dry-run approval
   - Phase 4: Macabacus refresh, Figma paste, link-break (one at a time)

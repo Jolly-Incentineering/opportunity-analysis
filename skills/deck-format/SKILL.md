@@ -30,7 +30,7 @@ Read the most recent file. Extract:
 - `client_root` (use this to override CLIENT_ROOT if present)
 - `vertical`
 - `branch`
-- `deck_type` -- "with_commentary" or "without_commentary"
+- `context` -- "pre_call" or "post_call"
 - `deck_folder` -- path to the Presentations subfolder
 - `deck_filename` -- the working deck filename
 - `vf_deck_filename` -- the vF delivery copy filename
@@ -122,17 +122,17 @@ python3 "$WS/.claude/scripts/deck_format.py" \
 
 ---
 
-## Step 3.5: Deck Type Branch
+## Step 3.5: Context Branch
 
-Check the `deck_type` from session state:
+Check the `context` from session state:
 
-**IF `deck_type == "without_commentary"`:**
+**IF `context == "pre_call"`:**
 
 Tell the user:
 
 ```
-Without Commentary deck — Macabacus pulls all numbers from the model automatically.
-No narrative text replacement needed. Streamlined to 2 manual steps only.
+Pre-call deck — Macabacus pulls all numbers from the model automatically.
+Quick deck template works for all contexts. Streamlined workflow.
 
 Next steps:
   1. Brand Assets review
@@ -140,11 +140,11 @@ Next steps:
   3. Macabacus refresh + vF copy + link break + PDF export
 ```
 
-Skip to Step 6 (Brand Assets). Do NOT run Steps 4-5.
+Continue to Step 6 (Brand Assets).
 
-**IF `deck_type == "with_commentary"`:**
+**IF `context == "post_call"`:**
 
-Continue to Step 4 normally (full flow including text replacement and campaign slides).
+Continue to Step 4 normally (full flow including campaign slides).
 
 ---
 

@@ -30,7 +30,7 @@ Read the most recent file. Extract:
 - `client_root` (use this to override CLIENT_ROOT if present)
 - `vertical`
 - `branch`
-- `deck_type` -- "with_commentary" or "without_commentary"
+- `context` -- "pre_call" or "post_call"
 - `deck_folder` -- presentation subfolder path
 - `vf_deck_filename` -- the vF deck filename
 - `pdf_filename` -- the PDF filename
@@ -53,27 +53,21 @@ Tell the user:
 ```
 Resuming from [session date] -- company: [Company Name], vertical: [Vertical].
 Starting Phase 5: QA and delivery.
-Deck type: [with Commentary / without Commentary]
+Context: [Pre-call / Post-call]
 ```
 
 ---
 
-## Step 1.5: Display QA Scope Based on Deck Type
+## Step 1.5: Display QA Scope
 
 Display the QA scope table to the user:
 
-**WITHOUT COMMENTARY — 11 checks run, 2 skipped:**
+**All contexts use the unified Quick Deck template — 11 focused checks run:**
 ```
-  Run:   M1 M2 M3 M4 M5 M6  D2 D2b D3 D5 D6 D7
-  Skip:  D1 (no template tokens in this deck type)
-         D2c (no narrative text to check for raw integers)
-  Note:  D4 (campaign list) is still checked — campaigns appear even without commentary.
+  Run:   M1 M2 M3 M4 M5 M6  D2 D3 D4 D5 D7
 ```
 
-**WITH COMMENTARY — all 13 checks run:**
-```
-  Run:   M1 M2 M3 M4 M5 M6  D1 D2 D2b D2c D3 D4 D5 D6 D7
-```
+All required checks to ensure the model and presentation are delivery-ready.
 
 ---
 
@@ -180,9 +174,7 @@ Walk through each deck check. Instruct the user to check manually in the open fi
 
 **Check D1 -- No template tokens remaining:**
 
-IF `deck_type == "without_commentary"`: SKIP this check. (Without Commentary decks have no template tokens by design.)
-
-IF `deck_type == "with_commentary"`: RUN this check.
+Scan all slides for any remaining template tokens (e.g., `[Company Name]`, `[Revenue]`).
 
 ```
 Check D1: Search the deck for any remaining template tokens.
@@ -236,9 +228,7 @@ python3 - "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[vF deck filename]"
 
 **Check D2c -- Raw integers in narrative text:**
 
-IF `deck_type == "without_commentary"`: SKIP this check. (Without Commentary decks have no narrative text by design.)
-
-IF `deck_type == "with_commentary"`: RUN this check.
+Always run this check. Scan all narrative text for raw integers that should be spelled out.
 
 Run programmatically against the vF:
 

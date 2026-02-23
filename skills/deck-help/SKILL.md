@@ -49,24 +49,21 @@ COMMANDS
     you through any manual steps in PowerPoint one at a time. Exports PDF when done.
 
   /deck-qa
-    Step 5. Runs 13 quality checks across the model and presentation. Flags
+    Step 5. Runs 11 quality checks across the model and presentation. Flags
     anything that needs fixing before delivery.
 
-DECK TYPES
+CONTEXT
 ────────────────────────────────────────────────────────────────────────────────
 
-  With Commentary
-    Use after a call has happened. Template includes narrative text, talking
-    points, and detailed campaign explanations. Full 13 QA checks run.
-    Timeline: ~20–25 minutes.
+  Pre-call
+    Use before a call has happened. Includes Slack + Public research only.
+    No Attio/Gong transcripts. Fast turnaround (~8–12 minutes).
 
-  Without Commentary
-    Use for cold outreach (no call yet). Template has numbers only, streamlined
-    for fast delivery. 11 QA checks run (skips template token checks and
-    narrative text validation).
-    Timeline: ~10–15 minutes.
+  Post-call
+    Use after a call has happened. Includes full Attio/Gong research with
+    transcripts, plus Slack and Public data. Comprehensive (~14–20 minutes).
 
-  At the start of every deck, Claude asks which type you need.
+  At the start of every deck, Claude asks which context applies.
 
 TYPICAL WORKFLOW
 ────────────────────────────────────────────────────────────────────────────────

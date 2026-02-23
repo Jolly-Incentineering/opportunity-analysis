@@ -126,8 +126,8 @@ Example:
 Claude will ask whether this is a "before call" or "after call" deck, then walk you through every step. If you need to pause, run the same command again and it picks up where you left off.
 
 **Time to complete:**
-- Without Commentary (no call yet): ~10–15 minutes
-- With Commentary (after a call): ~20–25 minutes
+- Pre-call (before a call): ~8–12 minutes
+- Post-call (after a call): ~14–20 minutes
 
 ---
 

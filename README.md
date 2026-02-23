@@ -6,7 +6,7 @@ The Jolly Opportunity Analysis plugin for Claude. Give it a company name and it 
 
 **Simplified single template approach:** "Quick Deck" — a streamlined template that works for both pre-call and post-call contexts. Claude captures whether it's pre-call or post-call to inform the research phase, but uses the same workflow and template throughout (~10–15 min). **Two ways to run it:** automatically with `/deck-auto [Company]`, or step-by-step yourself. Both are covered below.
 
-**Latest features (v1.2.0):**
+**Latest features (v1.3.0):**
 - Simplified single-template workflow: "Quick Deck" template works for all contexts
 - Pre-call context: Slack + Public data only (~8–12 min) — no Attio/Gong searches
 - Post-call context: Full Attio/Gong research with transcripts (~14–20 min)
@@ -15,7 +15,7 @@ The Jolly Opportunity Analysis plugin for Claude. Give it a company name and it 
 - Standardized cheat sheet generation to single combined PDF per company in `4. Reports/Cheat Sheets/`
 - Support for nested sub-brand folder structures with `--client-path` flag
 
-**[→ See full v1.2.0 release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v1.2.0)**
+**[→ See full v1.3.0 release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v1.3.0)**
 
 ---
 
@@ -272,14 +272,13 @@ All applicable tasks run in parallel and report back with their findings. Claude
 
 ### `/deck-format`
 
-**What it does:** Takes the branded assets and model outputs and puts them into the PowerPoint presentation. The steps vary based on deck type. For With Commentary, includes full text replacement and campaign narration. For Without Commentary, streamlines to numbers only. Walks you through any manual steps one at a time. Exports the final PDF when done.
+**What it does:** Takes the branded assets and model outputs and puts them into the PowerPoint presentation. Scans every slide for placeholder text and replaces with correct values and narrative. Walks you through any manual steps one at a time. Exports the final PDF when done.
 
 **What you do:** There are a few manual steps only you can do in PowerPoint (like refreshing a data link). Claude will stop at each one, give you clear step-by-step instructions, and wait for you to type "done" before moving on.
 
 **What Claude does:**
 - Exports company-branded slide frames from Figma (the design tool where slide templates live)
-- **With Commentary:** Scans every slide for placeholder text (like `[Company Name]` or `[Revenue]`) and replaces with correct values and narrative. Formats all dollar amounts correctly — under $1M shows as `$516K`, $1M and above shows as `$1.96MM`.
-- **Without Commentary:** Pulls numbers only from the model into banner slides, skipping narrative text replacement (faster for cold outreach).
+- Scans every slide for placeholder text (like `[Company Name]` or `[Revenue]`) and replaces with correct values and narrative. Formats all dollar amounts correctly — under $1M shows as `$516K`, $1M and above shows as `$1.96MM`.
 - Presents the replacement plan and waits for your approval before writing
 - Walks through placing logos, swag images, and banner graphics
 - Exports the final PDF to the Presentations folder and opens it for your review
@@ -296,25 +295,21 @@ All applicable tasks run in parallel and report back with their findings. Claude
 
 **What you do:** Review any flagged issues and fix them. Claude walks through each one interactively and re-runs the check after you confirm it is fixed.
 
-**What Claude does:** Runs checks based on deck type. **With Commentary: 13 checks.** **Without Commentary: 11 checks** (skips D1 and D2c to streamline cold outreach).
+**What Claude does:** Runs 11 focused checks:
 
-| Check | What it looks for | With Commentary | Without Commentary |
-|-------|-------------------|:---:|:---:|
-| M1 | Correct number of formula cells in the model (confirms nothing was accidentally deleted or overwritten) | ✓ | ✓ |
-| M2 | No required assumption cells left blank | ✓ | ✓ |
-| M3 | Every active campaign's return-on-spend is in the 10x–30x range | ✓ | ✓ |
-| M4 | Total EBITDA impact is within the 15% ceiling | ✓ | ✓ |
-| M5 | Hiring cost is not above $3,500 (QSR models) | ✓ | ✓ |
-| M6 | Source notes present on all hard-coded cells | ✓ | ✓ |
-| D1 | No placeholder text remaining in the presentation (e.g., `[Company Name]`) | ✓ |  |
-| D2 | All dollar amounts formatted correctly | ✓ | ✓ |
-| D2b | No raw integers in narrative text (e.g., "5" should be "five") | ✓ |  |
-| D2c | Campaign narrative text is present and complete | ✓ |  |
-| D3 | Banner numbers on the presentation match the model output | ✓ | ✓ |
-| D4 | Campaign slides match the approved campaign list | ✓ | ✓ |
-| D5 | Logo and brand assets are placed | ✓ | ✓ |
-| D6 | Return-on-spend values are hidden on prospect presentations (not shown to new clients) | ✓ | ✓ |
-| D7 | The exported PDF matches the current state of the presentation | ✓ | ✓ |
+| Check | What it looks for |
+|-------|-------------------|
+| M1 | Correct number of formula cells in the model (confirms nothing was accidentally deleted or overwritten) |
+| M2 | No required assumption cells left blank |
+| M3 | Every active campaign's return-on-spend is in the 10x–30x range |
+| M4 | Total EBITDA impact is within the 15% ceiling |
+| M5 | Hiring cost is not above $3,500 (QSR models) |
+| M6 | Source notes present on all hard-coded cells |
+| D2 | All dollar amounts formatted correctly |
+| D3 | Banner numbers on the presentation match the model output |
+| D4 | Campaign slides match the approved campaign list |
+| D5 | Logo and brand assets are placed |
+| D7 | The exported PDF matches the current state of the presentation |
 
 After all checks pass, Claude cleans up any temporary lock files and gives you the final list of delivery-ready files.
 
@@ -416,6 +411,13 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 ---
 
 ## Changelog
+
+### v1.3.0 (Feb 23, 2025)
+
+**Release notes** — [View on GitHub](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v1.3.0)
+
+- Aligned versioning across all plugins
+- No feature changes from v1.2.0
 
 ### v1.2.0 (Feb 23, 2025)
 
