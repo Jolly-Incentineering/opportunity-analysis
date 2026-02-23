@@ -84,14 +84,21 @@ Tell the user:
 ```
 No existing session found for [COMPANY_NAME]. Starting from Phase 1.
 
-Phases to run:
-  Phase 1: Start               -- initialize folder, templates, branch detection
-  Phase 2: Research            -- 4 parallel research agents, merge, campaign selection
-  Phase 3: Model               -- dry-run plan, Excel population, formula verification
-  Phase 4: Format              -- Macabacus refresh, Figma paste, link-break, deck_format.py
-  Phase 5: QA                  -- 13 checks (M1-M6 model, D1-D7 deck), open final files
+First, I'll ask you which deck type you need:
+  • Without Commentary (before a call) — ~10-15 minutes, numbers only
+  • With Commentary (after a call) — ~20-25 minutes, includes narrative
+
+Then I'll run these phases:
+  Phase 1: Start               -- folder structure, templates, deck type question, branch detection
+  Phase 2: Research            -- 3 parallel research agents, merge, campaign selection
+  Phase 3: Model               -- dry-run plan, Excel population, formula verification, scenario sensitivity checks
+  Phase 4: Format              -- Macabacus refresh, text replacement*, Figma paste, link-break, deck_format.py
+  Phase 5: QA                  -- 11-13 checks depending on deck type, open final files
+
+* Text replacement skipped for "Without Commentary" decks
 
 Human gates (will pause for your input):
+  - Phase 1: deck type selection
   - End of Phase 2: campaign selection confirmation
   - Start of Phase 3 writes: dry-run approval
   - Phase 4: Macabacus refresh, Figma paste, link-break (one at a time)

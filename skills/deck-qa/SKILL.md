@@ -30,10 +30,12 @@ Read the most recent file. Extract:
 - `client_root` (use this to override CLIENT_ROOT if present)
 - `vertical`
 - `branch`
+- `deck_type` -- "with_commentary" or "without_commentary"
+- `deck_folder` -- presentation subfolder path
+- `vf_deck_filename` -- the vF deck filename
+- `pdf_filename` -- the PDF filename
 - `phase_4_complete` -- whether Phase 4 (deck-format) has been marked complete
 - Model file path
-- Deck file path
-- PDF path
 - Campaigns selected
 
 If Phase 4 is not marked complete, tell the user:
@@ -51,6 +53,26 @@ Tell the user:
 ```
 Resuming from [session date] -- company: [Company Name], vertical: [Vertical].
 Starting Phase 5: QA and delivery.
+Deck type: [with Commentary / without Commentary]
+```
+
+---
+
+## Step 1.5: Display QA Scope Based on Deck Type
+
+Display the QA scope table to the user:
+
+**WITHOUT COMMENTARY — 11 checks run, 2 skipped:**
+```
+  Run:   M1 M2 M3 M4 M5 M6  D2 D2b D3 D5 D6 D7
+  Skip:  D1 (no template tokens in this deck type)
+         D2c (no narrative text to check for raw integers)
+  Note:  D4 (campaign list) is still checked — campaigns appear even without commentary.
+```
+
+**WITH COMMENTARY — all 13 checks run:**
+```
+  Run:   M1 M2 M3 M4 M5 M6  D1 D2 D2b D2c D3 D4 D5 D6 D7
 ```
 
 ---
@@ -149,7 +171,7 @@ Open the vF file (the delivery copy — this is what gets sent to the client):
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[vF deck filename]"
+start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/[deck_folder]/[vf_deck_filename]"
 ```
 
 The vF file is the delivery copy with static values (Macabacus links broken). Do NOT open the master deck for QA — the master has live Macabacus links and is not for delivery.
@@ -157,6 +179,10 @@ The vF file is the delivery copy with static values (Macabacus links broken). Do
 Walk through each deck check. Instruct the user to check manually in the open file, and wait for "done" after each item.
 
 **Check D1 -- No template tokens remaining:**
+
+IF `deck_type == "without_commentary"`: SKIP this check. (Without Commentary decks have no template tokens by design.)
+
+IF `deck_type == "with_commentary"`: RUN this check.
 
 ```
 Check D1: Search the deck for any remaining template tokens.
@@ -209,6 +235,10 @@ python3 - "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[vF deck filename]"
 ```
 
 **Check D2c -- Raw integers in narrative text:**
+
+IF `deck_type == "without_commentary"`: SKIP this check. (Without Commentary decks have no narrative text by design.)
+
+IF `deck_type == "with_commentary"`: RUN this check.
 
 Run programmatically against the vF:
 
@@ -289,7 +319,7 @@ Type "done":
 **Check D7 -- PDF matches deck:**
 
 ```
-Check D7: Open the PDF at: [PDF path]
+Check D7: Open the PDF at: [deck_folder]/[pdf_filename]
 Confirm it matches the current state of the deck (same number of slides, all values visible).
 Type "done":
 ```
@@ -376,7 +406,7 @@ QA complete for [COMPANY NAME].
 Delivery-ready files:
   Model:       [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/1. Model/[model filename]
   vF (deck):   [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/2. Presentations/[vF deck filename]
-  PDF:         [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/[PDF filename]
+  PDF:         [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/[deck_folder]/[pdf_filename]
   Cheat sheet: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/[COMPANY_NAME] Cheat Sheet.pdf
 
 QA result: [PASS / PASS with notes / FAIL -- resolved]

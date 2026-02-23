@@ -102,6 +102,37 @@ Apply rounding standards to all computed values:
 
 **Hiring cost cap (QSR only):** Never exceed $3,500.
 
+**SCENARIO SENSITIVITY RULE (MANDATORY):**
+
+When building Base / Upside / Downside scenarios for any campaign:
+
+1. **SINGLE INDEPENDENT VARIABLE**
+   Only the Target % (compliance rate, adoption rate, achievement rate, etc.) may vary across scenarios. Every other row — events, current %, savings per event, costs, employee counts — must be identical in all three columns, set to the Base value.
+
+2. **CONSISTENT SPREAD**
+   - Base → Upside: +5 percentage points
+   - Base → Downside: -5 percentage points
+   - Exception: if the Base target % is ≤ 15%, use ±2pp to avoid unrealistic swings.
+
+3. **VALIDATION CHECK (shown in dry-run plan before any write)**
+   For each campaign, confirm that ONLY ONE row differs between Base, Upside, and Downside columns. If more than one row differs, fix it before presenting the dry-run plan.
+
+   Correct example:
+   ```
+     Total Events:    480,000 / 480,000 / 480,000   ✓ constant
+     Current %:           75% /     75% /     75%   ✓ constant
+     Target %:            85% /     90% /     80%   ✓ only this varies
+     Savings/Event:       $50 /     $50 /     $50   ✓ constant
+   ```
+
+   Wrong (do not produce this):
+   ```
+     Target %:            85% /     90% /     80%
+     Savings/Event:       $50 /     $60 /     $40   ✗ VIOLATION — two rows vary
+   ```
+
+   Include the per-campaign validation result as a column in the dry-run output.
+
 **ROPS check for each campaign:**
 - Formula: ROPS = Savings / Incentive Cost
 - Target: 10x <= ROPS <= 30x

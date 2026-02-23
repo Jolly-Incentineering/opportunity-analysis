@@ -30,8 +30,12 @@ Read the most recent file. Extract:
 - `client_root` (use this to override CLIENT_ROOT if present)
 - `vertical`
 - `branch`
+- `deck_type` -- "with_commentary" or "without_commentary"
+- `deck_folder` -- path to the Presentations subfolder
+- `deck_filename` -- the working deck filename
+- `vf_deck_filename` -- the vF delivery copy filename
+- `pdf_filename` -- the PDF filename
 - `phase_3_complete` -- whether Phase 3 (deck-model) has been marked complete
-- Deck file path (from template paths)
 - Model file path (from template paths)
 
 If Phase 3 is not marked complete, tell the user:
@@ -49,7 +53,7 @@ Read the research output:
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-cat "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/Research/research_output_[company_slug].json"
+cat "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research_output_[company_slug].json"
 ```
 
 Tell the user:
@@ -65,12 +69,12 @@ Deck file: [deck filename]
 
 ## Step 2: Open Files
 
-Open both the deck and the model (model is read-only reference):
+Open both the deck and the model (model is read-only reference). Use paths from session state:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[deck filename]"
+start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/[deck_folder]/[deck_filename]"
 start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[model filename]"
 ```
 
@@ -88,7 +92,7 @@ Scan the deck for slides containing banner placeholder shapes. A shape is a bann
 
 For each banner shape found, report its slide number and current text.
 
-Map each banner to the corresponding campaign output value from the model population data in `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/Research/research_output_[company_slug].json`. Apply dollar formatting:
+Map each banner to the corresponding campaign output value from the model population data in `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research_output_[company_slug].json`. Apply dollar formatting:
 - Under $1M: `$X.Xk` (one decimal, lowercase k, drop decimal if zero — e.g. `$2.4k`, `$2k`, `$516k`)
 - $1M and above: `$X.XXMM` (uppercase MM, no space, e.g. `$1.96MM`)
 
@@ -118,11 +122,37 @@ python3 "$WS/.claude/scripts/deck_format.py" \
 
 ---
 
+## Step 3.5: Deck Type Branch
+
+Check the `deck_type` from session state:
+
+**IF `deck_type == "without_commentary"`:**
+
+Tell the user:
+
+```
+Without Commentary deck — Macabacus pulls all numbers from the model automatically.
+No narrative text replacement needed. Streamlined to 2 manual steps only.
+
+Next steps:
+  1. Brand Assets review
+  2. Final Visual Review
+  3. Macabacus refresh + vF copy + link break + PDF export
+```
+
+Skip to Step 6 (Brand Assets). Do NOT run Steps 4-5.
+
+**IF `deck_type == "with_commentary"`:**
+
+Continue to Step 4 normally (full flow including text replacement and campaign slides).
+
+---
+
 ## Step 4: Populate Text Placeholders
 
 Scan all slides for text placeholders that contain template tokens (e.g., `[Company Name]`, `[Revenue]`, `[Unit Count]`, `[Year]`, `[Vertical]`).
 
-For each placeholder found, map it to the correct value from `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/Research/research_output_[company_slug].json`. Apply dollar formatting where applicable.
+For each placeholder found, map it to the correct value from `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research_output_[company_slug].json`. Apply dollar formatting where applicable.
 
 Present the text replacement plan to the user:
 
@@ -250,29 +280,31 @@ from pptx import Presentation
 ws          = sys.argv[1]
 client_root = sys.argv[2]
 company     = sys.argv[3]
-date_str    = sys.argv[4]   # YYYY.MM.DD
+deck_folder = sys.argv[4]  # relative path from CLIENT_ROOT/company
+deck_filename = sys.argv[5]
+vf_filename = sys.argv[6]
 
-src  = Path(ws) / client_root / company / "2. Presentations" / f"{company} Intro Deck ({date_str}).pptx"
-dest = Path(ws) / client_root / company / "2. Presentations" / f"{company} Intro Deck ({date_str}) - vF.pptx"
+src  = Path(ws) / client_root / company / deck_folder / deck_filename
+dest = Path(ws) / client_root / company / deck_folder / vf_filename
 
 shutil.copy2(src, dest)
 
 prs = Presentation(dest)
-prs.core_properties.title = f"{company} Intro Deck ({date_str}) - vF"
+prs.core_properties.title = vf_filename.replace('.pptx', '')
 prs.save(dest)
 
 print(f"vF copy created: {dest}")
 EOF
-python3 - "$WS" "$CLIENT_ROOT" "[COMPANY_NAME]" "[YYYY.MM.DD]"
+python3 - "$WS" "$CLIENT_ROOT" "[COMPANY_NAME]" "[deck_folder]" "[deck_filename]" "[vf_deck_filename]"
 ```
 
 Record the vF file path:
-- vF file: `$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD) - vF.pptx`
+- vF file: `$WS/$CLIENT_ROOT/[COMPANY_NAME]/[deck_folder]/[vf_deck_filename]`
 
 Tell the user:
 
 ```
-vF copy created: [vF filename]
+vF copy created: [vf_deck_filename]
 The master deck retains all live Macabacus links — do not modify it.
 ```
 
@@ -288,7 +320,7 @@ Tell the user:
 Break Macabacus links in the vF — complete these steps, then type "ready":
 
 1. Open the vF file in PowerPoint:
-   [vF file path]
+   [deck_folder]/[vf_deck_filename]
 2. Click the Macabacus tab in the PowerPoint ribbon
 3. Click Break Links → confirm the dialog
 4. Spot-check 2-3 key banner slides — values should be identical to the master

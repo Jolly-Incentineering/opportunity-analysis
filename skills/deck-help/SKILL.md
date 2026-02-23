@@ -52,6 +52,22 @@ COMMANDS
     Step 5. Runs 13 quality checks across the model and presentation. Flags
     anything that needs fixing before delivery.
 
+DECK TYPES
+────────────────────────────────────────────────────────────────────────────────
+
+  With Commentary
+    Use after a call has happened. Template includes narrative text, talking
+    points, and detailed campaign explanations. Full 13 QA checks run.
+    Timeline: ~20–25 minutes.
+
+  Without Commentary
+    Use for cold outreach (no call yet). Template has numbers only, streamlined
+    for fast delivery. 11 QA checks run (skips template token checks and
+    narrative text validation).
+    Timeline: ~10–15 minutes.
+
+  At the start of every deck, Claude asks which type you need.
+
 TYPICAL WORKFLOW
 ────────────────────────────────────────────────────────────────────────────────
 
@@ -95,8 +111,14 @@ WORKSPACE STRUCTURE
       └── Company Name/
             ├── 1. Model/
             ├── 2. Presentations/
+            │     └── 1. [Company] Intro Deck with Commentary (YYYY.MM.DD)/
             ├── 3. Company Resources/
+            │     ├── 1. Logos/
+            │     └── 2. Swag/
             ├── 4. Reports/
+            │     ├── 1. Call Summaries/
+            │     ├── 2. Public Filings/
+            │     └── 3. Slack/
             └── 5. Call Transcripts/
     Tools/                 ← scripts (setup.bat, cheatsheet_gen.py)
     .claude/data/          ← workspace config and session state files

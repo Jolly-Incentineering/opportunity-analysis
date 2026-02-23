@@ -170,26 +170,65 @@ Do not tell the user. Continue to Step 5.5.
 Ask the user:
 
 ```
-How do you pull Gong call data into the research workflow?
+Do you have Gong call data for your clients?
 
-  1. Rube (rube.app) — Claude creates and runs the Gong recipe automatically via MCP
-  2. Zapier — provide a webhook URL that Claude will POST to on each research run
-  3. Manual — transcripts will already be in the 5. Call Transcripts/ folder
-  4. Not set up yet — skip for now
+  1. Yes — via Rube (rube.app). You'll need to create a Gong recipe on Rube.
+  2. Yes — transcripts are already in the 5. Call Transcripts/ folder (manual).
+  3. Not set up yet — skip for now.
 
-Reply with 1, 2, 3, or 4.
+Reply with 1, 2, or 3.
 ```
 
 Wait for the user's reply.
 
-- If **1 (Rube)**: set `gong_integration = "rube"`, `gong_webhook_url = null`
-- If **2 (Zapier)**: ask:
+- If **1 (Rube)**: Tell the user:
+
   ```
-  Paste your Zapier webhook URL (from your Zap's "Catch Hook" trigger):
+  To connect Gong, you'll create a recipe on Rube that pulls call data for any
+  company you research.
+
+  Here's how:
+
+    1. Go to rube.app and sign in.
+    2. Click "New Recipe".
+    3. Name it: gong_company_search
+    4. In the description box, paste this:
+
+       "Retrieves Gong calls for a specific Salesforce account and extracts
+       comprehensive structured insights using multi-pass AI analysis. Returns
+       maximum detail (metrics, pain points, tech stack, campaign signals,
+       champions) with validation and retry logic to ensure nothing is missed."
+
+    5. Add the Gong app as the integration.
+    6. Set up these inputs:
+         client_name     — Text (the company name to search for)
+         days_back       — Number (default: 180)
+         max_calls       — Number (default: 10)
+         strict_salesforce_match  — "true" or "false" (default: "true")
+         include_full_transcript  — "true" or "false" (default: "false")
+
+    7. The recipe should run 6 extraction passes on each call:
+         Pass 1 (HIGH reasoning): Revenue, employees, turnover, costs, growth rates
+         Pass 2 (MEDIUM): Pain points and operational challenges
+         Pass 3 (LOW): Tech stack — HRIS, ERP, POS, scheduling systems
+         Pass 4 (MEDIUM): Campaign signals — behaviors to incentivize
+         Pass 5 (LOW): 10 key quotes with speaker context
+         Pass 6 (MEDIUM): Champions — decision-makers and internal advocates
+
+    8. Save the recipe. Make sure it is named exactly: gong_company_search
+
+    Once created, Claude will call this recipe automatically every time you run
+    research on an existing client.
+
+  Type "done" when your recipe is ready, or "skip" to set this up later.
   ```
-  Wait for the URL. Set `gong_integration = "zapier"`, `gong_webhook_url = "[URL they paste]"`
-- If **3 (Manual)**: set `gong_integration = "manual"`, `gong_webhook_url = null`
-- If **4 (Skip)**: set `gong_integration = "none"`, `gong_webhook_url = null`
+
+  Wait for "done" or "skip".
+  - If "done": set `gong_integration = "rube"`, `gong_webhook_url = null`
+  - If "skip": set `gong_integration = "none"`, `gong_webhook_url = null`
+
+- If **2 (Manual)**: set `gong_integration = "manual"`, `gong_webhook_url = null`
+- If **3 (Skip)**: set `gong_integration = "none"`, `gong_webhook_url = null`
 
 Continue to Step 6.
 
