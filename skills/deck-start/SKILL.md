@@ -114,23 +114,20 @@ Do not tell the user which folders were created. Do not stop or ask for input. C
 
 ---
 
-## Step 3: Ask for Deck Type
+## Step 3: Ask if Pre-Call or Post-Call
 
 Ask the user:
 
 ```
-Will this deck go out before or after a call with the company?
+Is this deck for a pre-call or post-call context?
 
-  1. Before / without a call — choose this when no call has happened yet.
-     → Uses the "without Commentary" template.
-
-  2. After a call — choose this when you have call recordings or notes to draw from.
-     → Uses the "with Commentary" template.
+  1. Pre-call (no call yet) — uses public data only
+  2. Post-call (after call/notes) — can include internal data
 
 Reply with 1 or 2.
 ```
 
-Wait for the user's reply. Store `deck_type = "without_commentary"` or `"with_commentary"` based on their choice.
+Wait for the user's reply. Store `context = "pre_call"` or `"post_call"` based on their choice. This will inform the research phase but will not change the template or workflow.
 
 ---
 
@@ -144,22 +141,20 @@ TEMPLATES_ROOT=$(python3 -c "import json; c=json.load(open('$WS/.claude/data/wor
 find "$WS/$TEMPLATES_ROOT" -type f \( -name "*.xlsx" -o -name "*.pptx" \) | sort
 ```
 
-From the output, build a numbered list of available template pairs grouped by vertical. Filter to show ONLY templates that contain the correct Commentary label in their filename:
-- If `deck_type == "with_commentary"`: show only templates with `(with Commentary)` in the filename
-- If `deck_type == "without_commentary"`: show only templates with `(without Commentary)` in the filename
+From the output, build a numbered list of available template pairs grouped by vertical. Filter to show ONLY templates that contain `(without Commentary)` in the filename.
 
 Each pair is one `.xlsx` and one `.pptx` with matching names. Present only template pairs (both files exist). Show the vertical folder name and the template display name.
 
-Example format for "with Commentary":
+Example format:
 
 ```
-Available templates (with Commentary):
+Available templates:
 
   QSR
-    1. [QSR] Intro Template (with Commentary)
+    1. [QSR] Intro Template (without Commentary)
 
   Manufacturing
-    2. [Manufacturer] Intro Template (with Commentary)
+    2. [Manufacturer] Intro Template (without Commentary)
 
 Which template should I use for [COMPANY_NAME]? Reply with the number.
 ```
@@ -168,20 +163,18 @@ Wait for the user's reply. Record the chosen template number, derive the vertica
 
 ---
 
-## Step 5: Copy Templates to Client Folder
+## Step 4: Copy Templates to Client Folder
 
 Using today's date in YYYY.MM.DD format, create a subfolder under Presentations and copy the template files:
 
-Determine the deck label from `deck_type`:
-- If `deck_type == "with_commentary"`: `deck_label = "with Commentary"`
-- If `deck_type == "without_commentary"`: `deck_label = "without Commentary"`
+Set `deck_label = "Quick Deck"` (the standard template for this simplified workflow).
 
 Create the Presentations subfolder with numbering:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-mkdir -p "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/1. [COMPANY_NAME] Intro Deck [deck_label] (YYYY.MM.DD)"
+mkdir -p "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/1. [COMPANY_NAME] Quick Deck (YYYY.MM.DD)"
 ```
 
 Copy the files:
@@ -190,7 +183,7 @@ Copy the files:
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 cp "[full source .xlsx path]" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model (YYYY.MM.DD).xlsx"
-cp "[full source .pptx path]" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/1. [COMPANY_NAME] Intro Deck [deck_label] (YYYY.MM.DD)/[COMPANY_NAME] Intro Deck [deck_label] (YYYY.MM.DD).pptx"
+cp "[full source .pptx path]" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/1. [COMPANY_NAME] Quick Deck (YYYY.MM.DD)/[COMPANY_NAME] Quick Deck (YYYY.MM.DD).pptx"
 ```
 
 Update the document title metadata on both files to match the filename (without extension):
@@ -299,8 +292,8 @@ Date: YYYY-MM-DD
 ## Client Root
 [CLIENT_ROOT]
 
-## Deck Type
-[with_commentary or without_commentary]
+## Context
+[pre_call or post_call]
 
 ## Branch
 [A or B] -- [reason: which checks had data, or "all checks empty"]
@@ -310,10 +303,10 @@ Date: YYYY-MM-DD
 
 ## Template Paths
 - Model: [CLIENT_ROOT]/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model (YYYY.MM.DD).xlsx
-- Deck Folder: [CLIENT_ROOT]/[COMPANY_NAME]/2. Presentations/1. [COMPANY_NAME] Intro Deck [deck_label] (YYYY.MM.DD)
-- Deck File: [COMPANY_NAME] Intro Deck [deck_label] (YYYY.MM.DD).pptx
-- vF File: [COMPANY_NAME] Intro Deck [deck_label] (YYYY.MM.DD) - vF.pptx
-- PDF File: [COMPANY_NAME] Intro Deck [deck_label] (YYYY.MM.DD).pdf
+- Deck Folder: [CLIENT_ROOT]/[COMPANY_NAME]/2. Presentations/1. [COMPANY_NAME] Quick Deck (YYYY.MM.DD)
+- Deck File: [COMPANY_NAME] Quick Deck (YYYY.MM.DD).pptx
+- vF File: [COMPANY_NAME] Quick Deck (YYYY.MM.DD) - vF.pptx
+- PDF File: [COMPANY_NAME] Quick Deck (YYYY.MM.DD).pdf
 
 ## Phase Checklist
 - Phase 1: Initialization -- complete
@@ -335,7 +328,7 @@ Tell the user:
 ```
 [COMPANY_NAME] initialized.
 
-Deck type: [with Commentary / without Commentary]
+Context: [pre-call / post-call]
 Branch: [A - Existing Relationship / B - Cold Prospect]
 Reason: [which of Gong / Attio / Slack had data, or "no prior data found"]
 

@@ -5,6 +5,8 @@ description: Populate the Excel intro model with researched values -- assumption
 
 You are executing the `deck-model` phase of the Jolly intro deck workflow. Follow every step exactly as written. Do not skip steps. Do not write to any Excel cell without explicit user approval.
 
+**Model:** Use Haiku for standard Excel population tasks. If the model structure is unusually complex, row/column mappings are ambiguous, or campaign logic requires intricate validation, pause and tell the user you need to handle this with Sonnet to ensure accuracy. Do not attempt complex Excel logic with Haiku.
+
 Set workspace root and client root:
 
 ```bash

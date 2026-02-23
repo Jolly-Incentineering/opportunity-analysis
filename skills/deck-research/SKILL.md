@@ -28,6 +28,7 @@ ls "$WS/.claude/data/session_state_"*.md 2>/dev/null | sort | tail -1
 Read the most recent file. Extract:
 - `company_name` -- the company being worked on
 - `client_root` -- from the session state (use this to override CLIENT_ROOT if present)
+- `context` -- "pre_call" or "post_call"
 - `branch` -- "A" (existing client with call data) or "B" (prospect, no call data)
 - `vertical` -- industry vertical (QSR, manufacturing, etc.)
 - `phase_1_complete` -- whether Phase 1 (deck-start) has been marked complete
@@ -51,9 +52,17 @@ Derive `company_slug` from company name: lowercase, spaces replaced with undersc
 
 ---
 
-## Step 2: Prepare Gong Integration (Branch A only)
+## Step 2: Check Research Path Based on Context
 
-Skip this step entirely if branch is B.
+**Pre-call context:** Skip to Step 3b (Public + Slack only). Do not run the Attio/Gong research agent at all.
+
+**Post-call context:** Continue to Step 2a (below) to prepare Gong integration for Branch A.
+
+---
+
+## Step 2a: Prepare Gong Integration (Branch A + Post-Call Only)
+
+Skip this step entirely if branch is B OR context is pre_call.
 
 Read `gong_integration` from workspace config:
 
@@ -124,11 +133,28 @@ If no file exists, note "Gong: no transcript file found — continuing without c
 
 ---
 
-## Step 3: Dispatch 3 Research Agents in Parallel
+## Step 3: Dispatch Research Agents Based on Context
 
-Dispatch all 3 agents simultaneously using the Task tool. Do not wait for any one agent to finish before dispatching the others. All 3 Task calls must be issued in a single message.
+### Step 3a: Pre-Call Path (2 Agents)
 
-Each agent is fully self-contained. Each reads what it needs, does its work, and writes a JSON output file. The main skill does not do any inline research -- only dispatching and merging.
+Dispatch only the **Slack** and **Public** agents simultaneously using the Task tool with `model: "haiku"`. Do not dispatch the Attio/Gong agent.
+
+Each agent is fully self-contained. Each reads what it needs, does its work, and writes a JSON output file.
+
+**Model selection:** All research agents use **Haiku** by default for speed. If an agent encounters a complex ask (e.g., intricate data structure, ambiguous campaign logic), it should explicitly tell you it needs more processing power and recommend a manual Sonnet review instead of attempting the task with Haiku.
+
+Agents write to their own named subfolders under `4. Reports/`:
+- Agent 2 (slack)      → `4. Reports/3. Slack/`
+- Agent 3 (public)     → `4. Reports/2. Public Filings/`
+- Merged output        → `4. Reports/` (directly in Reports, not in a subfolder)
+
+### Step 3b: Post-Call Path (3 Agents)
+
+Dispatch all 3 agents simultaneously using the Task tool with `model: "haiku"`. Do not wait for any one agent to finish before dispatching the others. All 3 Task calls must be issued in a single message.
+
+Each agent is fully self-contained. Each reads what it needs, does its work, and writes a JSON output file.
+
+**Model selection:** All research agents use **Haiku** by default for speed. If an agent encounters a complex ask (e.g., intricate data structure, ambiguous campaign logic), it should explicitly tell you it needs more processing power and recommend a manual Sonnet review instead of attempting the task with Haiku.
 
 Each agent writes to its own named subfolder under `4. Reports/`:
 - Agent 1 (attio-gong) → `4. Reports/1. Call Summaries/`

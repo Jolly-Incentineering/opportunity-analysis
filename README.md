@@ -4,10 +4,12 @@ The Jolly Opportunity Analysis plugin for Claude. Give it a company name and it 
 
 > **Internal tool.** Maintained by the Incentineering team. Requires access to the private `nishant-jolly/opportunity-analysis` repo and the Jolly shared workspace.
 
-**Two deck types:** "With Commentary" (after a call, ~20–25 min) or "Without Commentary" (before a call, ~10–15 min). Claude asks which type at the start. **Two ways to run it:** automatically with `/deck-auto [Company]`, or step-by-step yourself. Both are covered below.
+**Simplified single template approach:** "Quick Deck" — a streamlined template that works for both pre-call and post-call contexts. Claude captures whether it's pre-call or post-call to inform the research phase, but uses the same workflow and template throughout (~10–15 min). **Two ways to run it:** automatically with `/deck-auto [Company]`, or step-by-step yourself. Both are covered below.
 
-**Latest features (v1.1.1):**
-- Optimized cold prospect workflow: fast-path "Without Commentary" decks now target ~10–15 minutes with streamlined QA (6 focused checks)
+**Latest features (v1.2.0):**
+- Simplified single-template workflow: "Quick Deck" template works for all contexts (~10–15 minutes)
+- Pre-call/post-call context captured for research phase without affecting template
+- Streamlined QA checks (11 focused checks)
 - Standardized cheat sheet generation to single combined PDF per company in `4. Reports/Cheat Sheets/`
 - Support for nested sub-brand folder structures with `--client-path` flag
 
@@ -57,7 +59,7 @@ The Jolly Opportunity Analysis plugin for Claude. Give it a company name and it 
 │                │  Flags anything that needs fixing.        │                        │
 └────────────────┴───────────────────────────────────────────┴────────────────────────┘
 
-**Total time:** Without Commentary (cold outreach): ~10–15 min. With Commentary (after a call): ~20–25 min.
+**Total time:** Pre-call (Slack + Public only): ~8–12 min. Post-call (with Attio/Gong transcripts): ~14–20 min.
 ```
 
 ---
@@ -82,43 +84,42 @@ Run each command yourself in order: `/deck-start`, then `/deck-research`, then `
 
 ```mermaid
 flowchart LR
-    START["/deck-start"] --> DTYPE
-    DTYPE{"Deck type?"}
+    START["/deck-start"] --> CONTEXT
+    CONTEXT{"Pre-call or<br/>post-call?"}
 
-    DTYPE -->|With Commentary| DETECT1["Existing client?"]
-    DTYPE -->|Without Commentary| DETECT2["Existing client?"]
+    CONTEXT -->|Pre-call| DETECT1["Existing client?"]
+    CONTEXT -->|Post-call| DETECT2["Existing client?"]
 
-    DETECT1 -->|Yes| RA["/deck-research<br/>CRM + calls + email + public<br/>13 QA checks"]
-    DETECT1 -->|No| RB1["/deck-research<br/>Public only<br/>13 QA checks"]
+    DETECT1 -->|Yes| RA["/deck-research<br/>Slack + Public only<br/>no transcripts"]
+    DETECT1 -->|No| RB["/deck-research<br/>Public only"]
 
-    DETECT2 -->|Yes| RC["/deck-research<br/>CRM + calls + email + public<br/>11 QA checks"]
-    DETECT2 -->|No| RD["/deck-research<br/>Public only<br/>11 QA checks"]
+    DETECT2 -->|Yes| RC["/deck-research<br/>Attio + Gong + Slack + Public<br/>with transcripts"]
+    DETECT2 -->|No| RD["/deck-research<br/>Public only"]
 
-    RA --> MODEL_A["/deck-model"]
-    RB1 --> MODEL_B["/deck-model"]
-    RC --> MODEL_C["/deck-model"]
-    RD --> MODEL_D["/deck-model"]
+    RA --> MODEL["/deck-model"]
+    RB --> MODEL
+    RC --> MODEL
+    RD --> MODEL
 
-    MODEL_A --> FORMAT_A["/deck-format<br/>Full steps"]
-    MODEL_B --> FORMAT_B["/deck-format<br/>Full steps"]
-    MODEL_C --> FORMAT_C["/deck-format<br/>Streamlined"]
-    MODEL_D --> FORMAT_D["/deck-format<br/>Streamlined"]
+    MODEL --> FORMAT["/deck-format<br/>Quick Deck template"]
 
-    FORMAT_A --> QA_A["/deck-qa<br/>13 checks"]
-    FORMAT_B --> QA_B["/deck-qa<br/>13 checks"]
-    FORMAT_C --> QA_C["/deck-qa<br/>11 checks"]
-    FORMAT_D --> QA_D["/deck-qa<br/>11 checks"]
+    FORMAT --> QA["/deck-qa<br/>11 checks"]
 
-    QA_A --> DONE["Delivery-ready"]
-    QA_B --> DONE
-    QA_C --> DONE
-    QA_D --> DONE
+    QA --> DONE["Delivery-ready"]
 
-    style DTYPE fill:#fff8e1,stroke:#f0a500,stroke-width:2px
+    style CONTEXT fill:#fff8e1,stroke:#f0a500,stroke-width:2px
     style DONE fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
 ```
 
-The diagram shows how an Opportunity Analysis moves from setup through research, modeling, formatting, and QA — with four paths depending on the deck type (With Commentary vs. Without Commentary) and whether the company is an existing client or brand-new prospect. The orange diamond shapes are gates where the workflow pauses and waits for your input. The number of QA checks depends on the deck type: Without Commentary uses 11 streamlined checks (skips template validation and narrative checks), While Commentary uses all 13 checks. `/deck-auto` is a wrapper that drives through the entire flow for you, so you only have to respond at the gate points rather than kick off each step manually.
+The diagram shows how an Opportunity Analysis moves from setup through research, modeling, formatting, and QA. While all decks use the same "Quick Deck" template, **research adapts based on context**: Pre-call uses Slack + Public data (no transcripts), while post-call includes full Attio/Gong research with call transcripts. Branch detection (existing client vs. new prospect) further refines the research scope. The orange diamond is a gate where the workflow pauses and waits for your input. QA uses 11 streamlined checks. `/deck-auto` is a wrapper that drives through the entire flow for you, so you only have to respond at the gate points rather than kick off each step manually.
+
+---
+
+## Model selection strategy
+
+- **Research agents (Haiku):** All research workstreams (Attio/Gong, Slack, public data) run via Haiku agents for speed. If an agent detects a complex scenario it cannot handle reliably, it will tell you and recommend a manual Sonnet review.
+
+- **Excel population (Haiku by default, Sonnet for complex):** Model population uses Haiku for standard tasks (straightforward cell mapping, campaign entry). For unusually complex models, intricate row/column logic, or ambiguous campaign validation, the workflow will pause and handle it with Sonnet to ensure accuracy.
 
 ---
 
@@ -198,13 +199,13 @@ Claude will find your client folder, confirm the location, save configuration fo
 
 **What it does:** Gets everything ready to start a new Opportunity Analysis. Creates the folder structure, copies the right template files, opens them on your screen, and starts downloading logos and brand assets in the background while you move on.
 
-**What you do:** Provide the company name. Claude will ask you three questions before starting: deck type (With or Without Commentary), which template to use, and which vertical (industry) the company is in.
+**What you do:** Provide the company name. Claude will ask you two questions before starting: whether it's pre-call or post-call (to determine research scope), and which template to use.
 
 **What Claude does:**
 - Checks whether you already have an active session for this company (and stops if you do, to avoid duplicates)
-- Asks whether this is going out before or after a call — this determines which template type to use
-- Lists available templates grouped by industry for the selected deck type — you pick the number
-- Copies the Excel model and PowerPoint presentation to the right client folder with deck-type-specific naming, dated with today's date
+- Asks whether this is pre-call or post-call — this determines which research sources to use (post-call includes call transcripts; pre-call uses public data only)
+- Lists available Quick Deck templates grouped by industry — you pick the number
+- Copies the Excel model and PowerPoint presentation to the right client folder with dated naming (YYYY.MM.DD)
 - Creates the numbered subfolder structure (1. Logos/, 2. Swag/, 1. Call Summaries/, 2. Public Filings/, 3. Slack/)
 - Opens both files on your screen
 - Figures out whether this is an existing client (has prior calls, emails, or CRM records) or a brand-new prospect — this affects how research runs later
@@ -221,17 +222,23 @@ Claude will find your client folder, confirm the location, save configuration fo
 
 ### `/deck-research`
 
-**What it does:** Pulls together everything Claude can find about the company from your tools — CRM records, past emails, Slack conversations, and public information. Then it proposes a list of campaigns to include in the Opportunity Analysis and asks you to confirm before moving on.
+**What it does:** Pulls together information about the company based on context and branch, proposes a campaign list, and asks you to confirm before moving on.
 
 **What you do:** Review the proposed campaign list and type "confirm" to proceed. If anything looks off — a campaign is missing, or one shouldn't be included — say so before confirming.
 
-**What Claude does:** Runs three research tasks at the same time (so it is faster than doing them one by one):
+**What Claude does:** Research scope depends on context:
 
-- **CRM and call research** — checks Attio for records, notes, and emails; pulls transcripts from past calls if this is an existing client or Gong data if connected
-- **Slack research** — searches Slack for messages about the company
-- **Public research** — looks up SEC filings (for public companies), industry benchmarks, LinkedIn headcount, and other public sources
+**Pre-call path (faster):**
+- **Slack research** — searches Slack for messages about the company (existing clients only)
+- **Public research** — looks up SEC filings, industry benchmarks, LinkedIn headcount, etc.
+- No Attio/Gong lookup (no call transcripts needed)
 
-All three run in parallel and report back with their findings. Claude then combines everything, flags any conflicts between sources, and presents a clean summary. If any required information is missing, it will tell you before asking for campaign confirmation.
+**Post-call path (comprehensive):**
+- **CRM and call research** — checks Attio for records, notes, emails; pulls transcripts from past calls if existing client (Gong data if connected)
+- **Slack research** — searches Slack for messages about the company (existing clients only)
+- **Public research** — looks up SEC filings, industry benchmarks, LinkedIn headcount, etc.
+
+All applicable tasks run in parallel and report back with their findings. Claude combines everything, flags any conflicts between sources, and presents a clean summary. If any required information is missing, it will tell you before asking for campaign confirmation.
 
 **Output:** A research summary file saved to your workspace, and a confirmed campaign list that flows into the next step.
 
@@ -381,14 +388,10 @@ The asset download runs in the background during `/deck-start`. It sometimes fin
 Each manual step comes with detailed instructions in the chat. Read them carefully, complete the step in PowerPoint, then come back to Claude and type "done" to continue.
 
 **"A command is taking a long time"**
-The research step pulls from multiple sources at once and can take 3–8 minutes depending on how much data exists and whether this is With Commentary (full research) or Without Commentary (public only). The model step can also take a minute or two if there are many campaigns. If it has been more than 10 minutes with no response, something may have gone wrong — ask Incentineering.
+The research step pulls from multiple sources and can take 2–6 minutes depending on context. Pre-call (Slack + Public) is faster. Post-call (Attio/Gong + Slack + Public) is slower due to call transcript and CRM lookups. The model step can also take a minute or two if there are many campaigns. If it has been more than 15 minutes with no response, something may have gone wrong — ask Incentineering.
 
-**"Which deck type should I choose?"**
-Choose **Without Commentary** if this is going out before you have spoken to the company (cold outreach). It uses public data only and completes in ~10–15 minutes. Choose **With Commentary** if you have had a call with the company or have internal notes. It includes Gong transcripts (if configured) and CRM data and completes in ~20–25 minutes.
-
-**"What is the difference between With and Without Commentary?"**
-**Without Commentary:** Numbers-only deck for cold outreach. Uses ~11 QA checks (skips template validation and narrative checks). Faster workflow, ~10–15 minutes total.
-**With Commentary:** Narrative-rich deck after a call. Uses all 13 QA checks. Includes campaign descriptions, talking points, and internal data. ~20–25 minutes total.
+**"Should I choose pre-call or post-call?"**
+Choose **pre-call** if you have not spoken to the company yet (cold outreach). It skips Attio/Gong lookups and uses Slack + Public data only (~8–12 minutes total). Choose **post-call** if you have had a call with the company or have internal notes. It includes full Attio research and call transcripts via Gong (if configured) and completes in ~14–20 minutes total. Both use the same Quick Deck template.
 
 ---
 
@@ -398,6 +401,10 @@ Choose **Without Commentary** if this is going out before you have spoken to the
 
 **New computer or new team member?** Ask Incentineering to configure your workspace path when you first install. Do not skip this — nothing else will work without it.
 
-**Existing client vs. new prospect matters.** Claude detects this automatically during `/deck-start` by checking whether any prior calls, emails, or CRM records exist for the company. Existing clients (Branch A) get a research-backed Opportunity Analysis using all internal data. New prospects (Branch B) get an illustrative Opportunity Analysis using public data only. Claude will tell you which branch it detected.
+**Context and branch both matter.** You choose context (pre-call vs post-call) at the start. Claude detects branch automatically during `/deck-start` by checking for prior calls, emails, or CRM records. The research path is determined by **both**:
+- **Pre-call context** → Slack + Public (no Attio/Gong lookups, faster)
+- **Post-call context + Branch A** → Attio + Gong + Slack + Public (full internal data with transcripts)
+- **Post-call context + Branch B** → Public only (new prospect, no internal data)
+- **Pre-call context + Branch A** → Slack + Public (even with internal data available, skips transcripts for pre-call speed)
 
 **If something seems wrong mid-workflow,** the session state file (your progress bookmark) in `.claude/data/` shows exactly what phase last completed and what Claude was about to do next. This is the first place to check. Ask Incentineering if you need help reading it.
