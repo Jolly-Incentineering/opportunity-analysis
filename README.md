@@ -4,7 +4,7 @@ The Jolly Opportunity Analysis plugin for Claude. Give it a company name and it 
 
 > **Internal tool.** Maintained by the Incentineering team. Requires access to the private `nishant-jolly/opportunity-analysis` repo and the Jolly shared workspace.
 
-**Two ways to use it:** run the whole workflow automatically with `/deck-auto [Company]`, or run each step yourself one at a time. Both are covered below.
+**Two deck types:** "With Commentary" (after a call, ~20–25 min) or "Without Commentary" (before a call, ~10–15 min). Claude asks which type at the start. **Two ways to run it:** automatically with `/deck-auto [Company]`, or step-by-step yourself. Both are covered below.
 
 ---
 
@@ -52,7 +52,7 @@ The Jolly Opportunity Analysis plugin for Claude. Give it a company name and it 
 │                │  Flags anything that needs fixing.        │                        │
 └────────────────┴───────────────────────────────────────────┴────────────────────────┘
 
-Total time: ~30–45 minutes per Opportunity Analysis.
+**Total time:** Without Commentary (cold outreach): ~10–15 min. With Commentary (after a call): ~20–25 min.
 ```
 
 ---
@@ -77,28 +77,43 @@ Run each command yourself in order: `/deck-start`, then `/deck-research`, then `
 
 ```mermaid
 flowchart LR
-    START["/deck-start"] --> DETECT
-    DETECT{"Existing client?"}
+    START["/deck-start"] --> DTYPE
+    DTYPE{"Deck type?"}
 
-    DETECT -->|Yes| RA["/deck-research<br/>CRM + calls + email + public"]
-    DETECT -->|No| RB["/deck-research<br/>Public only"]
+    DTYPE -->|With Commentary| DETECT1["Existing client?"]
+    DTYPE -->|Without Commentary| DETECT2["Existing client?"]
+
+    DETECT1 -->|Yes| RA["/deck-research<br/>CRM + calls + email + public<br/>13 QA checks"]
+    DETECT1 -->|No| RB1["/deck-research<br/>Public only<br/>13 QA checks"]
+
+    DETECT2 -->|Yes| RC["/deck-research<br/>CRM + calls + email + public<br/>11 QA checks"]
+    DETECT2 -->|No| RD["/deck-research<br/>Public only<br/>11 QA checks"]
 
     RA --> MODEL_A["/deck-model"]
-    RB --> MODEL_B["/deck-model"]
+    RB1 --> MODEL_B["/deck-model"]
+    RC --> MODEL_C["/deck-model"]
+    RD --> MODEL_D["/deck-model"]
 
-    MODEL_A --> FORMAT_A["/deck-format"]
-    MODEL_B --> FORMAT_B["/deck-format"]
+    MODEL_A --> FORMAT_A["/deck-format<br/>Full steps"]
+    MODEL_B --> FORMAT_B["/deck-format<br/>Full steps"]
+    MODEL_C --> FORMAT_C["/deck-format<br/>Streamlined"]
+    MODEL_D --> FORMAT_D["/deck-format<br/>Streamlined"]
 
-    FORMAT_A --> QA["/deck-qa"]
-    FORMAT_B --> QA
+    FORMAT_A --> QA_A["/deck-qa<br/>13 checks"]
+    FORMAT_B --> QA_B["/deck-qa<br/>13 checks"]
+    FORMAT_C --> QA_C["/deck-qa<br/>11 checks"]
+    FORMAT_D --> QA_D["/deck-qa<br/>11 checks"]
 
-    QA --> DONE["Delivery-ready"]
+    QA_A --> DONE["Delivery-ready"]
+    QA_B --> DONE
+    QA_C --> DONE
+    QA_D --> DONE
 
-    style DETECT fill:#fff8e1,stroke:#f0a500,stroke-width:2px
+    style DTYPE fill:#fff8e1,stroke:#f0a500,stroke-width:2px
     style DONE fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
 ```
 
-The diagram shows how an Opportunity Analysis moves from setup through research, modeling, formatting, and QA — with two paths depending on whether the company is an existing client or a brand-new prospect. The orange diamond shapes are gates where the workflow pauses and waits for your input before continuing. `/deck-auto` is a wrapper that drives through the entire flow for you, so you only have to respond at those gate points rather than kick off each step manually.
+The diagram shows how an Opportunity Analysis moves from setup through research, modeling, formatting, and QA — with four paths depending on the deck type (With Commentary vs. Without Commentary) and whether the company is an existing client or brand-new prospect. The orange diamond shapes are gates where the workflow pauses and waits for your input. The number of QA checks depends on the deck type: Without Commentary uses 11 streamlined checks (skips template validation and narrative checks), While Commentary uses all 13 checks. `/deck-auto` is a wrapper that drives through the entire flow for you, so you only have to respond at the gate points rather than kick off each step manually.
 
 ---
 
@@ -118,21 +133,35 @@ You need access to the private Jolly GitHub repo for this to work. If you get an
 
 You only need to do this once, on each computer you use.
 
-### Step 1 — Tell Claude where your Jolly folder is
-
-Claude needs to know where the Jolly shared folder lives on your computer. This is called your "workspace path" — it is just the folder location.
-
-Ask Incentineering to set this up for you when you first install the plugin. They will point Claude to the right folder (something like `Jolly - Documents` in your OneDrive).
-
-If you are already set up and want to check, the path looks like:
+**Recommended: Use the interactive onboarding guide.** When you first install the plugin, run:
 
 ```
-/c/Users/YourName/OneDrive - Default Directory/Jolly - Documents
+/jolly-onboarding
 ```
 
-Not sure where your Jolly folder is? Ask Incentineering.
+This walks you through everything step-by-step in plain language — no technical knowledge needed. It guides you through connecting Slack and Attio, setting your workspace path, and running the one-time setup. Takes about 10 minutes total.
 
-### Step 2 — Run setup
+### Or set up manually:
+
+**Step 1 — Tell Claude where your Jolly folder is**
+
+Claude needs to know where the Jolly shared folder lives on your computer. This is called your "workspace path" — set it as a System environment variable (on Windows) or export it in your shell (on Mac).
+
+Windows:
+- Press Windows key, type "environment variables"
+- Click "Edit the system environment variables"
+- Click "Environment Variables..." (button at bottom)
+- Under "System variables", click "New..."
+- Variable name: `JOLLY_WORKSPACE`
+- Variable value: `C:\Users\YourName\OneDrive - Default Directory\Jolly - Documents`
+- Click OK on all windows and **restart Claude Code**
+
+Mac:
+- Open Terminal
+- Run: `echo 'export JOLLY_WORKSPACE="/Users/YourName/Jolly - Documents"' >> ~/.zshrc`
+- Close Terminal and **restart Claude Code**
+
+**Step 2 — Run setup**
 
 Once the folder path is configured, type this in Claude:
 
@@ -140,7 +169,7 @@ Once the folder path is configured, type this in Claude:
 /deck-setup
 ```
 
-Claude will find your client folder, confirm the location, and save it so all future commands know where to look. This takes a few seconds and you only do it once. If you run it again later, it will just confirm everything is already set up and stop.
+Claude will find your client folder, confirm the location, save configuration for Gong (if you use it), and save it so all future commands know where to look. This takes a few seconds and you only do it once. If you run it again later, it will just confirm everything is already set up and stop.
 
 ---
 
@@ -164,12 +193,14 @@ Claude will find your client folder, confirm the location, and save it so all fu
 
 **What it does:** Gets everything ready to start a new Opportunity Analysis. Creates the folder structure, copies the right template files, opens them on your screen, and starts downloading logos and brand assets in the background while you move on.
 
-**What you do:** Provide the company name. Claude will ask you two questions before starting: which template to use, and which vertical (industry) the company is in.
+**What you do:** Provide the company name. Claude will ask you three questions before starting: deck type (With or Without Commentary), which template to use, and which vertical (industry) the company is in.
 
 **What Claude does:**
 - Checks whether you already have an active session for this company (and stops if you do, to avoid duplicates)
-- Lists available templates grouped by industry — you pick the number
-- Copies the Excel model and PowerPoint presentation to the right client folder, named with today's date
+- Asks whether this is going out before or after a call — this determines which template type to use
+- Lists available templates grouped by industry for the selected deck type — you pick the number
+- Copies the Excel model and PowerPoint presentation to the right client folder with deck-type-specific naming, dated with today's date
+- Creates the numbered subfolder structure (1. Logos/, 2. Swag/, 1. Call Summaries/, 2. Public Filings/, 3. Slack/)
 - Opens both files on your screen
 - Figures out whether this is an existing client (has prior calls, emails, or CRM records) or a brand-new prospect — this affects how research runs later
 - Starts downloading logos, swag images, and branded slide frames in the background
@@ -191,11 +222,11 @@ Claude will find your client folder, confirm the location, and save it so all fu
 
 **What Claude does:** Runs three research tasks at the same time (so it is faster than doing them one by one):
 
-- **CRM and call research** — checks Attio for records, notes, and emails; pulls transcripts from past calls if this is an existing client
+- **CRM and call research** — checks Attio for records, notes, and emails; pulls transcripts from past calls if this is an existing client or Gong data if connected
 - **Slack research** — searches Slack for messages about the company
 - **Public research** — looks up SEC filings (for public companies), industry benchmarks, LinkedIn headcount, and other public sources
 
-All four run in parallel and report back with their findings. Claude then combines everything, flags any conflicts between sources, and presents a clean summary. If any required information is missing, it will tell you before asking for campaign confirmation.
+All three run in parallel and report back with their findings. Claude then combines everything, flags any conflicts between sources, and presents a clean summary. If any required information is missing, it will tell you before asking for campaign confirmation.
 
 **Output:** A research summary file saved to your workspace, and a confirmed campaign list that flows into the next step.
 
@@ -225,15 +256,15 @@ All four run in parallel and report back with their findings. Claude then combin
 
 ### `/deck-format`
 
-**What it does:** Takes the branded assets and model outputs and puts them into the PowerPoint presentation. Walks you through any manual steps one at a time. Exports the final PDF when done.
+**What it does:** Takes the branded assets and model outputs and puts them into the PowerPoint presentation. The steps vary based on deck type. For With Commentary, includes full text replacement and campaign narration. For Without Commentary, streamlines to numbers only. Walks you through any manual steps one at a time. Exports the final PDF when done.
 
 **What you do:** There are a few manual steps only you can do in PowerPoint (like refreshing a data link). Claude will stop at each one, give you clear step-by-step instructions, and wait for you to type "done" before moving on.
 
 **What Claude does:**
 - Exports company-branded slide frames from Figma (the design tool where slide templates live)
-- Scans every slide for placeholder text (like `[Company Name]` or `[Revenue]`) and replaces them with the correct values
-- Formats all dollar amounts correctly — under $1M shows as `$516K`, $1M and above shows as `$1.96MM`
-- Presents the replacement plan for each section and waits for your approval before writing
+- **With Commentary:** Scans every slide for placeholder text (like `[Company Name]` or `[Revenue]`) and replaces with correct values and narrative. Formats all dollar amounts correctly — under $1M shows as `$516K`, $1M and above shows as `$1.96MM`.
+- **Without Commentary:** Pulls numbers only from the model into banner slides, skipping narrative text replacement (faster for cold outreach).
+- Presents the replacement plan and waits for your approval before writing
 - Walks through placing logos, swag images, and banner graphics
 - Exports the final PDF to the Presentations folder and opens it for your review
 
@@ -249,23 +280,25 @@ All four run in parallel and report back with their findings. Claude then combin
 
 **What you do:** Review any flagged issues and fix them. Claude walks through each one interactively and re-runs the check after you confirm it is fixed.
 
-**What Claude does:** Runs 13 named checks:
+**What Claude does:** Runs checks based on deck type. **With Commentary: 13 checks.** **Without Commentary: 11 checks** (skips D1 and D2c to streamline cold outreach).
 
-| Check | What it looks for |
-|-------|-------------------|
-| M1 | Correct number of formula cells in the model (confirms nothing was accidentally deleted or overwritten) |
-| M2 | No required assumption cells left blank |
-| M3 | Every active campaign's return-on-spend is in the 10x–30x range |
-| M4 | Total EBITDA impact is within the 15% ceiling |
-| M5 | Hiring cost is not above $3,500 (QSR models) |
-| M6 | Source notes present on all hard-coded cells |
-| D1 | No placeholder text remaining in the presentation (e.g., `[Company Name]`) |
-| D2 | All dollar amounts formatted correctly |
-| D3 | Banner numbers on the presentation match the model output |
-| D4 | Campaign slides match the approved campaign list |
-| D5 | Logo and brand assets are placed |
-| D6 | Return-on-spend values are hidden on prospect presentations (not shown to new clients) |
-| D7 | The exported PDF matches the current state of the presentation |
+| Check | What it looks for | With Commentary | Without Commentary |
+|-------|-------------------|:---:|:---:|
+| M1 | Correct number of formula cells in the model (confirms nothing was accidentally deleted or overwritten) | ✓ | ✓ |
+| M2 | No required assumption cells left blank | ✓ | ✓ |
+| M3 | Every active campaign's return-on-spend is in the 10x–30x range | ✓ | ✓ |
+| M4 | Total EBITDA impact is within the 15% ceiling | ✓ | ✓ |
+| M5 | Hiring cost is not above $3,500 (QSR models) | ✓ | ✓ |
+| M6 | Source notes present on all hard-coded cells | ✓ | ✓ |
+| D1 | No placeholder text remaining in the presentation (e.g., `[Company Name]`) | ✓ |  |
+| D2 | All dollar amounts formatted correctly | ✓ | ✓ |
+| D2b | No raw integers in narrative text (e.g., "5" should be "five") | ✓ |  |
+| D2c | Campaign narrative text is present and complete | ✓ |  |
+| D3 | Banner numbers on the presentation match the model output | ✓ | ✓ |
+| D4 | Campaign slides match the approved campaign list | ✓ | ✓ |
+| D5 | Logo and brand assets are placed | ✓ | ✓ |
+| D6 | Return-on-spend values are hidden on prospect presentations (not shown to new clients) | ✓ | ✓ |
+| D7 | The exported PDF matches the current state of the presentation | ✓ | ✓ |
 
 After all checks pass, Claude cleans up any temporary lock files and gives you the final list of delivery-ready files.
 
@@ -275,7 +308,7 @@ After all checks pass, Claude cleans up any temporary lock files and gives you t
 
 ## How it works
 
-When you run `/deck-research`, Claude sends out four separate research tasks at the same time — one to check your CRM, one to check emails and files, one to check Slack, and one to look up public information. Each task runs on its own and reports back with its findings. Claude then combines everything into one summary, flags any conflicts between sources, and asks you to confirm the campaign list before moving on.
+When you run `/deck-research`, Claude sends out three separate research tasks at the same time — one to check your CRM and calls, one to check Slack, and one to look up public information. Each task runs on its own and reports back with its findings. Claude then combines everything into one summary, flags any conflicts between sources, and asks you to confirm the campaign list before moving on.
 
 Progress is saved after every phase. That saved progress file (think of it as a bookmark) lives in the `.claude/data/` folder in your workspace. If a session gets interrupted — you close Claude, your laptop dies, anything — just run the same command again and Claude reads the bookmark and picks up where it left off. Nothing is lost.
 
@@ -289,9 +322,9 @@ Go to Claude.ai Settings > Integrations and make sure these are all connected be
 
 | Tool | What it is used for |
 |------|---------------------|
-| Slack | Searching messages and channels |
-| Attio / Gong | CRM records, contact notes, call transcripts |
-| Linear | Issue tracking |
+| Slack | Searching messages and channels for company research |
+| Attio | CRM records and contact notes |
+| Gong | Call transcripts (optional; must be configured via Rube recipe) |
 
 If any of these are not connected, Claude will not be able to pull data from that source and will tell you what is missing.
 
@@ -343,7 +376,14 @@ The asset download runs in the background during `/deck-start`. It sometimes fin
 Each manual step comes with detailed instructions in the chat. Read them carefully, complete the step in PowerPoint, then come back to Claude and type "done" to continue.
 
 **"A command is taking a long time"**
-The research step pulls from multiple sources at once and can take 2–5 minutes depending on how much data exists. The model step can also take a minute or two if there are many campaigns. If it has been more than 10 minutes with no response, something may have gone wrong — ask Incentineering.
+The research step pulls from multiple sources at once and can take 3–8 minutes depending on how much data exists and whether this is With Commentary (full research) or Without Commentary (public only). The model step can also take a minute or two if there are many campaigns. If it has been more than 10 minutes with no response, something may have gone wrong — ask Incentineering.
+
+**"Which deck type should I choose?"**
+Choose **Without Commentary** if this is going out before you have spoken to the company (cold outreach). It uses public data only and completes in ~10–15 minutes. Choose **With Commentary** if you have had a call with the company or have internal notes. It includes Gong transcripts (if configured) and CRM data and completes in ~20–25 minutes.
+
+**"What is the difference between With and Without Commentary?"**
+**Without Commentary:** Numbers-only deck for cold outreach. Uses ~11 QA checks (skips template validation and narrative checks). Faster workflow, ~10–15 minutes total.
+**With Commentary:** Narrative-rich deck after a call. Uses all 13 QA checks. Includes campaign descriptions, talking points, and internal data. ~20–25 minutes total.
 
 ---
 
