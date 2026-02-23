@@ -391,7 +391,7 @@ Write a new session state file at `$WS/.claude/data/session_state_[YYYY-MM-DD].m
   - Model: [model filename]
   - vF deck (delivery): [vF deck filename]
   - PDF: [PDF filename]
-  - Cheat sheet: [COMPANY_NAME] Cheat Sheet.pdf
+  - Cheat sheet: 4. Reports/Cheat Sheets/[COMPANY_NAME] Cheat Sheet.pdf
 - Next action: "Deliver to client"
 
 ---
@@ -407,7 +407,7 @@ Delivery-ready files:
   Model:       [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/1. Model/[model filename]
   vF (deck):   [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/2. Presentations/[vF deck filename]
   PDF:         [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/[deck_folder]/[pdf_filename]
-  Cheat sheet: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/[COMPANY_NAME] Cheat Sheet.pdf
+  Cheat sheet: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/Cheat Sheets/[COMPANY_NAME] Cheat Sheet.pdf
 
 QA result: [PASS / PASS with notes / FAIL -- resolved]
 
