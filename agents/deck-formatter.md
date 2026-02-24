@@ -4,14 +4,22 @@ description: Format the vF intro deck — dollar formatting and banner fill. Run
 model: sonnet
 ---
 
-You are formatting the vF intro deck for **[COMPANY_NAME]**. Working directory: `C:\Users\Nishant\OneDrive - Default Directory\Jolly - Documents`
+You are formatting the vF intro deck for **[COMPANY_NAME]**.
+
+Set workspace root:
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+```
 
 ## Step 1: Find the Files
 
 ```python
-import glob
-vf_files = glob.glob(f"Clients/[COMPANY_NAME]/2. Presentations/*vF*.pptx")
-model_files = glob.glob(f"Clients/[COMPANY_NAME]/1. Model/*.xlsx")
+import glob, os
+ws = os.environ.get("JOLLY_WORKSPACE", ".")
+client_root = os.environ.get("CLIENT_ROOT", "Clients")
+vf_files = glob.glob(f"{ws}/{client_root}/[COMPANY_NAME]/2. Presentations/*vF*.pptx")
+model_files = glob.glob(f"{ws}/{client_root}/[COMPANY_NAME]/1. Model/*.xlsx")
 ```
 
 If no vF file found, stop and tell the user.

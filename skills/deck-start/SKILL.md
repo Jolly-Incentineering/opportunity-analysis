@@ -177,7 +177,7 @@ Wait for the user's reply. Record the chosen template number, derive the vertica
 
 ---
 
-## Step 4: Copy Templates to Client Folder
+## Step 5: Copy Templates to Client Folder
 
 Using today's date in YYYY.MM.DD format, create a subfolder under Presentations and copy the template files:
 
@@ -249,7 +249,7 @@ Naming conventions:
 
 ---
 
-## Step 5: Scan Template and Load Config
+## Step 6: Scan Template and Load Config
 
 Run `template_scanner.py` on the copied model file to identify the template type and extract cell mappings:
 
@@ -296,7 +296,7 @@ Tell the user: "Template scanned. Config: [template type]. Campaigns: [list name
 
 ---
 
-## Step 6: Detect Branch (Run All 3 Checks Simultaneously)
+## Step 7: Detect Branch (Run All 3 Checks Simultaneously)
 
 Run all three checks at the same time (do not wait for one before starting the others):
 
@@ -324,7 +324,7 @@ Record which checks had data -- this becomes the branch reason.
 
 ---
 
-## Step 7: Launch Asset Gatherer as Background Subagent
+## Step 8: Launch Asset Gatherer as Background Subagent
 
 Launch a background subagent using the Task tool with subagent_type `asset-gatherer`. Pass the following prompt, substituting [COMPANY_NAME] and [CLIENT_ROOT]:
 
@@ -334,11 +334,11 @@ Client folder: [CLIENT_ROOT]/[COMPANY_NAME]/3. Company Resources/
 Skip banner step entirely -- do not ask for or mention a banner.
 ```
 
-Do not wait for the subagent to finish. Continue immediately to Step 8.
+Do not wait for the subagent to finish. Continue immediately to Step 9.
 
 ---
 
-## Step 8: Write Session State
+## Step 9: Write Session State
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
@@ -387,7 +387,7 @@ Run /deck-research
 
 ---
 
-## Step 9: Report to User
+## Step 10: Report to User
 
 Tell the user:
 

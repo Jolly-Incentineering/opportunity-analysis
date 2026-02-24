@@ -127,5 +127,12 @@
     "4 distinct unit cost types: Beverage, Single Food, Combo/Bundle, Seasonal/LTO",
     "Campaign Settings descriptions updated: Beverage Upsell, Single Food Upsell, Combo/Bundle Upsell, Seasonal/LTO Upsell"
   ],
-  "last_updated": "2026-02-17"
+  "last_updated": "2026-02-17",
+  "vertical_standards": {
+    "hours_per_year": 1820,
+    "hiring_cost_cap": 3500,
+    "incentive_range": [0.25, 0.50],
+    "return_rate_range": [5, 15],
+    "trir_divisor": null
+  }
 }

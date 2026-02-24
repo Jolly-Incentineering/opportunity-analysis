@@ -161,13 +161,15 @@ Report format:
   [Within ceiling / EXCEEDS ceiling -- requires user approval]
 ```
 
-**Check M5 -- Hiring cost cap (QSR only):**
+**Check M5 -- Hiring cost cap:**
 
-If vertical is QSR, verify no hiring cost cell exceeds $3,500.
+Read `vertical_standards.hiring_cost_cap` from `template_config.json`. If the value is null or the key is missing, skip this check (report N/A).
+
+If a cap exists, verify no hiring cost cell exceeds that value.
 
 ```
-[PASS / FAIL / N/A] M5 -- Hiring cost cap (QSR only)
-  [Pass / FAIL: [cell] shows $[X], exceeds $3,500 cap]
+[PASS / FAIL / N/A] M5 -- Hiring cost cap
+  [Pass / FAIL: [cell] shows $[X], exceeds $[cap] cap / N/A: no cap defined for this vertical]
 ```
 
 **Check M6 -- Comment coverage:**

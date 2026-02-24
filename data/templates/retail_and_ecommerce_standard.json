@@ -88,5 +88,12 @@
     "Incentive costs drive ROPS; target 10x-30x per campaign",
     "Total EBITDA accretion ceiling: 15% of annual EBITDA"
   ],
-  "last_updated": "2026-02-23"
+  "last_updated": "2026-02-23",
+  "vertical_standards": {
+    "hours_per_year": 1820,
+    "hiring_cost_cap": null,
+    "incentive_range": [0.25, 1.00],
+    "return_rate_range": [5, 20],
+    "trir_divisor": null
+  }
 }

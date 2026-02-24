@@ -127,7 +127,7 @@ Apply rounding standards to all computed values:
 | Incentive costs | Clean numbers ($0.10, $0.25, $0.50) |
 | Reduction / gain % | Nearest 2.5% or 5% |
 
-**Hiring cost cap (QSR only):** Never exceed $3,500.
+**Hiring cost cap:** Read `vertical_standards.hiring_cost_cap` from `template_config.json`. If defined, never exceed that value. If null or missing, no cap applies.
 
 **SCENARIO SENSITIVITY RULE (MANDATORY):**
 
