@@ -6,18 +6,14 @@ The Jolly Opportunity Analysis plugin for Claude. Give it a company name and it 
 
 **Intro Deck workflow** — a streamlined template that works for both pre-call and post-call contexts. Claude captures whether it's pre-call or post-call to inform the research phase, but uses the same workflow and template throughout (~10–15 min). **Two ways to run it:** automatically with `/deck-auto [Company]`, or step-by-step yourself. Both are covered below.
 
-**Latest features (v2.0.0):**
+**Latest features (v2.0.2):**
+- **Attio REST API preferred:** CRM reads now use the direct Attio REST API (via `ATTIO_API_KEY`) for faster, more reliable data retrieval, with automatic MCP fallback if no key is configured.
+- **Windows file locking fixed:** Programmatic checks (openpyxl, python-pptx) now run before files are opened, preventing `start ""` lock conflicts.
 - **Bundled scripts:** All Python scripts, agent specs, template configs, and tools ship with the plugin. `/deck-setup` installs them into your workspace automatically — no external `.claude/` dependencies needed.
 - **Template config system:** `template_scanner.py` auto-matches your model against known templates (QSR, Retail, etc.) and extracts campaign names, cell addresses, and formula counts. No more hardcoded values.
 - **Guardrails on every skill:** 10 hard rules prevent Claude from inventing campaign names, overwriting formulas, or expanding scope.
-- **Fixed step ordering:** deck-format now runs 8a→8b→8c→8d→7→9 (Macabacus refresh before visual review).
-- **3 research agents** (not 4) — dropped ws-m365. All use Haiku.
-- **"Intro Deck" naming** throughout (replaces "Intro Deck").
-- **Correct folder structure:** `1. Logos/`, `2. Swag/`, `1. Call Summaries/`, `2. Public Filings/`, `3. Slack/`
-- Pre-call context: Slack + Public data only (~8–12 min)
-- Post-call context: Full Attio/Gong research with transcripts (~14–20 min)
 
-**[→ See full v2.0.0 release notes](https://github.com/nishant-jolly/opportunity-analysis/releases/tag/v2.0.0)**
+**[→ See full v2.0.2 release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v2.0.2)**
 
 ---
 
@@ -413,6 +409,18 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 ---
 
 ## Changelog
+
+### v2.0.2 (Feb 24, 2026)
+
+- Attio reads now prefer direct REST API (`ATTIO_API_KEY` from env/.env) with MCP fallback
+- deck-format: programmatic banner scan/write runs before opening files (new Step 3a)
+- deck-qa: openpyxl checks (M1–M6) run before opening model (new Step 3b), python-pptx checks (D2b/D2c) run before opening vF (new Step 4b)
+
+**Release notes** — [View on GitHub](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v2.0.2)
+
+### v2.0.1 (Feb 23, 2026)
+
+- Fix portability for shared/multi-user workspaces
 
 ### v2.0.0 (Feb 23, 2026)
 
