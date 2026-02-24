@@ -1,0 +1,110 @@
+{
+  "_meta": {
+    "description": "Curated comp benchmarks by vertical. Refresh when >90 days old using sec_filings.py.",
+    "last_refreshed": "2026-02-18",
+    "refresh_command": "python .claude/scripts/sec_filings.py --ticker [TICKER] --output .claude/data/sec_[TICKER].json"
+  },
+
+  "qsr_franchise": {
+    "vertical_label": "QSR (franchise-heavy)",
+    "comps": [
+      {
+        "company": "Wingstop",
+        "ticker": "WING",
+        "period": "FY2024 (10-K 2025-02-19)",
+        "revenue": 625807000,
+        "operating_income": 165616000,
+        "operating_margin_pct": 0.265,
+        "system_unit_count": 2385,
+        "aуv_system": 1850000,
+        "employees_approx": 900,
+        "notes": "Franchise-heavy (~98% franchised). Revenue includes royalties, ad fees, company-owned sales."
+      },
+      {
+        "company": "Jack in the Box",
+        "ticker": "JACK",
+        "period": "Needs refresh — run sec_filings.py --ticker JACK",
+        "revenue": null,
+        "operating_income": null,
+        "operating_margin_pct": null,
+        "system_unit_count": null,
+        "aуv_system": null,
+        "employees_approx": null,
+        "notes": "Cache empty. Run: python .claude/scripts/sec_filings.py --ticker JACK --output .claude/data/sec_JACK.json"
+      }
+    ],
+    "benchmark_ranges": {
+      "_note": "Based on WING only until JACK is refreshed. Widen ranges once multiple comps available.",
+      "aуv_system": {
+        "low": 1400000,
+        "mid": 1700000,
+        "high": 2200000,
+        "source": "WING FY2024, industry estimates"
+      },
+      "operating_margin_pct": {
+        "low": 0.12,
+        "mid": 0.20,
+        "high": 0.27,
+        "source": "WING FY2024 (26.5%); lower end reflects company-owned-heavy models"
+      },
+      "restaurant_level_margin_pct": {
+        "low": 0.15,
+        "mid": 0.22,
+        "high": 0.30,
+        "source": "Industry estimates; WING company-owned ~20-22%"
+      },
+      "turnover_rate": {
+        "low": 0.80,
+        "mid": 1.10,
+        "high": 1.50,
+        "source": "QSR industry estimates (BLS, NRA); rarely disclosed in filings"
+      },
+      "ebitda_margin_pct": {
+        "low": 0.15,
+        "mid": 0.22,
+        "high": 0.30,
+        "source": "Operating margin proxy; add D&A (~2-4% of revenue) for true EBITDA"
+      },
+      "employees_per_location": {
+        "low": 15,
+        "mid": 25,
+        "high": 40,
+        "source": "Industry estimates; varies heavily by format (counter vs. full-service)"
+      }
+    }
+  },
+
+  "qsr_company_owned": {
+    "vertical_label": "QSR (company-owned heavy)",
+    "comps": [],
+    "benchmark_ranges": {
+      "_note": "No comps cached yet. Run sec_filings.py for SHAK (Shake Shack) or DPZ (Dominos)."
+    }
+  },
+
+  "manufacturing": {
+    "vertical_label": "Manufacturing",
+    "comps": [],
+    "benchmark_ranges": {
+      "_note": "No standard comp set for manufacturing yet. Use industry reports for benchmarks.",
+      "gross_margin_pct": {
+        "low": 0.20,
+        "mid": 0.30,
+        "high": 0.45,
+        "source": "Broad manufacturing range; varies heavily by sub-sector"
+      },
+      "ebitda_margin_pct": {
+        "low": 0.08,
+        "mid": 0.14,
+        "high": 0.22,
+        "source": "Industry estimates; food manufacturing skews lower, specialty higher"
+      },
+      "turnover_rate": {
+        "low": 0.20,
+        "mid": 0.35,
+        "high": 0.55,
+        "source": "BLS manufacturing sector averages"
+      }
+    }
+  }
+}

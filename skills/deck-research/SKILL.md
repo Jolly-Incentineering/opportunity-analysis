@@ -3,6 +3,20 @@ name: deck-research
 description: Run research workstreams via 3 parallel agents, merge results, and select campaigns for an in-progress intro deck.
 ---
 
+HARD RULES — NEVER VIOLATE:
+1. Do NOT generate or invent campaign names. Read them from the template config JSON.
+2. Do NOT make tool calls not listed in these instructions.
+3. Do NOT write to formula cells under any circumstances.
+4. Do NOT skip gates — wait for user confirmation at every gate.
+5. Do NOT open files you are about to write to programmatically. Keep them closed during writes.
+6. Do NOT add features, steps, or checks not specified here.
+7. Do NOT proceed past a failed step — stop and report the failure.
+8. If a tool call fails, report the error. Do NOT retry more than once.
+9. Keep all client-specific data in the client folder under 4. Reports/. Never write client data to .claude/data/.
+10. Use HAIKU for research agents unless explicitly told otherwise.
+
+---
+
 You are executing the `deck-research` phase of the Jolly intro deck workflow. Follow every step exactly as written. Do not skip steps. Do not proceed past a gate without explicit user confirmation.
 
 Set workspace root and client root:
@@ -524,6 +538,16 @@ Wait for the user to resolve any conflicts and gaps before proceeding to the cam
 
 ## Step 6: Campaign Selection Gate
 
+Read campaign names from the template config saved by deck-start:
+
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+cat "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/template_config.json"
+```
+
+Extract the campaign names from the `campaigns` dict in the config. Do NOT generate or invent campaign names — use ONLY the names from the template config.
+
 Present campaign recommendations and wait for explicit user confirmation. Do not proceed to any Excel or model work until the user types "confirm".
 
 **Branch A format:**
@@ -531,21 +555,22 @@ Present campaign recommendations and wait for explicit user confirmation. Do not
 ```
 CAMPAIGN RECOMMENDATIONS for [COMPANY NAME]
 Based on [N] Gong calls + [list other sources used]
+Template campaigns (from config): [list all campaign names from template_config.json]
 
 RECOMMENDED (include in model + summary slide):
-1. [Campaign Name] -- HIGH priority
+1. [Campaign Name from config] -- HIGH priority
    Evidence: "[exact verbatim quote]" (Gong, [YYYY-MM-DD])
    Client interest: Explicit
 
-2. [Campaign Name] -- HIGH priority
+2. [Campaign Name from config] -- HIGH priority
    Evidence: "[exact verbatim quote or paraphrase]" ([source], [date])
    Client interest: [Explicit / Implied]
 
 STANDARD (include in model, exclude from summary slide):
-3. [Campaign Name] -- [reason for standard classification]
+3. [Campaign Name from config] -- [reason for standard classification]
 
 EXCLUDE:
-- [Campaign Name] -- [reason for exclusion]
+- [Campaign Name from config] -- [reason for exclusion]
 
 Type "confirm" to proceed with this campaign list, or tell me what to change:
 ```
@@ -555,10 +580,11 @@ Type "confirm" to proceed with this campaign list, or tell me what to change:
 ```
 CAMPAIGN SELECTION for [COMPANY NAME]
 No call data -- showing full standard template for [Vertical].
+Template campaigns (from config): [list all campaign names]
 
 All [N] campaigns included (prospect deck -- illustrative):
-1. [Campaign Name]
-2. [Campaign Name]
+1. [Campaign Name from config]
+2. [Campaign Name from config]
 ...
 
 Type "confirm" to proceed with all campaigns, or remove any you do not want:

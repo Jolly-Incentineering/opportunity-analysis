@@ -139,7 +139,7 @@ TROUBLESHOOTING
       required packages.
 
   Research taking too long
-    → Normal: research runs 4 agents simultaneously and takes 3-5 minutes.
+    → Normal: research runs 3 agents simultaneously and takes 3-5 minutes.
       If nothing happens after 10 minutes, something went wrong — ask Nishant.
 
   Updating the plugin

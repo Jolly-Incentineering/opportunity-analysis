@@ -1,0 +1,92 @@
+{
+  "template_type": "Retail",
+  "description": "Standard Retail & E-Commerce Intro Model Template (REI standard as of 2026-02-23)",
+  "vertical": "Retail",
+  "labels": {
+    "Inputs": 2,
+    "COMPANY BASICS": 4,
+    "Company Name": 5,
+    "Annual Revenue": 6,
+    "Store Count": 7,
+    "Employee Count": 8,
+    "CAMPAIGN SETTINGS": 17,
+    "Campaign 1 - Member Sign-Ups": 18,
+    "Campaign 2 - Employee Referrals": 19,
+    "Campaign 3 - Timeliness & Attendance": 23,
+    "Campaign 4 - Inventory Accuracy": 24,
+    "Campaign 5 - Employee Retention": 25,
+    "SCENARIO ASSUMPTIONS": 30,
+    "Campaign 1: Member Sign-Ups": 31,
+    "Annual New Members": 32,
+    "Signup Lift %": 33,
+    "Member Lifetime Value": 34,
+    "Associate Enrollment Rate": 35,
+    "Campaign 1 Incentive Cost": 36,
+    "Campaign 2: Employee Referrals": 38,
+    "Annual Turnover Rate": 39,
+    "Referral Success Rate": 40,
+    "Traditional Hiring Cost": 41,
+    "Campaign 2 Incentive Cost": 42,
+    "Campaign 3: Timeliness & Attendance": 44,
+    "Hours Per Employee Per Year": 45,
+    "% Hours Lost to Tardiness": 46,
+    "Campaign Reduction %": 47,
+    "Revenue Per Hour": 48,
+    "Campaign 3 Daily Incentive": 49,
+    "Campaign 4: Inventory Accuracy": 51,
+    "Annual Inventory Value": 52,
+    "Annual Shrink Rate %": 53,
+    "Shrink Reduction %": 54,
+    "Campaign 4 Incentive Cost": 55,
+    "Campaign 5: Employee Retention": 57,
+    "Voluntary Quit Reduction %": 58,
+    "Replacement Cost": 59,
+    "Campaign 5 Retention Incentive": 60
+  },
+  "scenarios": [
+    "C",
+    "D",
+    "E"
+  ],
+  "scenario_definitions": {
+    "C": "Base",
+    "D": "Upside",
+    "E": "Downside"
+  },
+  "campaigns": {
+    "Member Sign-Ups": {
+      "row": 18,
+      "assumptions_start": 31,
+      "type": "acquisition"
+    },
+    "Employee Referrals": {
+      "row": 19,
+      "assumptions_start": 38,
+      "type": "recruitment"
+    },
+    "Timeliness & Attendance": {
+      "row": 23,
+      "assumptions_start": 44,
+      "type": "operations"
+    },
+    "Inventory Accuracy": {
+      "row": 24,
+      "assumptions_start": 51,
+      "type": "shrink"
+    },
+    "Employee Retention": {
+      "row": 25,
+      "assumptions_start": 57,
+      "type": "retention"
+    }
+  },
+  "notes": [
+    "REI standard Retail template with 5 campaigns",
+    "Row numbers are from REI model; always match by labels in column B",
+    "Scenarios in columns C (Base), D (Upside), E (Downside)",
+    "All values must be clean round numbers per Rounding Standards",
+    "Incentive costs drive ROPS; target 10x-30x per campaign",
+    "Total EBITDA accretion ceiling: 15% of annual EBITDA"
+  ],
+  "last_updated": "2026-02-23"
+}

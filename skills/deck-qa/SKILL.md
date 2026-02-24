@@ -3,6 +3,20 @@ name: deck-qa
 description: Run final quality checks on the Excel model and PowerPoint deck before client delivery.
 ---
 
+HARD RULES — NEVER VIOLATE:
+1. Do NOT generate or invent campaign names. Read them from the template config JSON.
+2. Do NOT make tool calls not listed in these instructions.
+3. Do NOT write to formula cells under any circumstances.
+4. Do NOT skip gates — wait for user confirmation at every gate.
+5. Do NOT open files you are about to write to programmatically. Keep them closed during writes.
+6. Do NOT add features, steps, or checks not specified here.
+7. Do NOT proceed past a failed step — stop and report the failure.
+8. If a tool call fails, report the error. Do NOT retry more than once.
+9. Keep all client-specific data in the client folder under 4. Reports/. Never write client data to .claude/data/.
+10. Use HAIKU for research agents unless explicitly told otherwise.
+
+---
+
 You are executing the `deck-qa` phase of the Jolly intro deck workflow. This is the final phase before delivery. Follow every step exactly as written. Do not skip any check. Surface every issue to the user -- do not silently pass a failing check.
 
 Set workspace root and client root:
@@ -62,7 +76,7 @@ Context: [Pre-call / Post-call]
 
 Display the QA scope table to the user:
 
-**All contexts use the unified Quick Deck template — 11 focused checks run:**
+**All contexts use the unified Intro Deck template — 11 focused checks run:**
 ```
   Run:   M1 M2 M3 M4 M5 M6  D2 D3 D4 D5 D7
 ```
@@ -98,21 +112,27 @@ Run these checks programmatically using `excel_editor.py` where possible, otherw
 
 **Check M1 -- Formula cell integrity:**
 
-Confirm formula cell counts match the template:
-- QSR: Campaigns sheet = 153 formula cells, Sensitivities sheet = 86 formula cells
-- Manufacturing: Campaigns sheet = 366 formula cells, Sensitivities sheet = 205 formula cells
+Read the expected formula counts from the template config:
+
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+cat "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/template_config.json" 2>/dev/null
+```
+
+Extract expected formula counts from `formula_counts` in the template config JSON. Compare actual formula cell counts against the config values — do NOT use hardcoded numbers.
 
 If counts do not match:
 
 ```
 FAIL M1: Formula cell count mismatch in [Sheet].
-Expected [N], found [N]. A formula may have been overwritten.
+Expected [N] (from template config), found [N]. A formula may have been overwritten.
 Please review [Sheet] before proceeding.
 ```
 
 **Check M2 -- No empty required assumption cells:**
 
-Scan the Assumptions sheet for any hard-coded input cells that are blank or still contain placeholder text. Report any found.
+Scan the Assumptions sheet for any hard-coded input cells in column E of the Inputs sheet that are blank or still contain placeholder text. Report any found.
 
 **Check M3 -- ROPS range:**
 

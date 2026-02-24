@@ -3,6 +3,20 @@ name: deck-format
 description: Format the PowerPoint intro deck -- populate text, update banners, apply brand colors, and export PDF.
 ---
 
+HARD RULES — NEVER VIOLATE:
+1. Do NOT generate or invent campaign names. Read them from the template config JSON.
+2. Do NOT make tool calls not listed in these instructions.
+3. Do NOT write to formula cells under any circumstances.
+4. Do NOT skip gates — wait for user confirmation at every gate.
+5. Do NOT open files you are about to write to programmatically. Keep them closed during writes.
+6. Do NOT add features, steps, or checks not specified here.
+7. Do NOT proceed past a failed step — stop and report the failure.
+8. If a tool call fails, report the error. Do NOT retry more than once.
+9. Keep all client-specific data in the client folder under 4. Reports/. Never write client data to .claude/data/.
+10. Use HAIKU for research agents unless explicitly told otherwise.
+
+---
+
 You are executing the `deck-format` phase of the Jolly intro deck workflow. Follow every step exactly as written. Do not skip steps. Do not modify the deck without explicit user approval at each gate.
 
 Set workspace root and client root:
@@ -65,9 +79,26 @@ Starting Phase 4: Deck formatting.
 Deck file: [deck filename]
 ```
 
+Phase 4 scope:
+```
+  WILL DO: Banner fill, text replacement, brand assets, Macabacus refresh, vF copy, link break, PDF export
+  WILL NOT: Custom UI design, app mockups, visual redesign
+  MANUAL: Macabacus refresh (~1 min), brand frames (optional), link break (~30 sec)
+  PDF: Manual export via PowerPoint UI (~15 sec)
+```
+
 ---
 
 ## Step 2: Open Files
+
+```
+PHASE 4 FILE MANAGEMENT:
+1. Close ALL Excel and PowerPoint files now — I need them closed for automated steps.
+2. I'll tell you when to open each file and when to close it.
+3. Each file opens exactly once.
+```
+
+Sequence: Open master → brand + refresh → close master → vF copy (auto) → open vF → break links → close vF → open PDF
 
 Open both the deck and the model (model is read-only reference). Use paths from session state:
 
@@ -92,7 +123,7 @@ Scan the deck for slides containing banner placeholder shapes. A shape is a bann
 
 For each banner shape found, report its slide number and current text.
 
-Map each banner to the corresponding campaign output value from the model population data in `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research_output_[company_slug].json`. Apply dollar formatting:
+Map each banner to the corresponding campaign EBITDA uplift value from `campaign_details` in the research output JSON at `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research_output_[company_slug].json`. Read `campaign_details.[campaign_name].ebitda_uplift_base` for each campaign. Do NOT try to extract values from the Excel model at runtime (file locking issues). Apply dollar formatting:
 - Under $1M: `$X.Xk` (one decimal, lowercase k, drop decimal if zero — e.g. `$2.4k`, `$2k`, `$516k`)
 - $1M and above: `$X.XXMM` (uppercase MM, no space, e.g. `$1.96MM`)
 
@@ -197,14 +228,14 @@ Campaign slide checklist -- complete each step in the open deck, then type "done
 Brand asset checklist -- complete each step, then type "done":
 
 1. Navigate to the title slide. Confirm the company logo is placed correctly. If not, find the logo at:
-   [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/3. Company Resources/Logos/
+   [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/3. Company Resources/1. Logos/
    and insert it.
    > [wait for "done"]
 
-2. Check the color scheme. If the template colors do not match [COMPANY_NAME]'s brand colors (check brand_info.json in the Logos folder), update the theme colors manually.
+2. Check the color scheme. If the template colors do not match [COMPANY_NAME]'s brand colors (check brand_info.json in the 1. Logos/ folder), update the theme colors manually.
    > [wait for "done"]
 
-3. If swag images are available at [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/3. Company Resources/Swag/, insert the most relevant one on the swag/merchandise slide (if present).
+3. If swag images are available at [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/3. Company Resources/2. Swag/, insert the most relevant one on the swag/merchandise slide (if present).
    > [wait for "done"]
 
 4. Open Figma and export the branded frames for [COMPANY_NAME]:
@@ -215,28 +246,6 @@ Brand asset checklist -- complete each step, then type "done":
    - Save the deck (Ctrl+S)
    Type "skip" if no Figma frames are needed.
    > [wait for "done" or "skip"]
-```
-
----
-
-## Step 7: Final Visual Review -- Manual Step Checklist
-
-Walk through each item in the open master deck and wait for "done" before presenting the next.
-
-```
-Final visual review -- complete each step in the master deck, then type "done":
-
-1. Run Slide Show from the beginning (F5). Check that no template tokens ([...]) remain on any slide.
-   > [wait for "done"]
-
-2. Check all dollar values in the deck. Confirm formatting: under $1M = $X.Xk (one decimal, drop if zero), $1M+ = $X.XXMM.
-   > [wait for "done"]
-
-3. Check that ROPS values are not shown on prospect slides (Branch B). ROPS is internal only.
-   > [wait for "done"]
-
-4. Save the master deck (Ctrl+S).
-   > [wait for "done"]
 ```
 
 ---
@@ -378,7 +387,7 @@ Wait for the subagent to complete. Report its output (replacements made, banner 
 Tell the user:
 
 ```
-vF formatted and exported to PDF: [PDF filename]
+vF formatted. Cleanup pass complete.
 
 Master deck retains live Macabacus links for future refreshes.
 Do not edit the vF directly — make changes in the master, re-run Steps 8a–8d.
@@ -386,25 +395,43 @@ Do not edit the vF directly — make changes in the master, re-run Steps 8a–8d
 
 ---
 
-## Step 9: Verify PDF
+## Step 7: Final Visual Review -- Manual Step Checklist
 
-The deck-formatter subagent in Step 8d produced the PDF. Open it for review:
-
-```bash
-WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf"
-```
-
-If the PDF does not exist (formatter failed), fall back to manual export:
+Walk through each item in the open vF deck and wait for "done" before presenting the next.
 
 ```
-PDF export fallback:
-1. In PowerPoint, open the vF file and go to File → Export → Create PDF/XPS.
-   Save to: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf
+Final visual review -- complete each step in the vF deck, then type "done":
 
-2. Then run this to set the PDF title metadata:
+1. Run Slide Show from the beginning (F5). Check that no template tokens ([...]) remain on any slide.
+   > [wait for "done"]
+
+2. Check all dollar values in the deck. Confirm formatting: under $1M = $X.Xk (one decimal, drop if zero), $1M+ = $X.XXMM.
+   > [wait for "done"]
+
+3. Check that ROPS values are not shown on prospect slides (Branch B). ROPS is internal only.
+   > [wait for "done"]
+
+4. Save the vF deck (Ctrl+S).
+   > [wait for "done"]
 ```
+
+---
+
+## Step 9: Export PDF -- Manual Step
+
+Tell the user:
+
+```
+Export PDF manually:
+1. Open the vF in PowerPoint: [deck_folder]/[vf_deck_filename]
+2. File → Export → Create PDF/XPS
+3. Save to: [deck_folder]/[pdf_filename]
+Takes ~15 seconds.
+
+After exporting, type "done".
+```
+
+Wait for "done". Then set the PDF title metadata:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
@@ -417,8 +444,16 @@ writer = pypdf.PdfWriter(clone_from=pdf_path)
 writer.add_metadata({'/Title': pdf_title})
 writer.write(pdf_path)
 print(f'PDF title set: {pdf_title}')
-" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf" \
+" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/[deck_folder]/[pdf_filename]" \
   "[COMPANY_NAME] Intro Deck (YYYY.MM.DD)"
+```
+
+Open the PDF for verification:
+
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/[deck_folder]/[pdf_filename]"
 ```
 
 Tell the user:

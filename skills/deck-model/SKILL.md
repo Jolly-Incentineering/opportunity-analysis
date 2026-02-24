@@ -3,6 +3,20 @@ name: deck-model
 description: Populate the Excel intro model with researched values -- assumptions, campaign inputs, and sensitivities.
 ---
 
+HARD RULES — NEVER VIOLATE:
+1. Do NOT generate or invent campaign names. Read them from the template config JSON.
+2. Do NOT make tool calls not listed in these instructions.
+3. Do NOT write to formula cells under any circumstances.
+4. Do NOT skip gates — wait for user confirmation at every gate.
+5. Do NOT open files you are about to write to programmatically. Keep them closed during writes.
+6. Do NOT add features, steps, or checks not specified here.
+7. Do NOT proceed past a failed step — stop and report the failure.
+8. If a tool call fails, report the error. Do NOT retry more than once.
+9. Keep all client-specific data in the client folder under 4. Reports/. Never write client data to .claude/data/.
+10. Use HAIKU for research agents unless explicitly told otherwise.
+
+---
+
 You are executing the `deck-model` phase of the Jolly intro deck workflow. Follow every step exactly as written. Do not skip steps. Do not write to any Excel cell without explicit user approval.
 
 **Model:** Use Haiku for standard Excel population tasks. If the model structure is unusually complex, row/column mappings are ambiguous, or campaign logic requires intricate validation, pause and tell the user you need to handle this with Sonnet to ensure accuracy. Do not attempt complex Excel logic with Haiku.
@@ -51,7 +65,7 @@ Read the research output file:
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-cat "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/Research/research_output_[company_slug].json"
+cat "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research_output_[company_slug].json"
 ```
 
 If the file does not exist, tell the user: "Research output not found. Run /deck-research first." Then stop.
@@ -68,21 +82,32 @@ Campaigns approved: [N]
 
 ---
 
-## Step 2: Open the Model File
+## Step 2: Ensure Model File is Closed
 
-Open the model file:
+Tell the user:
 
-```bash
-WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[model filename]"
+```
+Close the model file if it's open. I need it closed to write values programmatically.
+All writes will happen in a single batch in Step 5. You can open and review the model after writes complete in Step 7.
+
+Type "ready" when the model file is closed.
 ```
 
-Tell the user: "Model opened. Do not edit it yet -- I will tell you exactly what to enter and where."
+Wait for "ready" before proceeding.
 
 ---
 
 ## Step 3: Build the Dry-Run Plan
+
+Read the template config from the client's Reports folder:
+
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+cat "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/template_config.json"
+```
+
+Use the template config's `labels` dict for row → cell address mapping. Use the config's `campaigns` dict for campaign names. Do NOT scan row labels at runtime — the config already has this mapping.
 
 Compute all values to write before touching the file. Use the merged field map from `research_output_[company_slug].json`.
 
@@ -177,15 +202,17 @@ Comment dimensions: width=420px, height=220px, font size 8.
 
 **Formula lock list -- never write to these cells:**
 
-QSR model:
-- All cells in the Campaigns sheet that are part of the 153 campaign formula cells
-- All cells in the Sensitivities sheet that are part of the 86 sensitivity formula cells
+Scan formulas at runtime to build the lock list (the template config has formula counts but not individual cell addresses):
 
-Manufacturing model:
-- All cells in the Campaigns sheet that are part of the 366 campaign formula cells
-- All cells in the Campaigns sheet that are part of the 205 sensitivity formula cells
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+python3 "$WS/.claude/agents/excel_editor.py" \
+  --file "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[model filename]" \
+  --action scan-formulas
+```
 
-If a value needs to go into a formula cell, flag it to the user and ask for guidance. Do not overwrite formulas.
+Store the list of formula cell addresses. Do not write to any cell on this list under any circumstances. If a value needs to go into a formula cell, flag it to the user and ask for guidance.
 
 ---
 
@@ -245,21 +272,34 @@ After writing, tell the user: "Wrote [N] cells to [model filename]. Verifying...
 
 Read back each cell that was written and confirm the value matches what was planned. Report any discrepancies.
 
-Run a formula integrity check: confirm that the formula cell counts are unchanged.
+Run a formula integrity check: confirm that the formula cell counts are unchanged. Read expected counts from `template_config.json` (do NOT use hardcoded numbers):
 
-QSR: Campaigns sheet should still have 153 formula cells. Sensitivities sheet should have 86.
-Manufacturing: Campaigns sheet should still have 366 formula cells. Sensitivities sheet should have 205.
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+python3 -c "import json; c=json.load(open('$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/template_config.json')); print(json.dumps(c.get('formula_counts', {})))"
+```
+
+Compare actual formula cell counts against the values from template_config.json.
 
 If any formula cell count has changed, alert the user immediately:
 
 ```
-WARNING: Formula cell count changed in [Sheet] -- expected [N], found [N].
+WARNING: Formula cell count changed in [Sheet] -- expected [N] (from template config), found [N].
 This may indicate a formula was overwritten. Please check [sheet] before proceeding.
 ```
 
 ---
 
-## Step 7: Manual Review Checklist
+## Step 7: Open Model for Review and Manual Review Checklist
+
+Open the model file now that all writes are complete:
+
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[model filename]"
+```
 
 Present a checklist of manual steps the user must complete in Excel before the model is considered final. Wait for the user to type "done" after each item before presenting the next.
 
@@ -268,10 +308,10 @@ Checklist:
 ```
 Manual review checklist -- complete each step in the open model, then type "done":
 
-1. Scroll through the Assumptions sheet. Confirm all yellow cells have values. Any still showing placeholders?
+1. Scroll through the Inputs sheet. Confirm all hard-coded input cells in column E have values. Any still showing placeholders?
    > [wait for "done"]
 
-2. Check the Campaigns sheet. Confirm all selected campaigns ([list]) are activated (toggle = ON). Any toggled off that should be on?
+2. Check the Campaigns sheet. Confirm all selected campaigns ([list]) have non-zero values in their assumption rows.
    > [wait for "done"]
 
 3. Check ROPS column. Confirm all active campaigns show ROPS between 10x and 30x. Any outside range?
@@ -290,7 +330,7 @@ If the user reports an issue at any step, address it before marking that step do
 
 ## Step 8: Update Research Output and Session State
 
-Update `research_output_[company_slug].json` -- populate the `model_population` field:
+Update `research_output_[company_slug].json` -- populate the `model_population` field AND add `campaign_details`:
 
 ```json
 {
@@ -307,9 +347,20 @@ Update `research_output_[company_slug].json` -- populate the `model_population` 
     "formula_cells_preserved": true,
     "model_file": "[model filename]",
     "population_date": "[YYYY-MM-DD]"
+  },
+  "campaign_details": {
+    "[Campaign Name]": {
+      "rops_base": null,
+      "rops_upside": null,
+      "incentive_cost_base": null,
+      "ebitda_uplift_base": null,
+      "description": ""
+    }
   }
 }
 ```
+
+For each campaign, populate `campaign_details` with the values from the model population. These values are needed by deck-format for banner values — deck-format reads them from this JSON instead of extracting from Excel at runtime (avoids file locking issues).
 
 Write a new session state file at `$WS/.claude/data/session_state_[YYYY-MM-DD].md` (today's date). Include:
 - Company name

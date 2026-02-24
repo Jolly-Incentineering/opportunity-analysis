@@ -3,6 +3,20 @@ name: deck-setup
 description: Run once per workspace to detect or create the client folder root and write workspace_config.json.
 ---
 
+HARD RULES — NEVER VIOLATE:
+1. Do NOT generate or invent campaign names. Read them from the template config JSON.
+2. Do NOT make tool calls not listed in these instructions.
+3. Do NOT write to formula cells under any circumstances.
+4. Do NOT skip gates — wait for user confirmation at every gate.
+5. Do NOT open files you are about to write to programmatically. Keep them closed during writes.
+6. Do NOT add features, steps, or checks not specified here.
+7. Do NOT proceed past a failed step — stop and report the failure.
+8. If a tool call fails, report the error. Do NOT retry more than once.
+9. Keep all client-specific data in the client folder under 4. Reports/. Never write client data to .claude/data/.
+10. Use HAIKU for research agents unless explicitly told otherwise.
+
+---
+
 You are performing one-time workspace setup for the Jolly deck workflow. This skill runs once. If it has already been run, report the existing config and stop.
 
 Set the workspace root:
@@ -253,9 +267,63 @@ Write to `$WS/.claude/data/workspace_config.json` with the following content (su
   "gong_integration": "[rube | zapier | manual | none]",
   "gong_webhook_url": "[URL or null]",
   "setup_date": "[today YYYY-MM-DD]",
-  "structure_choice": "[existing | new_folder]"
+  "structure_choice": "[existing | new_folder]",
+  "plugin_dir": "[path to plugin install directory]",
+  "scripts_version": "2.0.0"
 }
 ```
+
+---
+
+## Step 6.5: Install Plugin Resources
+
+The plugin bundles all scripts, agents, templates, and tools. Copy them into the workspace so all skills can find them.
+
+Locate the plugin install directory by traversing up from this SKILL.md file to the plugin root (the directory containing `.claude-plugin/plugin.json`).
+
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+PLUGIN_DIR="[path to plugin root directory]"
+
+# Copy scripts
+mkdir -p "$WS/.claude/scripts"
+mkdir -p "$WS/.claude/agents"
+mkdir -p "$WS/.claude/agents/templates"
+mkdir -p "$WS/.claude/data"
+
+cp "$PLUGIN_DIR/scripts/"*.py "$WS/.claude/scripts/" 2>/dev/null
+cp "$PLUGIN_DIR/scripts/excel_editor.py" "$WS/.claude/agents/excel_editor.py" 2>/dev/null
+cp "$PLUGIN_DIR/scripts/template_scanner.py" "$WS/.claude/agents/template_scanner.py" 2>/dev/null
+cp "$PLUGIN_DIR/scripts/pptx_editor.py" "$WS/.claude/agents/pptx_editor.py" 2>/dev/null
+cp "$PLUGIN_DIR/scripts/assumption_guardrails.py" "$WS/.claude/agents/assumption_guardrails.py" 2>/dev/null
+cp "$PLUGIN_DIR/scripts/jolly_utils.py" "$WS/.claude/agents/jolly_utils.py" 2>/dev/null
+
+# Copy agent specs
+cp "$PLUGIN_DIR/agents/"*.md "$WS/.claude/agents/" 2>/dev/null
+
+# Copy template configs
+cp "$PLUGIN_DIR/data/templates/"*.json "$WS/.claude/agents/templates/" 2>/dev/null
+cp "$PLUGIN_DIR/data/templates/README.md" "$WS/.claude/agents/templates/" 2>/dev/null
+
+# Copy vertical benchmarks
+cp "$PLUGIN_DIR/data/vertical_benchmarks.json" "$WS/.claude/data/" 2>/dev/null
+
+# Copy tools
+mkdir -p "$WS/Tools/Brandfetch Logo Downloader"
+mkdir -p "$WS/Tools/Goody Scraper"
+cp "$PLUGIN_DIR/tools/brandfetch_downloader.py" "$WS/Tools/Brandfetch Logo Downloader/" 2>/dev/null
+cp "$PLUGIN_DIR/tools/goody_scraper.py" "$WS/Tools/Goody Scraper/" 2>/dev/null
+cp "$PLUGIN_DIR/tools/setup.bat" "$WS/Tools/" 2>/dev/null
+```
+
+Confirm the copies succeeded by checking that key files exist:
+
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+ls "$WS/.claude/agents/excel_editor.py" "$WS/.claude/agents/template_scanner.py" "$WS/.claude/agents/templates/qsr_standard.json" "$WS/.claude/data/vertical_benchmarks.json" 2>/dev/null
+```
+
+If any key file is missing, report it to the user but continue setup.
 
 ---
 
@@ -275,6 +343,9 @@ Workspace layout detected:
 These paths are saved to .claude/data/workspace_config.json. If your folders
 are named differently, edit that file to match.
 
+Template configs available for: QSR, Retail. New templates will be auto-scanned.
+Scripts version: 2.0.0 (bundled with plugin).
+
 Expected workspace structure:
   [WORKSPACE ROOT]/
   ├── [templates_root]/           ← Intro deck and model templates (grouped by vertical)
@@ -286,15 +357,20 @@ Expected workspace structure:
   │           ├── 1. Model/
   │           ├── 2. Presentations/
   │           ├── 3. Company Resources/
-  │           │     ├── Logos/
-  │           │     └── Swag/
+  │           │     ├── 1. Logos/
+  │           │     └── 2. Swag/
   │           ├── 4. Reports/
-  │           │     └── research/
+  │           │     ├── 1. Call Summaries/
+  │           │     ├── 2. Public Filings/
+  │           │     └── 3. Slack/
   │           └── 5. Call Transcripts/
   ├── [tools_root]/               ← Optional: scripts, cheatsheet_gen.py, etc.
   └── .claude/
-        └── data/
-              └── workspace_config.json
+        ├── agents/
+        │     └── templates/      ← Template configs (auto-matched during deck-start)
+        ├── data/
+        │     └── workspace_config.json
+        └── scripts/
 
 Run /deck-start [Company] to begin a new engagement.
 ```

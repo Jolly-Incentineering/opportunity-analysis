@@ -1,0 +1,6 @@
+openpyxl
+python-pptx
+requests
+edgartools
+playwright
+pypdf

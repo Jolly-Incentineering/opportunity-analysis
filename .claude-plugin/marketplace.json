@@ -9,7 +9,7 @@
     {
       "name": "opportunity-analysis",
       "description": "Opportunity Analysis workflow for Jolly — research, model, and format a client deck from start to finish.",
-      "version": "1.3.0",
+      "version": "2.0.0",
       "source": "./",
       "author": {
         "name": "Jolly",

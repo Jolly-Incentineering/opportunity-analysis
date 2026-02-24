@@ -4,18 +4,20 @@ The Jolly Opportunity Analysis plugin for Claude. Give it a company name and it 
 
 > **Internal tool.** Maintained by the Incentineering team. Requires access to the private `nishant-jolly/opportunity-analysis` repo and the Jolly shared workspace.
 
-**Simplified single template approach:** "Quick Deck" — a streamlined template that works for both pre-call and post-call contexts. Claude captures whether it's pre-call or post-call to inform the research phase, but uses the same workflow and template throughout (~10–15 min). **Two ways to run it:** automatically with `/deck-auto [Company]`, or step-by-step yourself. Both are covered below.
+**Intro Deck workflow** — a streamlined template that works for both pre-call and post-call contexts. Claude captures whether it's pre-call or post-call to inform the research phase, but uses the same workflow and template throughout (~10–15 min). **Two ways to run it:** automatically with `/deck-auto [Company]`, or step-by-step yourself. Both are covered below.
 
-**Latest features (v1.3.0):**
-- Simplified single-template workflow: "Quick Deck" template works for all contexts
-- Pre-call context: Slack + Public data only (~8–12 min) — no Attio/Gong searches
+**Latest features (v2.0.0):**
+- **Bundled scripts:** All Python scripts, agent specs, template configs, and tools ship with the plugin. `/deck-setup` installs them into your workspace automatically — no external `.claude/` dependencies needed.
+- **Template config system:** `template_scanner.py` auto-matches your model against known templates (QSR, Retail, etc.) and extracts campaign names, cell addresses, and formula counts. No more hardcoded values.
+- **Guardrails on every skill:** 10 hard rules prevent Claude from inventing campaign names, overwriting formulas, or expanding scope.
+- **Fixed step ordering:** deck-format now runs 8a→8b→8c→8d→7→9 (Macabacus refresh before visual review).
+- **3 research agents** (not 4) — dropped ws-m365. All use Haiku.
+- **"Intro Deck" naming** throughout (replaces "Intro Deck").
+- **Correct folder structure:** `1. Logos/`, `2. Swag/`, `1. Call Summaries/`, `2. Public Filings/`, `3. Slack/`
+- Pre-call context: Slack + Public data only (~8–12 min)
 - Post-call context: Full Attio/Gong research with transcripts (~14–20 min)
-- Research agents default to Haiku; Sonnet available for complex scenarios
-- Streamlined QA checks (11 focused checks)
-- Standardized cheat sheet generation to single combined PDF per company in `4. Reports/Cheat Sheets/`
-- Support for nested sub-brand folder structures with `--client-path` flag
 
-**[→ See full v1.3.0 release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v1.3.0)**
+**[→ See full v2.0.0 release notes](https://github.com/nishant-jolly/opportunity-analysis/releases/tag/v2.0.0)**
 
 ---
 
@@ -105,7 +107,7 @@ flowchart LR
     RC --> MODEL
     RD --> MODEL
 
-    MODEL --> FORMAT["/deck-format<br/>Quick Deck template"]
+    MODEL --> FORMAT["/deck-format<br/>Intro Deck template"]
 
     FORMAT --> QA["/deck-qa<br/>11 checks"]
 
@@ -115,7 +117,7 @@ flowchart LR
     style DONE fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
 ```
 
-The diagram shows how an Opportunity Analysis moves from setup through research, modeling, formatting, and QA. While all decks use the same "Quick Deck" template, **research adapts based on context**: Pre-call uses Slack + Public data (no transcripts), while post-call includes full Attio/Gong research with call transcripts. Branch detection (existing client vs. new prospect) further refines the research scope. The orange diamond is a gate where the workflow pauses and waits for your input. QA uses 11 streamlined checks. `/deck-auto` is a wrapper that drives through the entire flow for you, so you only have to respond at the gate points rather than kick off each step manually.
+The diagram shows how an Opportunity Analysis moves from setup through research, modeling, formatting, and QA. While all decks use the same "Intro Deck" template, **research adapts based on context**: Pre-call uses Slack + Public data (no transcripts), while post-call includes full Attio/Gong research with call transcripts. Branch detection (existing client vs. new prospect) further refines the research scope. The orange diamond is a gate where the workflow pauses and waits for your input. QA uses 11 streamlined checks. `/deck-auto` is a wrapper that drives through the entire flow for you, so you only have to respond at the gate points rather than kick off each step manually.
 
 ---
 
@@ -208,7 +210,7 @@ Claude will find your client folder, confirm the location, save configuration fo
 **What Claude does:**
 - Checks whether you already have an active session for this company (and stops if you do, to avoid duplicates)
 - Asks whether this is pre-call or post-call — this determines which research sources to use (post-call includes call transcripts; pre-call uses public data only)
-- Lists available Quick Deck templates grouped by industry — you pick the number
+- Lists available Intro Deck templates grouped by industry — you pick the number
 - Copies the Excel model and PowerPoint presentation to the right client folder with dated naming (YYYY.MM.DD)
 - Creates the numbered subfolder structure (1. Logos/, 2. Swag/, 1. Call Summaries/, 2. Public Filings/, 3. Slack/)
 - Opens both files on your screen
@@ -319,7 +321,7 @@ After all checks pass, Claude cleans up any temporary lock files and gives you t
 
 ## How it works
 
-When you run `/deck-research`, Claude sends out three separate research tasks at the same time — one to check your CRM and calls, one to check Slack, and one to look up public information. Each task runs on its own and reports back with its findings. Claude then combines everything into one summary, flags any conflicts between sources, and asks you to confirm the campaign list before moving on.
+When you run `/deck-research`, Claude sends out three parallel research agents — one for CRM and calls (Attio/Gong), one for Slack, and one for public data. Each task runs on its own and reports back with its findings. Claude then combines everything into one summary, flags any conflicts between sources, and asks you to confirm the campaign list before moving on.
 
 Progress is saved after every phase. That saved progress file (think of it as a bookmark) lives in the `.claude/data/` folder in your workspace. If a session gets interrupted — you close Claude, your laptop dies, anything — just run the same command again and Claude reads the bookmark and picks up where it left off. Nothing is lost.
 
@@ -390,7 +392,7 @@ Each manual step comes with detailed instructions in the chat. Read them careful
 The research step pulls from multiple sources and can take 2–6 minutes depending on context. Pre-call (Slack + Public) is faster. Post-call (Attio/Gong + Slack + Public) is slower due to call transcript and CRM lookups. The model step can also take a minute or two if there are many campaigns. If it has been more than 15 minutes with no response, something may have gone wrong — ask Incentineering.
 
 **"Should I choose pre-call or post-call?"**
-Choose **pre-call** if you have not spoken to the company yet (cold outreach). It skips Attio/Gong lookups and uses Slack + Public data only (~8–12 minutes total). Choose **post-call** if you have had a call with the company or have internal notes. It includes full Attio research and call transcripts via Gong (if configured) and completes in ~14–20 minutes total. Both use the same Quick Deck template.
+Choose **pre-call** if you have not spoken to the company yet (cold outreach). It skips Attio/Gong lookups and uses Slack + Public data only (~8–12 minutes total). Choose **post-call** if you have had a call with the company or have internal notes. It includes full Attio research and call transcripts via Gong (if configured) and completes in ~14–20 minutes total. Both use the same Intro Deck template.
 
 ---
 
@@ -412,6 +414,21 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 
 ## Changelog
 
+### v2.0.0 (Feb 23, 2026)
+
+**Release notes** — [View on GitHub](https://github.com/nishant-jolly/opportunity-analysis/releases/tag/v2.0.0)
+
+- Bundled all scripts, agents, template configs, and tools with plugin (fully self-contained)
+- Added template config system via `template_scanner.py` — auto-matches models, extracts campaign names/cell addresses/formula counts
+- Added guardrails block to every skill (10 hard rules)
+- Fixed deck-auto: 3 agents (not 4), Haiku model, correct folder names, correct step order, template config
+- Fixed deck-format step order: 8a→8b→8c→8d→7→9
+- Fixed file locking: model closed during writes, banner values read from JSON not Excel
+- Replaced all hardcoded formula counts with template config references
+- PDF export is now manual step (more reliable)
+- "Intro Deck" naming throughout (replaces "Quick Deck")
+- deck-setup now installs plugin resources into workspace on first run
+
 ### v1.3.0 (Feb 23, 2025)
 
 **Release notes** — [View on GitHub](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v1.3.0)
@@ -424,7 +441,7 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 **Simplified single-template workflow**
 
 - Removed "With Commentary" / "Without Commentary" dual-template branching
-- Single "Quick Deck" template for all contexts (template selection by vertical unchanged)
+- Single "Intro Deck" template for all contexts (template selection by vertical unchanged)
 - Pre-call/post-call context selection now determines research scope only:
   - Pre-call: Slack + Public data (~8–12 min)
   - Post-call: Attio + Gong + Slack + Public (~14–20 min)

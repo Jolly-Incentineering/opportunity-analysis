@@ -3,6 +3,20 @@ name: deck-start
 description: Initialize a new intro deck engagement -- verify folder, copy templates, detect branch, and launch asset gathering.
 ---
 
+HARD RULES — NEVER VIOLATE:
+1. Do NOT generate or invent campaign names. Read them from the template config JSON.
+2. Do NOT make tool calls not listed in these instructions.
+3. Do NOT write to formula cells under any circumstances.
+4. Do NOT skip gates — wait for user confirmation at every gate.
+5. Do NOT open files you are about to write to programmatically. Keep them closed during writes.
+6. Do NOT add features, steps, or checks not specified here.
+7. Do NOT proceed past a failed step — stop and report the failure.
+8. If a tool call fails, report the error. Do NOT retry more than once.
+9. Keep all client-specific data in the client folder under 4. Reports/. Never write client data to .claude/data/.
+10. Use HAIKU for research agents unless explicitly told otherwise.
+
+---
+
 You are initializing a new intro deck engagement for **[COMPANY_NAME]** (replace with the argument the user passed to `/deck-start`). Work through each step below in order. Stop and surface blockers to the user before proceeding past any gate.
 
 ---
@@ -167,14 +181,12 @@ Wait for the user's reply. Record the chosen template number, derive the vertica
 
 Using today's date in YYYY.MM.DD format, create a subfolder under Presentations and copy the template files:
 
-Set `deck_label = "Quick Deck"` (the standard template for this simplified workflow).
-
 Create the Presentations subfolder with numbering:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-mkdir -p "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/1. [COMPANY_NAME] Quick Deck (YYYY.MM.DD)"
+mkdir -p "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/1. [COMPANY_NAME] Intro Deck (YYYY.MM.DD)"
 ```
 
 Copy the files:
@@ -183,7 +195,7 @@ Copy the files:
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 cp "[full source .xlsx path]" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model (YYYY.MM.DD).xlsx"
-cp "[full source .pptx path]" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/1. [COMPANY_NAME] Quick Deck (YYYY.MM.DD)/[COMPANY_NAME] Quick Deck (YYYY.MM.DD).pptx"
+cp "[full source .pptx path]" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/1. [COMPANY_NAME] Intro Deck (YYYY.MM.DD)/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx"
 ```
 
 Update the document title metadata on both files to match the filename (without extension):
@@ -211,9 +223,9 @@ prs.save(deck_path)
 EOF
 python3 - \
   "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model (YYYY.MM.DD).xlsx" \
-  "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/1. [COMPANY_NAME] Intro Deck [deck_label] (YYYY.MM.DD)/[COMPANY_NAME] Intro Deck [deck_label] (YYYY.MM.DD).pptx" \
+  "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/1. [COMPANY_NAME] Intro Deck (YYYY.MM.DD)/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx" \
   "[COMPANY_NAME] Intro Model (YYYY.MM.DD)" \
-  "[COMPANY_NAME] Intro Deck [deck_label] (YYYY.MM.DD)"
+  "[COMPANY_NAME] Intro Deck (YYYY.MM.DD)"
 ```
 
 Then open both files:
@@ -222,12 +234,65 @@ Then open both files:
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model (YYYY.MM.DD).xlsx"
-start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/1. [COMPANY_NAME] Intro Deck [deck_label] (YYYY.MM.DD)/[COMPANY_NAME] Intro Deck [deck_label] (YYYY.MM.DD).pptx"
+start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/1. [COMPANY_NAME] Intro Deck (YYYY.MM.DD)/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx"
 ```
 
 Tell the user: "Templates copied and opened. Model: [filename]. Deck: [filename]."
 
 Record the presentation subfolder path and deck filename -- they will be written to session state as `deck_folder`, `deck_filename`, `vf_deck_filename`, and `pdf_filename`.
+
+Naming conventions:
+- Deck subfolder: `1. [COMPANY_NAME] Intro Deck (YYYY.MM.DD)/`
+- Deck filename: `[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx`
+- vF filename: `[COMPANY_NAME] Intro Deck (YYYY.MM.DD) - vF.pptx`
+- PDF filename: `[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf`
+
+---
+
+## Step 5: Scan Template and Load Config
+
+Run `template_scanner.py` on the copied model file to identify the template type and extract cell mappings:
+
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+python3 "$WS/.claude/agents/template_scanner.py" \
+  --file "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model (YYYY.MM.DD).xlsx" \
+  --configs-dir "$WS/.claude/agents/templates/" \
+  --threshold 0.85
+```
+
+**If a match is found (≥85% similarity):**
+- Load the matching config JSON (e.g., `qsr_standard.json`)
+- Extract: campaign names, cell addresses, formula counts, labels dict
+- Save the config to the client folder:
+
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+cp "$WS/.claude/agents/templates/[matched_config].json" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/template_config.json"
+```
+
+**If no match is found:**
+- Run the scanner in create mode to generate a new config:
+
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+python3 "$WS/.claude/agents/template_scanner.py" \
+  --file "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model (YYYY.MM.DD).xlsx" \
+  --create \
+  --output "$WS/.claude/agents/templates/[company_slug]_custom.json"
+cp "$WS/.claude/agents/templates/[company_slug]_custom.json" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/template_config.json"
+```
+
+Record the following from the template config for use in later phases:
+- Campaign names (from `campaigns` dict)
+- Formula counts (from `formula_counts` dict)
+- Cell addresses (from `labels` dict)
+- Template type name
+
+Tell the user: "Template scanned. Config: [template type]. Campaigns: [list names]. Config saved to 4. Reports/template_config.json."
 
 ---
 
@@ -303,10 +368,11 @@ Date: YYYY-MM-DD
 
 ## Template Paths
 - Model: [CLIENT_ROOT]/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model (YYYY.MM.DD).xlsx
-- Deck Folder: [CLIENT_ROOT]/[COMPANY_NAME]/2. Presentations/1. [COMPANY_NAME] Quick Deck (YYYY.MM.DD)
-- Deck File: [COMPANY_NAME] Quick Deck (YYYY.MM.DD).pptx
-- vF File: [COMPANY_NAME] Quick Deck (YYYY.MM.DD) - vF.pptx
-- PDF File: [COMPANY_NAME] Quick Deck (YYYY.MM.DD).pdf
+- Deck Folder: [CLIENT_ROOT]/[COMPANY_NAME]/2. Presentations/1. [COMPANY_NAME] Intro Deck (YYYY.MM.DD)
+- Deck File: [COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx
+- vF File: [COMPANY_NAME] Intro Deck (YYYY.MM.DD) - vF.pptx
+- PDF File: [COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf
+- Template Config: [CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/template_config.json
 
 ## Phase Checklist
 - Phase 1: Initialization -- complete
