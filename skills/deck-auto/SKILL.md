@@ -114,7 +114,7 @@ Extract campaign names, formula counts, cell addresses from config.
 
 Run simultaneously:
 - **Check A:** `gong_insights_*.json` in `5. Call Transcripts/` (≤30 days old)
-- **Check B:** `mcp__claude_ai_Attio__search-records` query [COMPANY_NAME]
+- **Check B:** Attio CRM — prefer REST API (`POST https://api.attio.com/v2/objects/companies/records/query` with `Authorization: Bearer $ATTIO_API_KEY`) if ATTIO_API_KEY is available in env or .env file. Fallback: `mcp__claude_ai_Attio__search-records` query [COMPANY_NAME]
 - **Check C:** `mcp__claude_ai_Slack__slack_search_channels` with slug
 
 Branch A (existing) if ANY has data. Branch B (prospect) if ALL empty.

@@ -200,7 +200,37 @@ Your job: run Attio + Gong research and write a clean JSON output.
 
 --- ATTIO (Branch A only -- if Branch B, skip all Attio calls and set all Attio fields to empty) ---
 
-Fire all 4 Attio calls in parallel:
+**Preferred method: Attio REST API (faster, more reliable).** Check for ATTIO_API_KEY in the environment or .env file. If the key is available, use the REST API. If not, fall back to the MCP tools.
+
+**Option A — Attio REST API (preferred):**
+
+Load the API key:
+```bash
+ATTIO_API_KEY=$(python3 -c "
+import os
+key = os.environ.get('ATTIO_API_KEY', '')
+if not key:
+    try:
+        for line in open('.env'):
+            if line.startswith('ATTIO_API_KEY='):
+                key = line.split('=',1)[1].strip()
+                break
+    except FileNotFoundError:
+        pass
+print(key)
+")
+```
+
+If ATTIO_API_KEY is non-empty, fire these 4 API calls in parallel using curl with header `Authorization: Bearer $ATTIO_API_KEY`:
+
+1. POST https://api.attio.com/v2/objects/companies/records/query — body: `{"filter":{"name":{"$contains":"[COMPANY_NAME]"}}}` — to search company records
+2. POST https://api.attio.com/v2/notes/query — body: `{"filter":{"parent_object":"companies","parent_record_id":"[record_id from call 1]"}}` — to get notes (run after call 1 returns)
+3. POST https://api.attio.com/v2/objects/companies/records/query with full field expansion — to get record details by ID (run after call 1 returns)
+4. POST https://api.attio.com/v2/emails/query — body: `{"filter":{"parent_object":"companies","parent_record_id":"[record_id from call 1]"}}` — to search emails (run after call 1 returns)
+
+**Option B — MCP fallback (if no API key):**
+
+Fire all 4 Attio MCP calls in parallel:
 1. mcp__claude_ai_Attio__search-records -- query: [COMPANY_NAME]
 2. mcp__claude_ai_Attio__get-records-by-ids -- for any record IDs returned in call 1
 3. mcp__claude_ai_Attio__semantic-search-notes -- query: [COMPANY_NAME]

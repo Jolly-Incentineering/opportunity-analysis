@@ -89,7 +89,7 @@ Phase 4 scope:
 
 ---
 
-## Step 2: Open Files
+## Step 2: Ensure Files Are Closed
 
 ```
 PHASE 4 FILE MANAGEMENT:
@@ -98,18 +98,11 @@ PHASE 4 FILE MANAGEMENT:
 3. Each file opens exactly once.
 ```
 
-Sequence: Open master → brand + refresh → close master → vF copy (auto) → open vF → break links → close vF → open PDF
+Sequence: Automated banner scan + write (files closed) → open master + model → brand + refresh → close master → vF copy (auto) → open vF → break links → close vF → open PDF
 
-Open both the deck and the model (model is read-only reference). Use paths from session state:
+Tell the user: "Confirm all Excel and PowerPoint files are closed, then type 'ready'."
 
-```bash
-WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/[deck_folder]/[deck_filename]"
-start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[model filename]"
-```
-
-Tell the user: "Both files opened. Do not edit the deck yet -- I will walk you through each section."
+Wait for "ready" before continuing.
 
 ---
 
@@ -150,6 +143,21 @@ python3 "$WS/.claude/scripts/deck_format.py" \
   --company "[COMPANY_NAME]" \
   --step banners
 ```
+
+---
+
+## Step 3a: Open Files for Manual Review
+
+Banner writes are complete. Now open both files for the manual steps that follow:
+
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/[deck_folder]/[deck_filename]"
+start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[model filename]"
+```
+
+Tell the user: "Both files opened. Do not edit the deck yet -- I will walk you through each section."
 
 ---
 

@@ -314,7 +314,33 @@ find "$WS/$CLIENT_ROOT/[COMPANY_NAME]/5. Call Transcripts" -name "gong_insights_
 For any file found, check if its date (extracted from the filename `gong_insights_YYYY-MM-DD.json`) is within the last 30 days. A file counts as "has data" only if it is 30 days old or newer.
 
 **Check B -- Attio CRM:**
-Call `mcp__claude_ai_Attio__search-records` with query [COMPANY_NAME]. Result counts as "has data" if any records are returned.
+
+Preferred: use the Attio REST API if ATTIO_API_KEY is available (check environment and .env file). If the key exists, run:
+
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+ATTIO_API_KEY=$(python3 -c "
+import os
+key = os.environ.get('ATTIO_API_KEY', '')
+if not key:
+    try:
+        for line in open('$WS/.env'):
+            if line.startswith('ATTIO_API_KEY='):
+                key = line.split('=',1)[1].strip()
+                break
+    except FileNotFoundError:
+        pass
+print(key)
+")
+curl -s -X POST "https://api.attio.com/v2/objects/companies/records/query" \
+  -H "Authorization: Bearer $ATTIO_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"filter":{"name":{"$contains":"[COMPANY_NAME]"}}}'
+```
+
+Fallback: if no API key, call `mcp__claude_ai_Attio__search-records` with query [COMPANY_NAME].
+
+Result counts as "has data" if any records are returned.
 
 **Check C -- Slack channel:**
 Derive a slug from [COMPANY_NAME]: lowercase, spaces replaced with hyphens, remove special characters. Call `mcp__claude_ai_Slack__slack_search_channels` with that slug. Result counts as "has data" if any channels are returned.

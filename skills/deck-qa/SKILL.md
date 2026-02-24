@@ -100,13 +100,7 @@ Read the script output. If any check fails, report it to the user with the exact
 
 ## Step 3: Model QA Checks
 
-Open the model file:
-
-```bash
-WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[model filename]"
-```
+Ensure the model file is **closed** before running programmatic checks (openpyxl cannot read a file locked by Excel on Windows).
 
 Run these checks programmatically using `excel_editor.py` where possible, otherwise instruct the user to check manually:
 
@@ -180,41 +174,31 @@ Report any cells missing comments or missing required fields.
 
 ---
 
-## Step 4: Deck QA Checks
+## Step 3b: Open Model for Manual Review
 
-Open the vF file (the delivery copy — this is what gets sent to the client):
+All programmatic model checks (M1–M6) are complete. Now open the model so the user can verify results visually:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/[deck_folder]/[vf_deck_filename]"
+start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[model filename]"
 ```
+
+Tell the user: "Model opened. Review the M1–M6 results above. Type 'done' when satisfied, or report any issues."
+
+Wait for "done" before continuing.
+
+---
+
+## Step 4: Deck QA Checks
+
+Ensure the vF file is **closed** before running programmatic checks (python-pptx cannot read a file locked by PowerPoint on Windows).
 
 The vF file is the delivery copy with static values (Macabacus links broken). Do NOT open the master deck for QA — the master has live Macabacus links and is not for delivery.
 
-Walk through each deck check. Instruct the user to check manually in the open file, and wait for "done" after each item.
+Run the programmatic checks (D2b, D2c) first while the file is closed, then open for manual checks.
 
-**Check D1 -- No template tokens remaining:**
-
-Scan all slides for any remaining template tokens (e.g., `[Company Name]`, `[Revenue]`).
-
-```
-Check D1: Search the deck for any remaining template tokens.
-In PowerPoint, press Ctrl+F and search for "[". Report any matches found.
-Type "done" when complete (or report any tokens found):
-```
-
-**Check D2 -- Dollar formatting:**
-
-```
-Check D2: Scroll through all slides with dollar values.
-Confirm: under $1M shows as $X.Xk (one decimal, drop if zero — e.g. $2.4k, $2k, $516k),
-         $1M+ shows as $X.XXMM (uppercase MM, e.g. $1.96MM).
-Report any incorrectly formatted values.
-Type "done":
-```
-
-**Check D2b -- Macabacus range blanks:**
+**Check D2b -- Macabacus range blanks (programmatic, file closed):**
 
 Run programmatically against the vF:
 
@@ -290,6 +274,40 @@ else:
     print("PASS D2c")
 EOF
 python3 - "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[vF deck filename]"
+```
+
+### Step 4b: Open vF for Manual Review
+
+Programmatic checks (D2b, D2c) are complete. Now open the vF so the user can perform the manual checks:
+
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/[deck_folder]/[vf_deck_filename]"
+```
+
+Tell the user: "vF opened. Walking through manual checks now."
+
+Walk through each remaining deck check. Instruct the user to check manually in the open file, and wait for "done" after each item.
+
+**Check D1 -- No template tokens remaining:**
+
+Scan all slides for any remaining template tokens (e.g., `[Company Name]`, `[Revenue]`).
+
+```
+Check D1: Search the deck for any remaining template tokens.
+In PowerPoint, press Ctrl+F and search for "[". Report any matches found.
+Type "done" when complete (or report any tokens found):
+```
+
+**Check D2 -- Dollar formatting:**
+
+```
+Check D2: Scroll through all slides with dollar values.
+Confirm: under $1M shows as $X.Xk (one decimal, drop if zero — e.g. $2.4k, $2k, $516k),
+         $1M+ shows as $X.XXMM (uppercase MM, e.g. $1.96MM).
+Report any incorrectly formatted values.
+Type "done":
 ```
 
 **Check D3 -- Banner values match model:**
