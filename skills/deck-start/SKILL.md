@@ -171,7 +171,10 @@ Available templates:
     2. [Manufacturer] Intro Template (without Commentary)
 
 Which template should I use for [COMPANY_NAME]? Reply with the number.
+Or type "new" to create a template for a vertical not listed above.
 ```
+
+If the user types "new", run `/deck-new-template` and return to this skill after the template is created. The new template will appear in the list above.
 
 Wait for the user's reply. Record the chosen template number, derive the vertical from the chosen template's folder name, and record the full paths to both files.
 

@@ -52,6 +52,12 @@ COMMANDS
     Step 5. Runs 11 quality checks across the model and presentation. Flags
     anything that needs fixing before delivery.
 
+  /deck-new-template [Vertical Name]
+    Create a new vertical template. Walks you through defining campaigns,
+    company basics, and vertical standards, then generates the Excel model,
+    PowerPoint deck, and JSON config. Also triggered from /deck-start when
+    you type "new" at the template selection prompt.
+
 CONTEXT
 ────────────────────────────────────────────────────────────────────────────────
 
