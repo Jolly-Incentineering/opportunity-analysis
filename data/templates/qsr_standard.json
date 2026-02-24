@@ -1,6 +1,6 @@
 {
   "template_type": "QSR",
-  "description": "Standard QSR Intro Model Template",
+  "description": "Standard QSR Intro Model Template (Sweetgreen standard as of 2026-02-23)",
   "labels": {
     "Inputs": 2,
     "COMPANY BASICS": 4,
@@ -12,8 +12,6 @@
     "CAMPAIGN ECONOMICS": 11,
     "Cost Per Beverage Upsell": 59,
     "Cost Per Single Food Upsell": 60,
-    "Cost Per Combo/Bundle Upsell": 61,
-    "Cost Per Seasonal/LTO Upsell": 62,
     "CAMPAIGN SETTINGS": 15,
     "Campaign 1": 16,
     "Campaign 2": 17,
@@ -22,10 +20,6 @@
     "Campaign 3b": 20,
     "Campaign 3c": 21,
     "Campaign 4": 22,
-    "Campaign 5": 23,
-    "Campaign 6": 24,
-    "Campaign 7": 25,
-    "Campaign 8": 26,
     "SCENARIO ASSUMPTIONS": 26,
     "=\"Campaign 1: \"&C28": 28,
     "Sales Uplift %": 33,
@@ -40,20 +34,13 @@
     "Hours Lost to Tardiness %": 43,
     "Campaign Reduction %": 44,
     "EBITDA per Hour Saved": 45,
-    "=\"Campaign 5: \"&C46": 46,
-    "=\"Campaign 6: \"&C48": 48,
-    "=\"Campaign 7: \"&C50": 50,
-    "=\"Campaign 8: \"&C52": 52,
-    "Input Field": 49,
     "Employee Turnover Rate": 56,
     "Hiring Cost Per Employee": 57,
     "Social Media Interactions/Day": 58
   },
   "campaign_economics_rows": {
     "Cost Per Beverage Upsell": 20,
-    "Cost Per Single Food Upsell": 21,
-    "Cost Per Combo/Bundle Upsell": 22,
-    "Cost Per Seasonal/LTO Upsell": 23
+    "Cost Per Single Food Upsell": 21
   },
   "campaign_settings_rows": {
     "Campaign 1 - Beverage Upsell": 32,
@@ -62,11 +49,7 @@
     "Campaign 3a": 35,
     "Campaign 3b": 36,
     "Campaign 3c": 37,
-    "Campaign 4 - Employee Timeliness": 38,
-    "Campaign 5 - Employee Retention": 39,
-    "Campaign 6 - Combo/Bundle Upsell": 40,
-    "Campaign 7 - Seasonal/LTO Upsell": 41,
-    "Campaign 8 - Store Operations Compliance": 42
+    "Campaign 4 - Employee Timeliness": 38
   },
   "scenario_assumptions": {
     "Campaign 1": {
@@ -91,28 +74,6 @@
       "Hours Lost to Tardiness %": 69,
       "Campaign Reduction %": 70,
       "EBITDA per Hour Saved": 71
-    },
-    "Campaign 5": {
-      "header_row": 73,
-      "Quit Rate Reduction %": 74,
-      "Replacement Cost per Employee": 75
-    },
-    "Campaign 6": {
-      "header_row": 77,
-      "Sales Uplift %": 78,
-      "Contribution Margin %": 79
-    },
-    "Campaign 7": {
-      "header_row": 81,
-      "Sales Uplift %": 82,
-      "Contribution Margin %": 83
-    },
-    "Campaign 8": {
-      "header_row": 85,
-      "Shifts per Store per Year": 86,
-      "Non-Compliance Rate %": 87,
-      "Campaign Improvement %": 88,
-      "Cost per Non-Compliant Shift": 89
     }
   },
   "scenarios": [
@@ -124,10 +85,10 @@
     "Row numbers may vary by company model - always match by labels in column B",
     "Scenarios are in columns C (Base), D (Upside), E (Downside)",
     "All values must be clean round numbers per Rounding Standards",
-    "4 distinct unit cost types: Beverage, Single Food, Combo/Bundle, Seasonal/LTO",
-    "Campaign Settings descriptions updated: Beverage Upsell, Single Food Upsell, Combo/Bundle Upsell, Seasonal/LTO Upsell"
+    "2 unit cost types: Beverage, Single Food",
+    "4 campaigns: Beverage Upsell, Single Food Upsell, Employee Referrals, Employee Timeliness"
   ],
-  "last_updated": "2026-02-17",
+  "last_updated": "2026-02-24",
   "vertical_standards": {
     "hours_per_year": 1820,
     "hiring_cost_cap": 3500,

@@ -266,8 +266,35 @@ python3 "$WS/.claude/agents/template_scanner.py" \
 ```
 
 **If a match is found (≥85% similarity):**
-- Load the matching config JSON (e.g., `qsr_standard.json`)
-- Extract: campaign names, cell addresses, formula counts, labels dict
+- Check whether the Excel template has been modified since the config was last updated:
+
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+python3 -c "
+import json, os, datetime
+cfg = json.load(open('$WS/.claude/agents/templates/[matched_config].json'))
+last = datetime.date.fromisoformat(cfg.get('last_updated','2000-01-01'))
+tmpl = datetime.date.fromtimestamp(os.path.getmtime('$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model (YYYY.MM.DD).xlsx'))
+print('STALE' if tmpl > last else 'FRESH')
+"
+```
+
+- If **STALE**: the template has changed since the config was last built. Re-scan and update:
+
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+python3 "$WS/.claude/agents/template_scanner.py" \
+  --file "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model (YYYY.MM.DD).xlsx" \
+  --create \
+  --output "$WS/.claude/agents/templates/[matched_config].json"
+```
+
+Tell the user: "Template newer than config — re-scanned [matched_config].json." Then continue.
+
+- If **FRESH**: no action needed, continue.
+
+- Load the config JSON, extract: campaign names, cell addresses, formula counts, labels dict
 - Save the config to the client folder:
 
 ```bash

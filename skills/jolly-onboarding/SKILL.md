@@ -7,6 +7,70 @@ Welcome to Jolly's Opportunity Analysis workflow! This guide walks you through o
 
 ---
 
+## Section 0: Check Prerequisites (Git)
+
+The plugin system uses Git to download and update plugins. Let's make sure it's installed and configured.
+
+### Step 0a: Check if Git is installed
+
+Run:
+
+```bash
+git --version
+```
+
+If you see a version number (e.g. `git version 2.x.x`), skip to Step 0c.
+
+If Git is not found, follow the instructions for your operating system:
+
+**Windows:**
+1. Download the Git installer from https://git-scm.com/download/win
+2. Run the installer — use the default settings throughout (just click Next until it finishes).
+3. Close and reopen your terminal.
+4. Verify by running `git --version`.
+
+**Mac:**
+1. Run this command in Terminal:
+   ```bash
+   xcode-select --install
+   ```
+2. A dialog will pop up asking to install developer tools — click **Install** and wait (~2–5 minutes).
+3. Once it completes, verify by running `git --version`.
+
+Tell me when Git is installed:
+
+```
+✓ Git installed
+```
+
+### Step 0b: Configure Git to use HTTPS for GitHub
+
+This prevents "Permission denied (publickey)" errors when installing plugins. Run this once:
+
+```bash
+git config --global url."https://github.com/".insteadOf git@github.com:
+```
+
+This tells Git to use HTTPS instead of SSH for all GitHub repositories. On Windows, the built-in credential manager will prompt you to log in to GitHub once and then remember it. On Mac, you'll be prompted for your GitHub username and a personal access token (generate one at https://github.com/settings/tokens with "repo" scope).
+
+### Step 0c: Verify GitHub access
+
+Run:
+
+```bash
+git ls-remote https://github.com/Jolly-Incentineering/opportunity-analysis.git HEAD
+```
+
+If you see a commit hash, you're good. If you get an authentication error, you need to log in to GitHub — the next time you install or update a plugin, Git will prompt you for credentials.
+
+Tell me when you're ready to continue:
+
+```
+✓ Git configured
+```
+
+---
+
 ## Section 1: Connect Integrations in Claude
 
 Before running any deck commands, you need to connect two tools in Claude. This is a one-time setup per workspace.
