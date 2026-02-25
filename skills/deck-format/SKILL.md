@@ -109,54 +109,35 @@ Wait for "ready" before continuing.
 
 ---
 
-## Step 3: Detect and Populate Banner Slides
+## Step 3: Scan Banner Slides (Read-Only)
 
-Scan the deck for slides containing banner placeholder shapes. A shape is a banner if its text content matches any of these patterns (case-insensitive):
-- `$[ ]`
-- `[ ] quantified`
-- `$[EBITDA]`
-- `quantified Jolly`
+Scan the deck for slides containing banner placeholder shapes. A shape is a banner if its text contains any bracket-placeholder pattern — i.e. any text matching the regex `\[.*?\]` (square brackets with any content, including empty). Common examples:
+- `$[ ]`, `[ ]`, `$[EBITDA]`, `[ ] quantified`, `quantified Jolly`
+- Any other `[...]` token that hasn't been replaced with a real value
 
-**Skip Macabacus-linked shapes.** If a shape's text runs have red font color (R>200, G<100, B<100), that value is populated by Macabacus refresh -- do not touch it. Only edit runs with non-red text.
+**Skip Macabacus-linked shapes.** If a shape's text runs have red font color (R>200, G<100, B<100), that value is populated by Macabacus refresh -- note it but do not plan edits.
 
 For each banner shape found, report its slide number and current text.
 
-Map each banner to the corresponding campaign EBITDA uplift value from `campaign_details` in the research output JSON at `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research_output_[company_slug].json`. Read `campaign_details.[campaign_name].ebitda_uplift_base` for each campaign. Do NOT try to extract values from the Excel model at runtime (file locking issues). Apply dollar formatting:
-- Under $1M: `$X.Xk` (one decimal, lowercase k, drop decimal if zero — e.g. `$2.4k`, `$2k`, `$516k`)
-- $1M and above: `$X.XMM` (1 decimal, uppercase MM, no space, e.g. `$2.0MM`)
+**Do NOT fill banners here.** Banner values will be written in Step 8d on the vF copy (after Macabacus refresh, vF copy, and link break). This step is scan-only so we know what the formatter will need to fix.
 
-Present the banner replacement plan to the user before writing anything:
+Tell the user:
 
 ```
-BANNER REPLACEMENT PLAN -- [COMPANY NAME]
+BANNER SCAN -- [COMPANY NAME]
 
-Slide [N] | Shape: "[current text]" -> "$[value]" ([source campaign])
-Slide [N] | Shape: "[current text]" -> "$[value]" ([source campaign])
+Slide [N] | "[current text]" (placeholder — will be filled on vF)
+Slide [N] | "[current text]" (Macabacus-linked — skip)
 ...
 
-→ "approve" to apply banners, or tell me what to change
+Banners will be populated in the vF formatting step (Step 8d).
 ```
-
-Wait for "approve" before writing. If the user requests changes, update and re-present.
-
-Use `pptx_editor.py` to write banner values programmatically. Open the deck with python-pptx, find the banner shapes identified above, replace placeholder text with the approved values, and save:
-
-```bash
-WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-python3 "$WS/.claude/agents/pptx_editor.py" \
-  --file "$WS/$CLIENT_ROOT/[COMPANY_NAME]/[deck_folder]/[deck_filename]" \
-  --action fill-banners \
-  --values '[JSON of banner replacements]'
-```
-
-If `pptx_editor.py` does not support `--action fill-banners`, use inline python-pptx to open the file, iterate shapes, replace matching text, preserve formatting, and save. Always check `run.font.color` before editing -- skip any run with red font color (Macabacus link).
 
 ---
 
 ## Step 3a: Open Files for Manual Review
 
-Banner writes are complete. Now open both files for the manual steps that follow:
+Banner scan is complete. Now open both files for the manual steps that follow:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
@@ -253,76 +234,6 @@ Brand asset checklist:
    > [wait for "done"]
 ```
 
-### Step 6b: Generate Inbox Feed Notification Copy
-
-Generate branded notification copy for the Figma inbox feed frame. This frame shows a mock mobile notification feed with the company's logo and Jolly-style campaign notifications.
-
-Read the campaign list and incentive costs:
-
-```bash
-WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-python3 -c "
-import json, sys
-r = json.load(open('$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research_output_[company_slug].json'))
-camps = r.get('campaigns_selected', [])
-details = r.get('campaign_details', {})
-for c in camps:
-    name = c.get('name', c) if isinstance(c, dict) else c
-    d = details.get(name, {})
-    cost = d.get('incentive_cost_base', 0)
-    print(f'{name}|{cost}')
-"
-```
-
-For each campaign, generate one notification row:
-
-- **Title:** A short, employee-facing push notification headline (past tense, celebrating an achievement). Include one relevant emoji. Examples: "Zero returns this week! 🎯", "Perfect orders today ⭐", "Your suggestion was approved! 💡"
-- **Subtitle:** One sentence of encouraging flavor text, truncated with "..." to mimic a mobile notification preview.
-- **Points:** Calculate from incentive cost: `incentive_cost_per_unit * 200` (200 Jolly Points per dollar). For per-task incentives (daily campaigns like upsell/order accuracy), multiply by 5 to show a weekly total. Round to the nearest clean number from this set: 100, 250, 400, 500, 750, 1000, 2500, 5000.
-
-**Sorting rule:** Sort notifications by point value descending (highest points at top).
-
-Present the full table:
-
-```
-FIGMA INBOX FEED -- [COMPANY NAME]
-
-| # | Campaign | Notification Title | Subtitle | Points |
-|---|----------|-------------------|----------|--------|
-| 1 | [Campaign] | [Title with emoji] | [Truncated subtitle...] | +[N] |
-| 2 | ... | ... | ... | +[N] |
-...
-
-Point derivation:
-  [Campaign 1]: $[incentive] x 200 pts/$ = [raw] -> [rounded] pts
-  [Campaign 2]: $[incentive] x 200 pts/$ x 5 days = [raw] -> [rounded] pts
-  ...
-
-Copy these into the Figma inbox feed frame, then export.
-Type "done" when the inbox feed is populated, or "adjust" to change any row.
-```
-
-Wait for "done" or adjustments. If the user adjusts, update and re-present.
-
-### Step 6c: Figma Frame Export
-
-Tell the user:
-
-```
-Export the branded Figma frames for [COMPANY_NAME]:
-  1. Inbox feed frame (populated in Step 6b)
-  2. Any other branded frames (swag mockups, app screenshots, etc.)
-
-Export as PNG and save to:
-  [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/3. Company Resources/
-
-Insert exported frames into the appropriate deck slides.
-Type "done" when all frames are inserted.
-```
-
-Wait for "done".
-
 ---
 
 ## Step 8a: Refresh Macabacus on Master -- Manual Step
@@ -356,30 +267,9 @@ Tell the user: "Creating vF delivery copy from refreshed master..."
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-python3 - <<'EOF'
-import sys, shutil
-from pathlib import Path
-from pptx import Presentation
-
-ws          = sys.argv[1]
-client_root = sys.argv[2]
-company     = sys.argv[3]
-deck_folder = sys.argv[4]  # relative path from CLIENT_ROOT/company
-deck_filename = sys.argv[5]
-vf_filename = sys.argv[6]
-
-src  = Path(ws) / client_root / company / deck_folder / deck_filename
-dest = Path(ws) / client_root / company / deck_folder / vf_filename
-
-shutil.copy2(src, dest)
-
-prs = Presentation(dest)
-prs.core_properties.title = vf_filename.replace('.pptx', '')
-prs.save(dest)
-
-print(f"vF copy created: {dest}")
-EOF
-python3 - "$WS" "$CLIENT_ROOT" "[COMPANY_NAME]" "[deck_folder]" "[deck_filename]" "[vf_deck_filename]"
+python3 "$WS/.claude/scripts/deck_engine.py" copy-vf \
+  --src "$WS/$CLIENT_ROOT/[COMPANY_NAME]/[deck_folder]/[deck_filename]" \
+  --dest "$WS/$CLIENT_ROOT/[COMPANY_NAME]/[deck_folder]/[vf_deck_filename]"
 ```
 
 Record the vF file path:
@@ -407,7 +297,8 @@ Break Macabacus links in the vF — complete these steps, then type "ready":
    [deck_folder]/[vf_deck_filename]
 2. Click the Macabacus tab in the PowerPoint ribbon
 3. Click Break Links → confirm the dialog
-4. Spot-check 2-3 key banner slides — values should be identical to the master
+4. Spot-check 2-3 slides with Macabacus-linked values — numbers should match the master
+   (Banner placeholders like $[ ] are expected — they will be filled in the next step)
 5. Save the vF (Ctrl+S)
 6. Close the vF
 
@@ -418,51 +309,35 @@ Wait for "ready" before continuing.
 
 ---
 
-## Step 8d: Run Deck Formatter -- Automated
+## Step 8d: Format vF Deck -- Automated
 
-Launch the deck-formatter subagent to scan for any remaining unfilled placeholders, apply dollar formatting, and export to PDF. Banners were already filled in Step 3 and carried over to the vF via the copy in Step 8b — the formatter is a cleanup pass and PDF export, not a primary fill.
+Fill banners, reformat dollars, and finalize the vF for delivery. This is the primary banner fill — banners were intentionally left as placeholders on the master so Macabacus refresh and link break happen first. The vF must be closed for this step.
 
-Record the paths:
-- vF file: `$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD) - vF.pptx`
-- PDF output: `$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf`
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+VF="$WS/$CLIENT_ROOT/[COMPANY_NAME]/[deck_folder]/[vf_deck_filename]"
+RESEARCH="$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research_output_[company_slug].json"
 
-```
-Task tool — subagent_type: deck-formatter
+# 1. Fill banners from research data
+python3 "$WS/.claude/scripts/deck_engine.py" fill-banners --file "$VF" --research "$RESEARCH"
 
-Prompt (substitute actual values):
+# 2. Reformat raw dollar amounts
+python3 "$WS/.claude/scripts/deck_engine.py" format-dollars --file "$VF"
 
-  Format the vF delivery deck for [COMPANY_NAME].
+# 3. Convert red Macabacus text to black/white
+python3 "$WS/.claude/scripts/deck_engine.py" finalize --file "$VF"
 
-  company:        [COMPANY_NAME]
-  vf_deck_path:   [full vF .pptx path]
-  model_path:     [full .xlsx model path]
-  pdf_output:     [full PDF output path]
-  pdf_title:      [COMPANY_NAME] Intro Deck (YYYY.MM.DD)
-  research_json:  [full path to research_output_[company_slug].json]
-
-  Scan for any remaining unfilled placeholders (text matching patterns like $[ ], [ ] quantified,
-  [Company Name], [Revenue], etc.) and fill them from model and research data. If none are found,
-  skip silently. Skip any text run with red font color (Macabacus link) — do not edit those.
-
-  Apply dollar formatting to all numeric values (non-Macabacus runs only):
-  - Under $1M: $X.Xk — one decimal place, drop the decimal only if it is exactly zero
-    (e.g. $2,400 → $2.4k, $2,000 → $2k, $516,000 → $516k)
-  - $1M and above: $X.XMM (1 decimal, e.g. $1,960,000 → $2.0MM)
-
-  Export the finished deck as PDF to pdf_output.
-  After export, set the PDF /Title metadata to pdf_title using pypdf:
-    import pypdf; writer = pypdf.PdfWriter(clone_from=pdf_output)
-    writer.add_metadata({"/Title": pdf_title})
-    writer.write(pdf_output)
-  Return: PDF path if successful, or error details.
+# 4. Verify no placeholders remain
+python3 "$WS/.claude/scripts/deck_engine.py" find-placeholders --file "$VF"
 ```
 
-Wait for the subagent to complete. Report its output (replacements made, banner values, PDF path).
+If find-placeholders returns any results, report them to the user before continuing.
 
 Tell the user:
 
 ```
-vF formatted. Cleanup pass complete.
+vF formatted — banners filled, dollars reformatted, Macabacus text finalized.
 
 Master deck retains live Macabacus links for future refreshes.
 Do not edit the vF directly — make changes in the master, re-run Steps 8a–8d.
@@ -480,13 +355,10 @@ Final visual review -- complete each step in the vF deck, then type "done":
 1. Run Slide Show from the beginning (F5). Check that no template tokens ([...]) remain on any slide.
    > [wait for "done"]
 
-2. Check all dollar values in the deck. Confirm formatting: under $1M = $X.Xk (one decimal, drop if zero), $1M+ = $X.XMM (one decimal).
+2. Check all dollar values in the deck. Confirm formatting: $1M+ = $X.XMM (one decimal), $1K–$999K = $XXXk (integer, no decimal).
    > [wait for "done"]
 
-3. Check that ROPS values are not shown on prospect slides (Branch B). ROPS is internal only.
-   > [wait for "done"]
-
-4. Save the vF deck (Ctrl+S).
+3. Save the vF deck (Ctrl+S).
    > [wait for "done"]
 ```
 
@@ -506,28 +378,14 @@ Takes ~15 seconds.
 After exporting, type "done".
 ```
 
-Wait for "done". Then set the PDF title metadata:
+Wait for "done". Then set the PDF title and open it:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-python3 -c "
-import pypdf, sys
-pdf_path = sys.argv[1]
-pdf_title = sys.argv[2]
-writer = pypdf.PdfWriter(clone_from=pdf_path)
-writer.add_metadata({'/Title': pdf_title})
-writer.write(pdf_path)
-print(f'PDF title set: {pdf_title}')
-" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/[deck_folder]/[pdf_filename]" \
-  "[COMPANY_NAME] Intro Deck (YYYY.MM.DD)"
-```
-
-Open the PDF for verification:
-
-```bash
-WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+python3 "$WS/.claude/scripts/deck_engine.py" set-pdf-title \
+  --file "$WS/$CLIENT_ROOT/[COMPANY_NAME]/[deck_folder]/[pdf_filename]" \
+  --from-pptx "$WS/$CLIENT_ROOT/[COMPANY_NAME]/[deck_folder]/[vf_deck_filename]"
 start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/[deck_folder]/[pdf_filename]"
 ```
 
@@ -572,7 +430,7 @@ Do not stop the workflow if this step fails — continue to Step 11.
 
 ## Step 11: Update Session State
 
-Write a new session state file at `$WS/.claude/data/session_state_[YYYY-MM-DD].md` (today's date). Include:
+Write a new session state file at `$WS/.claude/data/session_state_[company_slug]_[YYYY-MM-DD].md` (today's date). Include:
 - Company name
 - Client root
 - Current phase: Phase 4 complete

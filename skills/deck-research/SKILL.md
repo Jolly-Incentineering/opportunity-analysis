@@ -689,7 +689,7 @@ The JSON must conform to this schema:
 
 Populate all fields from the merged data. Leave `model_population` as an empty object.
 
-Then update the session state file. Write a new file at `$WS/.claude/data/session_state_[YYYY-MM-DD].md` (today's date). Include:
+Then update the session state file. Write a new file at `$WS/.claude/data/session_state_[company_slug]_[YYYY-MM-DD].md` (today's date). Include:
 - Company name
 - Client root
 - Current phase: Phase 2 complete

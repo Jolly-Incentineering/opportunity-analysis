@@ -1,72 +1,45 @@
 ---
 name: asset-gatherer
-description: Gather all company assets in parallel with the research + model session — logos and swag.
+description: Download logos and swag for a company. Runs in background.
 model: haiku
 ---
 
-Set workspace root:
+Gather assets for **[COMPANY_NAME]** into `$WS/$CLIENT_ROOT/[COMPANY_NAME]/3. Company Resources/`.
+
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+RES="$WS/$CLIENT_ROOT/[COMPANY_NAME]/3. Company Resources"
 ```
-Use `$WS/$CLIENT_ROOT` as the prefix for all client folder paths below.
 
-You are gathering assets for **[COMPANY_NAME]**. Run in parallel with the research + model session. Goal: populate `$WS/$CLIENT_ROOT/[Company Name]/3. Company Resources/` with everything needed for the deck.
-
-## Step 1: Check What Already Exists
+## 1. Check existing
 
 ```bash
-ls "$WS/$CLIENT_ROOT/[Company Name]/3. Company Resources/1. Logos/" 2>/dev/null
-ls "$WS/$CLIENT_ROOT/[Company Name]/3. Company Resources/2. Swag/" 2>/dev/null
+ls "$RES/1. Logos/" "$RES/2. Swag/" 2>/dev/null
 ```
 
-If assets already exist and look complete, ask user if they want to refresh or skip.
+If complete, ask user: refresh or skip.
 
-## Step 2: Download Logos (Brandfetch)
+## 2. Logos (Brandfetch)
 
 ```bash
 BRANDFETCH_API_KEY=$(grep BRANDFETCH_API_KEY "$WS/.claude/.env" | cut -d '=' -f2)
 python "$WS/Tools/brandfetch_downloader.py" \
-  --api-key "$BRANDFETCH_API_KEY" \
-  --brand "[company-domain.com]" \
-  --output "$WS/$CLIENT_ROOT/[Company Name]/3. Company Resources/1. Logos"
+  --api-key "$BRANDFETCH_API_KEY" --brand "[domain.com]" --output "$RES/1. Logos"
 ```
 
-Expected: `icon_512.png`, `icon_1024.png`, `logo_400.png`, SVGs, `brand_info.json`
+Try `.net` if `.com` fails. Don't edit logos.
 
-If `.com` fails try `.net`. Do NOT edit logos for transparency.
+## 3. Swag (Goody)
 
-## Step 3: Download Swag (Goody Scraper)
-
-Use `icon_1024.png` from Step 2 as the logo path. If Goody doesn't recognise the domain ("No images found for this domain"), the scraper will automatically upload this logo and retry. The `--fallback` flag ensures local compositing kicks in if Goody still fails. The `--output` flag downloads directly to the client folder (no manual copy step).
-
-```bash
-LOGO_PATH="$WS/$CLIENT_ROOT/[Company Name]/3. Company Resources/1. Logos/icon_1024.png"
-SWAG_DIR="$WS/$CLIENT_ROOT/[Company Name]/3. Company Resources/2. Swag"
-
-python "$WS/Tools/Goody Scraper/goody_scraper.py" \
-  --domain "[company-domain.com]" \
-  -n "[Company Name]" \
-  --logo-path "$LOGO_PATH" \
-  --output "$SWAG_DIR" \
-  --fallback
-```
-
-If `icon_1024.png` doesn't exist (Brandfetch failed), fall back to domain-only:
 ```bash
 python "$WS/Tools/Goody Scraper/goody_scraper.py" \
-  --domain "[company-domain.com]" \
-  -n "[Company Name]" \
-  --output "$SWAG_DIR"
+  --domain "[domain.com]" -n "[COMPANY_NAME]" \
+  --logo-path "$RES/1. Logos/icon_1024.png" --output "$RES/2. Swag" --fallback
 ```
 
-If Goody fails entirely, note it and move on — do not block.
+If Brandfetch failed (no icon_1024.png), omit `--logo-path`. If Goody fails, note it and move on.
 
-## Step 4: Verify and Report
+## 4. Report
 
-```bash
-echo "Logos:" && ls "$WS/$CLIENT_ROOT/[Company Name]/3. Company Resources/1. Logos/"
-echo "Swag:" && ls "$WS/$CLIENT_ROOT/[Company Name]/3. Company Resources/2. Swag/" | wc -l
-```
-
-Report status clearly — what succeeded, what failed, what still needs user action.
+What succeeded, what failed, what needs user action.

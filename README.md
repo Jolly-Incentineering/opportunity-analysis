@@ -6,14 +6,13 @@ The Jolly Opportunity Analysis plugin for Claude. Give it a company name and it 
 
 **Intro Deck workflow** — a streamlined template that works for both pre-call and post-call contexts. Claude captures whether it's pre-call or post-call to inform the research phase, but uses the same workflow and template throughout (~10–15 min). **Two ways to run it:** automatically with `/deck-auto [Company]`, or step-by-step yourself. Both are covered below.
 
-**Latest features (v2.2.0):**
-- **Attio REST API preferred:** CRM reads now use the direct Attio REST API (via `ATTIO_API_KEY`) for faster, more reliable data retrieval, with automatic MCP fallback if no key is configured.
-- **Windows file locking fixed:** Programmatic checks (openpyxl, python-pptx) now run before files are opened, preventing `start ""` lock conflicts.
-- **Bundled scripts:** All Python scripts, agent specs, template configs, and tools ship with the plugin. `/deck-setup` installs them into your workspace automatically — no external `.claude/` dependencies needed.
-- **Template config system:** `template_scanner.py` auto-matches your model against known templates (QSR, Retail, etc.) and extracts campaign names, cell addresses, and formula counts. No more hardcoded values.
-- **Guardrails on every skill:** 10 hard rules prevent Claude from inventing campaign names, overwriting formulas, or expanding scope.
+**Latest features (v3.0.0):**
+- **Two commands:** `/deck-auto [Company]` starts a new deck, `/deck-continue` resumes from where you left off. Individual phase commands still work but are hidden under "Advanced".
+- **`deck_engine.py`:** Standalone CLI replacing all inline Python in skills — 7 actions (fill-banners, format-dollars, find-placeholders, set-title, set-pdf-title, finalize, copy-vf). Skills are now thin orchestrators.
+- **Portable scripts:** `jolly_utils.py`, `qa_check.py`, `excel_editor.py`, and `template_scanner.py` all resolve paths from `JOLLY_WORKSPACE` env var + workspace config. No hardcoded developer paths.
+- **CLI interfaces on all scripts:** `excel_editor.py` (scan-formulas, write-cells, read-summary), `template_scanner.py` (scan, match, create configs) — skills call them via argparse, not class imports.
 
-**[→ See full v2.2.0 release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v2.2.0)**
+**[→ See full v3.0.0 release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v3.0.0)**
 
 ---
 
@@ -409,6 +408,27 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 
 ## Changelog
 
+### v3.0.0 (Feb 25, 2026)
+
+- **`deck_engine.py` built:** Consolidated CLI tool (7 actions) replacing all inline python-pptx/openpyxl in skill prompts. Skills call it via bash instead of embedding 20+ line heredocs.
+- **`/deck-continue` command:** Resume dispatcher — reads session state, shows phase progress, hands off to the correct phase skill. Accepts "go", "phase N", or "restart".
+- **`/deck-help` updated:** Two primary commands (deck-auto, deck-continue) at the top; individual phase commands moved to Advanced section.
+- **Portable path resolution:** `jolly_utils.py` reads `JOLLY_WORKSPACE` env var + `workspace_config.json` instead of hardcoded developer path. `qa_check.py` does the same. Works on any machine after `/deck-setup`.
+- **CLI interfaces added:** `excel_editor.py` (argparse: scan-formulas, write-cells, read-summary) and `template_scanner.py` (argparse: --file, --configs-dir, --threshold, --create, --output). Fixed `excel_editor.py` relative import (`from .jolly_utils` → `from jolly_utils`).
+- **Session state filenames include company slug:** `session_state_[slug]_YYYY-MM-DD.md` prevents collisions when running multiple companies on the same day.
+- **ROPS ceiling aligned:** `jolly_utils.py` changed from 50x to 30x to match all skill references.
+- **vF path search fixed:** `qa_check.py` `find_vf_deck()` now uses recursive glob (`**/*vF*.pptx`) to find vF in presentation subfolders.
+- **Figma steps removed:** Steps 6b (inbox feed) and 6c (Figma export) removed from deck-format and deck-auto.
+- **Dead D6 check removed:** ROPS hiding check fully removed (was "REMOVED" placeholder). PDF check renumbered D7→D6.
+- **`deck_engine.py` path fixed:** All skill references changed from `$WS/scripts/` to `$WS/.claude/scripts/` to match where deck-setup copies them.
+- **`TEMPLATES_ROOT` added to deck-auto preamble:** Was used but never defined.
+- **Unused actions trimmed:** Removed `scan-banners`, `replace-text`, `export-pdf` from deck_engine.py (no callers).
+- **Agent specs rewritten:** deck-formatter (83→30 lines), code-review agents (38→20 lines each), asset-gatherer (73→40 lines). All use haiku.
+- **Banner timing fixed:** Step 3 is now read-only scan on master; all banner writes happen in Step 8d on the vF copy after Macabacus refresh + link break.
+- **Banner pattern broadened:** Detection changed from hardcoded list to regex `\[.*?\]` catching all bracket placeholders.
+- **PDF title from presentation:** `set-pdf-title` reads `core_properties.title` from the vF instead of hardcoding.
+- **Dollar formatting:** `$X.XMM` ($1M+), `$XXXk` ($1K–$999K, integer), `$XXX` (under $1K). Consistent across all files.
+
 ### v2.2.0 (Feb 25, 2026)
 
 - **Inbox Feed Generator:** New Step 6b in deck-format generates branded push notification copy for the Figma inbox feed frame — titles, subtitles, and point values derived from campaign incentive costs (200 pts/$, sorted by points descending)
@@ -419,7 +439,7 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 
 ### v2.1.1 (Feb 25, 2026)
 
-- **Dollar formatting standardized to 1 decimal:** All MM and k values now use one decimal place (`$2.0MM`, `$516k`) across all skills, agents, and scripts
+- **Dollar formatting standardized:** MM values use 1 decimal (`$2.0MM`, `$65.4MM`), k values are integer (`$516k`, `$2k`) across all skills, agents, and scripts
 - **Macabacus-linked text protected:** All programmatic text edits (banners, placeholders, company name) now skip Macabacus-linked runs (red font color), preventing overwrites of live model links and reducing unnecessary edits
 - **`pptx_editor.py` guardrails:** New `_is_macabacus_linked()` helper; `replace_text()`, `update_company_name()`, and `fill_ebitda_placeholder()` all skip red-text runs automatically
 

@@ -78,7 +78,7 @@ For each file found, read it and check whether the `company` field equals [COMPA
 If a session state file for this company exists, tell the user:
 
 ```
-A session for [COMPANY_NAME] already exists (session_state_[DATE].md).
+A session for [COMPANY_NAME] already exists (session_state_[company_slug]_[DATE].md).
 Last phase: [phase from file]. Next action: [next action from file].
 
 If you want to restart from scratch, delete that file first and re-run /deck-start.
@@ -208,29 +208,12 @@ Update the document title metadata on both files to match the filename (without 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-python3 - <<'EOF'
-import sys
-from openpyxl import load_workbook
-from pptx import Presentation
-
-model_path = f"{sys.argv[1]}"
-deck_path = f"{sys.argv[2]}"
-model_title = f"{sys.argv[3]}"
-deck_title = f"{sys.argv[4]}"
-
-wb = load_workbook(model_path)
-wb.properties.title = model_title
-wb.save(model_path)
-
-prs = Presentation(deck_path)
-prs.core_properties.title = deck_title
-prs.save(deck_path)
-EOF
-python3 - \
-  "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model (YYYY.MM.DD).xlsx" \
-  "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/1. [COMPANY_NAME] Intro Deck (YYYY.MM.DD)/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx" \
-  "[COMPANY_NAME] Intro Model (YYYY.MM.DD)" \
-  "[COMPANY_NAME] Intro Deck (YYYY.MM.DD)"
+python3 "$WS/.claude/scripts/deck_engine.py" set-title \
+  --file "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model (YYYY.MM.DD).xlsx" \
+  --title "[COMPANY_NAME] Intro Model (YYYY.MM.DD)"
+python3 "$WS/.claude/scripts/deck_engine.py" set-title \
+  --file "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/1. [COMPANY_NAME] Intro Deck (YYYY.MM.DD)/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx" \
+  --title "[COMPANY_NAME] Intro Deck (YYYY.MM.DD)"
 ```
 
 Then open both files:
@@ -403,7 +386,7 @@ WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 ```
 
-Write a session state file to `$WS/.claude/data/session_state_YYYY-MM-DD.md` (use today's date). Contents:
+Write a session state file to `$WS/.claude/data/session_state_[company_slug]_YYYY-MM-DD.md` (use today's date). Contents:
 
 ```markdown
 # Session State: [COMPANY_NAME]

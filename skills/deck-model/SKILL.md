@@ -362,7 +362,7 @@ Update `research_output_[company_slug].json` -- populate the `model_population` 
 
 For each campaign, populate `campaign_details` with the values from the model population. These values are needed by deck-format for banner values — deck-format reads them from this JSON instead of extracting from Excel at runtime (avoids file locking issues).
 
-Write a new session state file at `$WS/.claude/data/session_state_[YYYY-MM-DD].md` (today's date). Include:
+Write a new session state file at `$WS/.claude/data/session_state_[company_slug]_[YYYY-MM-DD].md` (today's date). Include:
 - Company name
 - Client root
 - Current phase: Phase 3 complete

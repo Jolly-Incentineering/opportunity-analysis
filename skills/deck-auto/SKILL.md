@@ -26,6 +26,7 @@ The company name is the argument passed to `/deck-auto`. Substitute [COMPANY_NAM
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+TEMPLATES_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c.get('templates_root', 'Templates'))" 2>/dev/null || echo "Templates")
 ```
 
 Derive `company_slug`: lowercase, spaces → underscores, remove special characters. Compute once, reuse.
@@ -129,7 +130,7 @@ Background Task tool subagent for logos/swag. Do not wait.
 
 ### 1.7 Save State
 
-Write `session_state_YYYY-MM-DD.md`: Phase 1 complete, context, branch, vertical, template paths, template config path.
+Write `session_state_[company_slug]_YYYY-MM-DD.md`: Phase 1 complete, context, branch, vertical, template paths, template config path.
 
 Tell user: "Phase 1 complete. Moving to Phase 2: Research..."
 
@@ -252,9 +253,9 @@ Will NOT do: Custom UI design, app mockups, visual redesign.
 
 Open master deck. Read banner values from `campaign_details` in `research_output_[slug].json` (NOT from Excel).
 
-### 4.2 Banners
+### 4.2 Banner Scan (Read-Only)
 
-Present banner replacement plan. Skip any shape/run with red font color (Macabacus-linked — populated by refresh). Wait for "approve banners". Write.
+Scan banner placeholders on master. Report slide numbers and current text. Do NOT fill banners here — they will be filled on the vF in Step 4.9.
 
 ### 4.3 Text Placeholders
 
@@ -264,11 +265,9 @@ Scan for template tokens. Skip Macabacus-linked runs (red font). Present replace
 
 Walk through campaign slide checklist. Wait for "done" after each.
 
-### 4.5 Brand Assets and Inbox Feed
+### 4.5 Brand Assets
 
 1. Logo check: confirm logo on title slide (`3. Company Resources/1. Logos/`). Wait for "done".
-2. Generate inbox feed notification copy: read `campaigns_selected` and `campaign_details.incentive_cost_base` from research JSON. For each campaign, generate a notification title (past-tense achievement + emoji), subtitle (truncated flavor text), and points (`incentive * 200 pts/$`, per-task x5 for weekly, round to clean number). Sort by points descending. Present table. Wait for "done"/"adjust".
-3. Figma frame export: user exports inbox feed + other branded frames, inserts into deck. Wait for "done".
 
 ### 4.6 Step 8a: Macabacus Refresh (Manual)
 
@@ -280,15 +279,15 @@ Copy master to vF filename. Update title metadata.
 
 ### 4.8 Step 8c: Break Links (Manual)
 
-User opens vF, breaks Macabacus links, saves, closes. Wait for "ready".
+User opens vF, breaks Macabacus links, spot-checks Macabacus-linked values (not banners — those are still placeholders), saves, closes. Wait for "ready".
 
 ### 4.9 Step 8d: Run Deck Formatter (Automated)
 
-Launch deck-formatter subagent for cleanup pass on vF.
+Launch deck-formatter subagent on vF. This is the primary banner fill — populates banner placeholders, applies dollar formatting, and exports PDF.
 
 ### 4.10 Step 7: Final Visual Review (Manual)
 
-User reviews vF: no tokens, dollar formatting, ROPS hidden (Branch B). Wait for "done".
+User reviews vF: no tokens, dollar formatting. Wait for "done".
 
 ### 4.11 Step 9: Export PDF (Manual)
 
@@ -334,14 +333,13 @@ Open model. Run:
 
 Open vF. Walk through:
 - **D1:** No template tokens (Ctrl+F "[")
-- **D2:** Dollar formatting ($X.Xk / $X.XMM)
+- **D2:** Dollar formatting ($XXXk / $X.XMM)
 - **D2b:** Macabacus range blanks (programmatic)
 - **D2c:** Raw integers in narrative (programmatic)
 - **D3:** Banner values match model
 - **D4:** Campaign list matches approved
 - **D5:** Logo and brand assets
-- **D6:** ROPS hidden (Branch B only)
-- **D7:** PDF matches deck
+- **D6:** PDF matches deck
 
 ### 5.4 Summarize and Resolve
 

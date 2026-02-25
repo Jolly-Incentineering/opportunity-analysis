@@ -16,7 +16,7 @@ import shutil
 from pathlib import Path
 from openpyxl import load_workbook
 
-from .jolly_utils import (
+from jolly_utils import (
     BASE_DIR, CLIENTS_DIR,
     add_comment, set_cell, set_scenario_cells,
     load_workbook_safe, save_workbook_safe, verify_formula_counts,
@@ -297,3 +297,64 @@ class ExcelEditor:
             results.append(result)
 
         return results
+
+
+# ---------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------
+def main():
+    import argparse, json as _json, sys
+
+    parser = argparse.ArgumentParser(description="Excel editor for Jolly intro models")
+    parser.add_argument("--file", required=True, help="Path to Excel model file")
+    parser.add_argument("--action", required=True,
+                        choices=["scan-formulas", "write-cells", "read-summary"],
+                        help="Action to perform")
+    parser.add_argument("--cells", help="JSON string of cell writes: [{cell, value, comment}, ...]")
+    parser.add_argument("--template", default="qsr", help="Template type (default: qsr)")
+    args = parser.parse_args()
+
+    editor = ExcelEditor(args.template)
+
+    if args.action == "scan-formulas":
+        wb = load_workbook_safe(args.file, data_only=False)
+        formula_cells = []
+        for sheet_name in wb.sheetnames:
+            ws = wb[sheet_name]
+            for row in ws.iter_rows():
+                for cell in row:
+                    if isinstance(cell.value, str) and cell.value.startswith("="):
+                        formula_cells.append(f"{sheet_name}!{cell.coordinate}")
+        wb.close()
+        print(_json.dumps({"formula_cells": formula_cells, "count": len(formula_cells)}))
+
+    elif args.action == "write-cells":
+        if not args.cells:
+            print("ERROR: --cells required for write-cells action", file=sys.stderr)
+            sys.exit(1)
+        writes = _json.loads(args.cells)
+        wb = load_workbook_safe(args.file)
+        ws = wb["Inputs"]
+        written = 0
+        for w in writes:
+            ref = w["cell"]
+            # Safety: never overwrite formulas
+            current = ws[ref].value
+            if isinstance(current, str) and current.startswith("="):
+                print(f"SKIPPED {ref}: contains formula", file=sys.stderr)
+                continue
+            ws[ref] = w["value"]
+            if w.get("comment"):
+                add_comment(ws, ref, w["comment"])
+            written += 1
+        save_workbook_safe(wb, args.file)
+        wb.close()
+        print(_json.dumps({"written": written, "total": len(writes)}))
+
+    elif args.action == "read-summary":
+        result = editor.read_model_summary(args.file)
+        print(_json.dumps(result, default=str))
+
+
+if __name__ == "__main__":
+    main()

@@ -269,7 +269,7 @@ Write to `$WS/.claude/data/workspace_config.json` with the following content (su
   "setup_date": "[today YYYY-MM-DD]",
   "structure_choice": "[existing | new_folder]",
   "plugin_dir": "[path to plugin install directory]",
-  "scripts_version": "2.0.0"
+  "scripts_version": "3.0.0"
 }
 ```
 
@@ -344,7 +344,7 @@ These paths are saved to .claude/data/workspace_config.json. If your folders
 are named differently, edit that file to match.
 
 Template configs available for: QSR, Retail. New templates will be auto-scanned.
-Scripts version: 2.0.0 (bundled with plugin).
+Scripts version: 3.0.0 (bundled with plugin).
 
 Expected workspace structure:
   [WORKSPACE ROOT]/

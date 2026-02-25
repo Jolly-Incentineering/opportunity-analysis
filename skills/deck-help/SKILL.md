@@ -13,50 +13,38 @@ Print the following help text exactly. Do not add, remove, or summarize anything
 COMMANDS
 ────────────────────────────────────────────────────────────────────────────────
 
+  /deck-auto [Company Name]
+    ★ START HERE — runs the full workflow automatically.
+    Give it a company name and Claude handles research, model population, deck
+    formatting, and QA. Pauses only when it needs your input or when there is a
+    manual step only you can do in PowerPoint.
+
+    Example: /deck-auto Firebirds
+
+  /deck-continue
+    ★ RESUME — picks up where you left off.
+    Reads your saved progress, shows which phases are done, and continues from
+    the next pending phase. No arguments needed.
+
   /deck-help
     Show this reference guide.
 
   /deck-setup
-    One-time workspace setup. Run this once on each new machine before anything
-    else. Detects your client folder, templates, and Gong integration, then saves
-    the config to .claude/data/workspace_config.json.
-
-  /deck-auto [Company Name]
-    ★ RECOMMENDED — runs the full workflow automatically.
-    Give it a company name and Claude handles research, model population, deck
-    formatting, and QA. Pauses only when it needs your input or when there is a
-    manual step only you can do in PowerPoint. Progress is saved — if you stop
-    mid-workflow, run the same command again and it picks up where it left off.
-
-    Example: /deck-auto Firebirds
-
-  /deck-start [Company Name]
-    Step 1 of the manual workflow. Creates the client folder structure, copies
-    the right template files, opens them, and starts downloading brand assets in
-    the background. Run /deck-research next.
-
-  /deck-research
-    Step 2. Pulls everything Claude can find about the company — CRM records,
-    Gong transcripts, emails, Slack messages, and public data. Proposes a
-    campaign list for your approval before moving on.
-
-  /deck-model
-    Step 3. Shows you every value it plans to enter into the Excel model (with
-    source for each number) and waits for your approval before writing anything.
-
-  /deck-format
-    Step 4. Populates the PowerPoint with values, brand assets, and logos. Walks
-    you through any manual steps in PowerPoint one at a time. Exports PDF when done.
-
-  /deck-qa
-    Step 5. Runs 11 quality checks across the model and presentation. Flags
-    anything that needs fixing before delivery.
+    One-time workspace setup. Run once on each new machine before anything else.
 
   /deck-new-template [Vertical Name]
-    Create a new vertical template. Walks you through defining campaigns,
-    company basics, and vertical standards, then generates the Excel model,
-    PowerPoint deck, and JSON config. Also triggered from /deck-start when
-    you type "new" at the template selection prompt.
+    Create a new vertical template (campaigns, model, deck, config).
+
+  ADVANCED — Individual Phase Commands
+  · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·
+  These run a single phase. You don't need them — /deck-auto and /deck-continue
+  handle everything. Use only if you want to re-run or debug a specific step.
+
+    /deck-start [Company Name]    Phase 1: Create folders, copy templates
+    /deck-research                Phase 2: Research + campaign selection
+    /deck-model                   Phase 3: Populate Excel model
+    /deck-format                  Phase 4: Populate deck, export PDF
+    /deck-qa                      Phase 5: Quality checks
 
 CONTEXT
 ────────────────────────────────────────────────────────────────────────────────
@@ -78,14 +66,10 @@ TYPICAL WORKFLOW
     1. /deck-setup
 
   Every new Opportunity Analysis:
-    2. /deck-auto [Company Name]   ← does everything below automatically
+    2. /deck-auto [Company Name]   ← starts the workflow
 
-  Or step-by-step:
-    2. /deck-start [Company Name]
-    3. /deck-research
-    4. /deck-model
-    5. /deck-format
-    6. /deck-qa
+  Interrupted or returning later:
+    3. /deck-continue              ← resumes from where you left off
 
 WHAT CLAUDE DOES vs. WHAT YOU DO
 ────────────────────────────────────────────────────────────────────────────────
@@ -133,8 +117,8 @@ TROUBLESHOOTING
     → Run /deck-setup first.
 
   "A session already exists for this company"
-    → Run /deck-auto [Company] to resume, or ask ops to delete the session
-      file in .claude/data/ if you want to start over.
+    → Run /deck-continue to resume, or delete the session file in
+      .claude/data/ if you want to start over.
 
   "Templates folder not found"
     → Check that JOLLY_WORKSPACE is set as a System environment variable and

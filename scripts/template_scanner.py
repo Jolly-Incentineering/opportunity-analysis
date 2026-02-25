@@ -244,22 +244,48 @@ class TemplateScanner:
         return datetime.utcnow().isoformat()
 
 
-# Example usage
-if __name__ == "__main__":
-    scanner = TemplateScanner()
+def main():
+    import argparse
 
-    # Scan a template
-    scanned = scanner.scan_template("Templates/QSR/QSR Intro Model Template.xlsx")
-    print(f"Template type: {scanned['template_type']}")
-    print(f"Labels found: {len(scanned['labels'])}")
+    parser = argparse.ArgumentParser(description="Scan Excel templates and match against configs")
+    parser.add_argument("--file", required=True, help="Path to Excel model file")
+    parser.add_argument("--configs-dir", help="Path to configs directory (default: templates/ next to script)")
+    parser.add_argument("--threshold", type=float, default=0.85, help="Match threshold (default: 0.85)")
+    parser.add_argument("--create", action="store_true", help="Create a new config from the template")
+    parser.add_argument("--output", help="Output path for new config (used with --create)")
+    args = parser.parse_args()
 
-    # Find matching config
-    config_name, score = scanner.find_matching_config(scanned)
-    print(f"Best match: {config_name} (score: {score:.2f})")
+    configs_dir = Path(args.configs_dir) if args.configs_dir else None
+    scanner = TemplateScanner(templates_dir=configs_dir)
 
-    if config_name:
-        print(f"Using existing config: {config_name}")
+    scanned = scanner.scan_template(args.file)
+    print(json.dumps({
+        "template_type": scanned["template_type"],
+        "labels_count": len(scanned["labels"]),
+        "structure_hash": scanned["structure_hash"],
+    }))
+
+    if args.create:
+        output_path = args.output or f"{scanned['template_type'].lower()}_custom.json"
+        config_path = scanner.create_config_from_template(scanned, Path(output_path).name)
+        # If --output specified a different directory, move the file there
+        if args.output:
+            out = Path(args.output)
+            out.parent.mkdir(parents=True, exist_ok=True)
+            if str(out) != config_path:
+                Path(config_path).rename(out)
+                config_path = str(out)
+        print(json.dumps({"config_created": config_path}))
     else:
-        print("No match found, creating new config...")
-        new_config = scanner.create_config_from_template(scanned, "qsr_custom.json")
-        print(f"Created config: {new_config}")
+        config_name, score = scanner.find_matching_config(scanned)
+        result = {"best_match": config_name, "score": round(score, 3)}
+        if config_name and score >= args.threshold:
+            result["status"] = "matched"
+            result["config"] = scanner.load_config(config_name)
+        else:
+            result["status"] = "no_match"
+        print(json.dumps(result, default=str))
+
+
+if __name__ == "__main__":
+    main()

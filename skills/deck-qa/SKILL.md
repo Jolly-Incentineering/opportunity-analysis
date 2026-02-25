@@ -304,7 +304,7 @@ Type "done" when complete (or report any tokens found):
 
 ```
 Check D2: Scroll through all slides with dollar values.
-Confirm: under $1M shows as $X.Xk (one decimal, drop if zero — e.g. $2.4k, $2k, $516k),
+Confirm: under $1M shows as $XXXk (integer, no decimal — e.g. $516k, $2k),
          $1M+ shows as $X.XMM (1 decimal, uppercase MM, e.g. $2.0MM).
 Report any incorrectly formatted values.
 Type "done":
@@ -336,20 +336,10 @@ Confirm no placeholder logo images remain.
 Type "done":
 ```
 
-**Check D6 -- ROPS not visible to client (Branch B):**
-
-If branch is B (prospect deck), run this check. If branch is A, skip.
+**Check D6 -- PDF matches deck:**
 
 ```
-Check D6 (Branch B only): Confirm ROPS values are not shown on any visible slide.
-ROPS is internal only and must not appear in the client-facing deck.
-Type "done":
-```
-
-**Check D7 -- PDF matches deck:**
-
-```
-Check D7: Open the PDF at: [deck_folder]/[pdf_filename]
+Check D6: Open the PDF at: [deck_folder]/[pdf_filename]
 Confirm it matches the current state of the deck (same number of slides, all values visible).
 Type "done":
 ```
@@ -380,8 +370,7 @@ DECK CHECKS:
   D3  Banner values:           [PASS / FAIL]
   D4  Campaign list:           [PASS / FAIL]
   D5  Logo/brand assets:       [PASS / FAIL]
-  D6  ROPS hidden (B only):    [PASS / FAIL / N/A]
-  D7  PDF matches deck:        [PASS / FAIL]
+  D6  PDF matches deck:        [PASS / FAIL]
 
 Overall: [PASS -- ready for delivery / FAIL -- [N] issues require attention]
 ```
@@ -411,7 +400,7 @@ Report how many lock files were removed.
 
 ## Step 7: Update Session State
 
-Write a new session state file at `$WS/.claude/data/session_state_[YYYY-MM-DD].md` (today's date). Include:
+Write a new session state file at `$WS/.claude/data/session_state_[company_slug]_[YYYY-MM-DD].md` (today's date). Include:
 - Company name
 - Client root
 - Current phase: Phase 5 complete

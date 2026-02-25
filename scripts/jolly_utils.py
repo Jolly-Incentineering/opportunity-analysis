@@ -9,16 +9,21 @@ from openpyxl import load_workbook
 from openpyxl.comments import Comment
 
 # ---------------------------------------------------------------------------
-# Paths
+# Paths — resolved from JOLLY_WORKSPACE env var + workspace_config.json
 # ---------------------------------------------------------------------------
-BASE_DIR = Path(
-    os.getenv(
-        "JOLLY_BASE_DIR",
-        r"C:\Users\Nishant\OneDrive - Default Directory\Jolly - Documents",
-    )
-)
-CLIENTS_DIR = BASE_DIR / "Clients"
-TEMPLATES_DIR = BASE_DIR / "Templates"
+BASE_DIR = Path(os.getenv("JOLLY_WORKSPACE", ".")).resolve()
+
+# Read client_root and templates_root from workspace config if available
+_ws_config_path = BASE_DIR / ".claude" / "data" / "workspace_config.json"
+_ws_config = {}
+if _ws_config_path.exists():
+    try:
+        _ws_config = json.loads(_ws_config_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        pass
+
+CLIENTS_DIR = BASE_DIR / _ws_config.get("client_root", "Clients")
+TEMPLATES_DIR = BASE_DIR / _ws_config.get("templates_root", "Templates")
 CLAUDE_DIR = BASE_DIR / ".claude"
 
 # Load .env if present
@@ -51,7 +56,7 @@ FORMULA_COUNTS = {
 # Accretion bounds
 ACCRETION_BOUNDS = {
     "total_pct": (0.10, 0.15),
-    "rops_per_campaign": (10, 50),
+    "rops_per_campaign": (10, 30),
     "absolute_midsize": (3_000_000, 15_000_000),
     "absolute_small": (300_000, 3_000_000),
 }

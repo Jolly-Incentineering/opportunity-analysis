@@ -8,7 +8,7 @@ Checks:
     PPT:    red text, placeholders, dollar formatting, banner fill, uppercase K
     Cross:  key values approximately match between Excel and PPT
 """
-import sys, re, argparse
+import sys, os, re, argparse
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
@@ -22,7 +22,22 @@ try:
 except ImportError:
     print("ERROR: python-pptx not installed. Run: pip install python-pptx"); sys.exit(1)
 
-from jolly_utils import CLIENTS_DIR, FORMULA_COUNTS, count_formulas
+import json as _json
+from pathlib import Path as _Path
+
+# Resolve CLIENTS_DIR from JOLLY_WORKSPACE env var + workspace_config.json
+_ws = _Path(os.environ.get("JOLLY_WORKSPACE", ".")).resolve()
+_cfg_path = _ws / ".claude" / "data" / "workspace_config.json"
+_cfg = {}
+if _cfg_path.exists():
+    try:
+        _cfg = _json.loads(_cfg_path.read_text(encoding="utf-8"))
+    except Exception:
+        pass
+CLIENTS_DIR = _ws / _cfg.get("client_root", "Clients")
+
+# Import shared utils (formula counts, count helper)
+from jolly_utils import FORMULA_COUNTS, count_formulas
 
 PASS, FAIL, WARN = "[PASS]", "[FAIL]", "[WARN]"
 RED = RGBColor(0xFF, 0x00, 0x00)
@@ -41,8 +56,13 @@ def find_file(company: str, subfolder: str, pattern: str) -> str:
 
 
 def find_vf_deck(company: str) -> str:
-    """Locate the vF PowerPoint deck (case-insensitive)."""
+    """Locate the vF PowerPoint deck (searches subfolders recursively)."""
     folder = CLIENTS_DIR / company / "2. Presentations"
+    for pat in ("**/*vF*.pptx", "**/*vf*.pptx"):
+        matches = sorted(folder.glob(pat))
+        if matches:
+            return str(matches[-1])
+    # Fallback: check top-level too
     for pat in ("*vF*.pptx", "*vf*.pptx"):
         matches = sorted(folder.glob(pat))
         if matches:
