@@ -602,22 +602,23 @@ STANDARD (include in model, exclude from summary slide):
 EXCLUDE:
 - [Campaign Name from config] -- [reason for exclusion]
 
-Type "confirm" to proceed with this campaign list, or tell me what to change:
+→ "confirm" to proceed, or tell me what to change
 ```
 
 **Branch B format:**
 
 ```
-CAMPAIGN SELECTION for [COMPANY NAME]
-No call data -- showing full standard template for [Vertical].
-Template campaigns (from config): [list all campaign names]
+Campaign Selection — [COMPANY NAME]
 
-All [N] campaigns included (prospect deck -- illustrative):
-1. [Campaign Name from config]
-2. [Campaign Name from config]
-...
+  No call data — showing full [Vertical] template.
 
-Type "confirm" to proceed with all campaigns, or remove any you do not want:
+  [1] [Campaign Name from config]
+  [2] [Campaign Name from config]
+  ...
+
+  All [N] campaigns included (prospect deck — illustrative).
+
+→ "confirm" to proceed, or list campaigns to remove
 ```
 
 **Revision loop:** If the user requests changes, apply them and re-present the full campaign list. Repeat until the user types "confirm". Only proceed after "confirm" is received.

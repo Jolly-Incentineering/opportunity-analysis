@@ -184,13 +184,13 @@ Do not tell the user. Continue to Step 5.5.
 Ask the user:
 
 ```
-Do you have Gong call data for your clients?
+Gong Integration
 
-  1. Yes — via Rube (rube.app). You'll need to create a Gong recipe on Rube.
-  2. Yes — transcripts are already in the 5. Call Transcripts/ folder (manual).
-  3. Not set up yet — skip for now.
+  [1] Rube — call data via rube.app (recommended)
+  [2] Manual — transcripts already in 5. Call Transcripts/
+  [3] Skip — not set up yet
 
-Reply with 1, 2, or 3.
+→ 1, 2, or 3
 ```
 
 Wait for the user's reply.

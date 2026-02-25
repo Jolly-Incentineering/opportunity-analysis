@@ -133,12 +133,15 @@ Do not tell the user which folders were created. Do not stop or ask for input. C
 Ask the user:
 
 ```
-Is this deck for a pre-call or post-call context?
+Context
 
-  1. Pre-call (no call yet) — uses public data only
-  2. Post-call (after call/notes) — can include internal data
+  [1] Pre-call — no call yet
+      Slack + Public data only (~8-12 min)
 
-Reply with 1 or 2.
+  [2] Post-call — after a call or internal notes
+      Full Attio + Gong + Slack + Public (~14-20 min)
+
+→ 1 or 2
 ```
 
 Wait for the user's reply. Store `context = "pre_call"` or `"post_call"` based on their choice. This will inform the research phase but will not change the template or workflow.
@@ -155,23 +158,22 @@ TEMPLATES_ROOT=$(python3 -c "import json; c=json.load(open('$WS/.claude/data/wor
 find "$WS/$TEMPLATES_ROOT" -type f \( -name "*.xlsx" -o -name "*.pptx" \) | sort
 ```
 
-From the output, build a numbered list of available template pairs grouped by vertical. Filter to show ONLY templates that contain `(without Commentary)` in the filename.
+From the output, build a numbered list of available template pairs grouped by vertical. There is one template per vertical (no Commentary variants).
 
 Each pair is one `.xlsx` and one `.pptx` with matching names. Present only template pairs (both files exist). Show the vertical folder name and the template display name.
 
 Example format:
 
 ```
-Available templates:
+Template for [COMPANY_NAME]
 
   QSR
-    1. [QSR] Intro Template (without Commentary)
+    [1] QSR Intro Template
 
-  Manufacturing
-    2. [Manufacturer] Intro Template (without Commentary)
+  Retail
+    [2] Retail Intro Template
 
-Which template should I use for [COMPANY_NAME]? Reply with the number.
-Or type "new" to create a template for a vertical not listed above.
+→ Number, or "new" to create a template for a different vertical
 ```
 
 If the user types "new", run `/deck-new-template` and return to this skill after the template is created. The new template will appear in the list above.

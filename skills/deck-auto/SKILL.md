@@ -49,11 +49,15 @@ Scan `$WS/.claude/data/session_state_*.md` for a file matching [COMPANY_NAME].
 ```
 No existing session for [COMPANY_NAME]. Starting from Phase 1.
 
-Is this deck for a pre-call or post-call context?
-  1. Pre-call (no call yet) — Slack + Public data only (~8-12 min)
-  2. Post-call (after call/notes) — includes Attio/Gong research (~14-20 min)
+Context
 
-Reply with 1 or 2.
+  [1] Pre-call — no call yet
+      Slack + Public data only (~8-12 min)
+
+  [2] Post-call — after a call or internal notes
+      Full Attio + Gong + Slack + Public (~14-20 min)
+
+→ 1 or 2
 ```
 
 Wait for context selection. Store as `context`. Then show phase plan and wait for "go".
@@ -79,7 +83,7 @@ mkdir -p "$WS/$CLIENT_ROOT/[COMPANY_NAME]/5. Call Transcripts"
 
 ### 1.2 Template Selection
 
-List available `(without Commentary)` template pairs from `$WS/$TEMPLATES_ROOT` grouped by vertical. Wait for user's choice. Record vertical and paths.
+List available template pairs from `$WS/$TEMPLATES_ROOT` grouped by vertical (one template per vertical). Wait for user's choice. Record vertical and paths.
 
 ### 1.3 Copy Templates
 

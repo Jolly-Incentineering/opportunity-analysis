@@ -371,8 +371,6 @@ MANUAL STEPS REQUIRED:
   3. Review the Campaigns sheet - confirm formulas still calculate correctly
   4. In the deck: Macabacus ribbon -> Refresh Links -> point to the new model
   5. Save both files
-  6. Create a "(without Commentary)" version of the deck if needed
-
 After verification, this template will appear in /deck-start's template list
 for all future engagements in this vertical.
 

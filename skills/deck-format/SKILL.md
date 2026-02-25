@@ -100,7 +100,9 @@ PHASE 4 FILE MANAGEMENT:
 
 Sequence: Automated banner scan + write (files closed) → open master + model → brand + refresh → close master → vF copy (auto) → open vF → break links → close vF → open PDF
 
-Tell the user: "Confirm all Excel and PowerPoint files are closed, then type 'ready'."
+```
+→ Type "ready" when all files are closed
+```
 
 Wait for "ready" before continuing.
 
@@ -129,10 +131,10 @@ Slide [N] | Shape: "[current text]" -> "$[value]" ([source campaign])
 Slide [N] | Shape: "[current text]" -> "$[value]" ([source campaign])
 ...
 
-Type "approve banners" to apply, or tell me what to change:
+→ "approve" to apply banners, or tell me what to change
 ```
 
-Wait for "approve banners" before writing. If the user requests changes, update and re-present.
+Wait for "approve" before writing. If the user requests changes, update and re-present.
 
 Use `figma_editor.py` or `deck_format.py` to write banner values:
 
@@ -203,10 +205,10 @@ Slide [N] | "[Revenue]" -> "$X.XXMM"
 Slide [N] | "[Unit Count]" -> "XXX locations"
 ...
 
-Type "approve text" to apply, or tell me what to change:
+→ "approve" to apply text replacements, or tell me what to change
 ```
 
-Wait for "approve text" before writing.
+Wait for "approve" before writing.
 
 ---
 

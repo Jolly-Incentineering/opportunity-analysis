@@ -243,7 +243,7 @@ ACCRETION CHECK:
 FORMULA CELLS SKIPPED (do not overwrite):
   [List any formula cells that were identified and skipped]
 
-Type "approve" to write all cells, or tell me what to change:
+→ "approve" to write all cells, or tell me what to adjust
 ```
 
 Wait for the user to type "approve" before writing anything. If the user requests changes, update the plan and re-present. Repeat until "approve" is received.

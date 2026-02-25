@@ -114,7 +114,7 @@ WORKSPACE STRUCTURE
       └── Company Name/
             ├── 1. Model/
             ├── 2. Presentations/
-            │     └── 1. [Company] Intro Deck with Commentary (YYYY.MM.DD)/
+            │     └── 1. [Company] Intro Deck (YYYY.MM.DD)/
             ├── 3. Company Resources/
             │     ├── 1. Logos/
             │     └── 2. Swag/

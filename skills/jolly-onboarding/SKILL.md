@@ -37,11 +37,7 @@ If Git is not found, follow the instructions for your operating system:
 2. A dialog will pop up asking to install developer tools — click **Install** and wait (~2–5 minutes).
 3. Once it completes, verify by running `git --version`.
 
-Tell me when Git is installed:
-
-```
-✓ Git installed
-```
+→ Type "done" when Git is installed
 
 ### Step 0b: Configure Git to use HTTPS for GitHub
 
@@ -63,11 +59,7 @@ git ls-remote https://github.com/Jolly-Incentineering/opportunity-analysis.git H
 
 If you see a commit hash, you're good. If you get an authentication error, you need to log in to GitHub — the next time you install or update a plugin, Git will prompt you for credentials.
 
-Tell me when you're ready to continue:
-
-```
-✓ Git configured
-```
+→ Type "done" when ready to continue
 
 ---
 
@@ -95,12 +87,7 @@ Before running any deck commands, you need to connect two tools in Claude. This 
 
 **Done** — Claude can now pull CRM records and notes during research.
 
-Tell me when both are connected:
-
-```
-✓ Slack connected
-✓ Attio connected
-```
+→ Type "done" when both are connected
 
 ---
 
@@ -144,12 +131,7 @@ Claude needs to know where your Jolly folder lives on your computer. This is a o
 3. Close Terminal.
 4. **IMPORTANT: Close and fully reopen Claude Code.**
 
-Tell me when you have restarted Claude Code:
-
-```
-✓ JOLLY_WORKSPACE configured
-✓ Claude Code restarted
-```
+→ Type "done" when Claude Code has been restarted
 
 ---
 
