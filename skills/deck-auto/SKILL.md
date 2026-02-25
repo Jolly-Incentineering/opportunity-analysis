@@ -264,9 +264,11 @@ Scan for template tokens. Skip Macabacus-linked runs (red font). Present replace
 
 Walk through campaign slide checklist. Wait for "done" after each.
 
-### 4.5 Brand Assets
+### 4.5 Brand Assets and Inbox Feed
 
-Checklist: logo (`3. Company Resources/1. Logos/`), colors, swag (`2. Swag/`). Wait for "done"/"skip".
+1. Logo check: confirm logo on title slide (`3. Company Resources/1. Logos/`). Wait for "done".
+2. Generate inbox feed notification copy: read `campaigns_selected` and `campaign_details.incentive_cost_base` from research JSON. For each campaign, generate a notification title (past-tense achievement + emoji), subtitle (truncated flavor text), and points (`incentive * 200 pts/$`, per-task x5 for weekly, round to clean number). Sort by points descending. Present table. Wait for "done"/"adjust".
+3. Figma frame export: user exports inbox feed + other branded frames, inserts into deck. Wait for "done".
 
 ### 4.6 Step 8a: Macabacus Refresh (Manual)
 

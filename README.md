@@ -6,14 +6,14 @@ The Jolly Opportunity Analysis plugin for Claude. Give it a company name and it 
 
 **Intro Deck workflow** — a streamlined template that works for both pre-call and post-call contexts. Claude captures whether it's pre-call or post-call to inform the research phase, but uses the same workflow and template throughout (~10–15 min). **Two ways to run it:** automatically with `/deck-auto [Company]`, or step-by-step yourself. Both are covered below.
 
-**Latest features (v2.1.1):**
+**Latest features (v2.2.0):**
 - **Attio REST API preferred:** CRM reads now use the direct Attio REST API (via `ATTIO_API_KEY`) for faster, more reliable data retrieval, with automatic MCP fallback if no key is configured.
 - **Windows file locking fixed:** Programmatic checks (openpyxl, python-pptx) now run before files are opened, preventing `start ""` lock conflicts.
 - **Bundled scripts:** All Python scripts, agent specs, template configs, and tools ship with the plugin. `/deck-setup` installs them into your workspace automatically — no external `.claude/` dependencies needed.
 - **Template config system:** `template_scanner.py` auto-matches your model against known templates (QSR, Retail, etc.) and extracts campaign names, cell addresses, and formula counts. No more hardcoded values.
 - **Guardrails on every skill:** 10 hard rules prevent Claude from inventing campaign names, overwriting formulas, or expanding scope.
 
-**[→ See full v2.1.1 release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v2.1.1)**
+**[→ See full v2.2.0 release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v2.2.0)**
 
 ---
 
@@ -408,6 +408,14 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 ---
 
 ## Changelog
+
+### v2.2.0 (Feb 25, 2026)
+
+- **Inbox Feed Generator:** New Step 6b in deck-format generates branded push notification copy for the Figma inbox feed frame — titles, subtitles, and point values derived from campaign incentive costs (200 pts/$, sorted by points descending)
+- **Script efficiency overhaul:** `qa_check.py` rewritten with single-pass slide iteration and shared utils (340→261 lines); `cheatsheet_gen.py` deduplicated format functions, CSS, and Claude API calls (2167→2125 lines); `goody_scraper.py` rewritten with parallel downloads and context manager (614→458 lines)
+- **Brandfetch CLI mode:** `brandfetch_downloader.py` now supports headless `--api-key`/`--brand`/`--output` flags for automated use, with lazy GUI imports and parallel downloads
+- **Direct swag downloads:** Goody scraper `--output` flag downloads directly to client folder, eliminating the intermediate `~/Downloads/` copy step
+- **deck-format Step 6 streamlined:** Removed color scheme and swag insert checks (handled in Figma); restructured as 6a (logo), 6b (inbox feed), 6c (Figma export)
 
 ### v2.1.1 (Feb 25, 2026)
 

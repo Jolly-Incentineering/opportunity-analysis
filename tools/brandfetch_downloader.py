@@ -1,41 +1,82 @@
 """
-Brandfetch Logo Downloader - GUI Version
-==========================================
+Brandfetch Logo Downloader
+===========================
 
-A user-friendly GUI application for downloading brand logos from Brandfetch API.
-Styled with Jolly.com's professional color scheme.
-Perfect for non-technical users.
+Download brand logos from Brandfetch API.  Runs in two modes:
+
+  CLI (headless)  — for agent/script usage:
+      python brandfetch_downloader.py --api-key KEY --brand domain.com --output ./logos
+
+  GUI             — for interactive use (requires customtkinter):
+      python brandfetch_downloader.py
 
 INSTALLATION:
-pip install requests pillow customtkinter
-
-QUICK START:
-1. Get your FREE Brandfetch API key at: https://brandfetch.com/api
-2. Run this script: python brandfetch_downloader.py
-3. Paste your API key (shown in the app)
-4. Enter brand name or website
-5. Click "Download Logos"
+  pip install requests                       # required (CLI + GUI)
+  pip install pillow customtkinter           # optional (GUI only)
 
 FEATURES:
+- CLI mode: no GUI dependencies, parallel downloads, machine-friendly output
+- GUI mode: beautiful interface, real-time progress, Jolly.com theme
 - Download logos in multiple formats (SVG, PNG)
-- Download in various sizes (icon, logo, symbol)
 - Save brand colors and fonts information
-- Beautiful, easy-to-use interface
-- Real-time progress updates
 """
 
+import argparse
+import json
+import re
 import sys
 import threading
-import tkinter as tk
-from tkinter import filedialog, messagebox
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-import json
+
 import requests
-from urllib.parse import urlparse
-import customtkinter as ctk
+
+# ---------------------------------------------------------------------------
+# GUI imports — deferred so CLI mode works without customtkinter / tkinter
+# ---------------------------------------------------------------------------
+ctk = None
+tk = None
+filedialog = None
+messagebox = None
 
 
-# Jolly.com Color Scheme
+def _ensure_gui_imports():
+    """Lazy-import GUI libraries. Raises ImportError with a friendly message."""
+    global ctk, tk, filedialog, messagebox
+    if ctk is not None:
+        return
+    try:
+        import tkinter as _tk
+        from tkinter import filedialog as _fd, messagebox as _mb
+        import customtkinter as _ctk
+    except ImportError as exc:
+        print(
+            "[ERROR] GUI mode requires customtkinter and tkinter.\n"
+            "Install with:  pip install customtkinter\n"
+            f"({exc})"
+        )
+        sys.exit(1)
+    ctk = _ctk
+    tk = _tk
+    filedialog = _fd
+    messagebox = _mb
+
+
+# ---------------------------------------------------------------------------
+# Shared helpers
+# ---------------------------------------------------------------------------
+
+def _sanitize_filename(filename: str) -> str:
+    """Remove invalid characters from a filename."""
+    filename = re.sub(r'[<>:"/\\|?*]', '', filename)
+    filename = re.sub(r'\s+', ' ', filename)
+    filename = filename.strip('. ')
+    if len(filename) > 200:
+        filename = filename[:200]
+    return filename
+
+
+# Jolly.com Color Scheme (used by GUI widgets only)
 JOLLY_COLORS = {
     'primary_blue': '#123769',
     'neutral_gray': '#666D80',
@@ -48,53 +89,220 @@ JOLLY_COLORS = {
 }
 
 
-class ModernButton(ctk.CTkButton):
-    """Styled button matching Jolly.com theme."""
-    def __init__(self, master, **kwargs):
-        defaults = {
-            'fg_color': JOLLY_COLORS['primary_blue'],
-            'hover_color': JOLLY_COLORS['hover_blue'],
-            'text_color': JOLLY_COLORS['white'],
-            'font': ('Segoe UI', 14, 'bold'),
-            'corner_radius': 8,
-            'height': 45,
-            'border_width': 0
+# ===================================================================
+# CLI (headless) mode
+# ===================================================================
+
+def _search_brand_cli(api_key: str, query: str) -> str | None:
+    """Search for a brand and return its domain (CLI)."""
+    if '.' in query and ' ' not in query:
+        return query
+
+    url = "https://api.brandfetch.io/v2/search/" + query
+    headers = {"Authorization": f"Bearer {api_key}"}
+    resp = requests.get(url, headers=headers, timeout=15)
+
+    if resp.status_code == 401:
+        print("[FAIL] Invalid API key. Check your key at https://brandfetch.com/api")
+        return None
+    if resp.status_code == 404:
+        print(f"[FAIL] Brand '{query}' not found.")
+        return None
+    resp.raise_for_status()
+    data = resp.json()
+    if data and len(data) > 0:
+        return data[0].get('domain')
+    return None
+
+
+def _fetch_brand_data_cli(api_key: str, domain: str) -> dict | None:
+    """Fetch full brand data from Brandfetch (CLI)."""
+    url = f"https://api.brandfetch.io/v2/brands/{domain}"
+    headers = {"Authorization": f"Bearer {api_key}"}
+    resp = requests.get(url, headers=headers, timeout=15)
+    resp.raise_for_status()
+    return resp.json()
+
+
+def _download_one_logo(src: str, filepath: Path, label: str) -> tuple[str, bool]:
+    """Download a single logo file. Returns (label, success)."""
+    try:
+        resp = requests.get(src, timeout=30)
+        resp.raise_for_status()
+        with open(filepath, 'wb') as f:
+            f.write(resp.content)
+        return (label, True)
+    except Exception as exc:
+        return (f"{label} — {exc}", False)
+
+
+def _download_logos_parallel(brand_data: dict, output_folder: Path) -> int:
+    """Download all logo files using ThreadPoolExecutor. Returns count."""
+    logos = brand_data.get('logos', [])
+    if not logos:
+        print("  [WARN] No logos found in brand data")
+        return 0
+
+    print(f"  Found {len(logos)} logo variation(s)\n")
+
+    # Build work items
+    tasks: list[tuple[str, Path, str]] = []
+    for logo_group in logos:
+        logo_type = logo_group.get('type', 'unknown')
+        for fmt in logo_group.get('formats', []):
+            src = fmt.get('src')
+            if not src:
+                continue
+            format_type = fmt.get('format', 'unknown')
+            ext = format_type if format_type in ('svg', 'png', 'jpg', 'jpeg', 'webp') else 'png'
+            filename = f"{logo_type}_{format_type}.{ext}"
+            tasks.append((src, output_folder / filename, filename))
+
+    if not tasks:
+        return 0
+
+    downloaded = 0
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        futures = {
+            pool.submit(_download_one_logo, src, fp, label): label
+            for src, fp, label in tasks
         }
-        defaults.update(kwargs)
-        super().__init__(master, **defaults)
+        for future in as_completed(futures):
+            label, ok = future.result()
+            if ok:
+                print(f"    Downloaded {label} [OK]")
+                downloaded += 1
+            else:
+                print(f"    [FAIL] {label}")
+
+    return downloaded
 
 
-class ModernEntry(ctk.CTkEntry):
-    """Styled entry field matching Jolly.com theme."""
-    def __init__(self, master, **kwargs):
-        defaults = {
-            'fg_color': JOLLY_COLORS['white'],
-            'text_color': JOLLY_COLORS['neutral_gray'],
-            'border_color': JOLLY_COLORS['light_gray'],
-            'font': ('Segoe UI', 12),
-            'corner_radius': 8,
-            'height': 45,
-            'border_width': 2
-        }
-        defaults.update(kwargs)
-        super().__init__(master, **defaults)
+def _save_brand_info(brand_data: dict, output_folder: Path) -> None:
+    """Save brand information to JSON file."""
+    info = {
+        'name': brand_data.get('name'),
+        'domain': brand_data.get('domain'),
+        'description': brand_data.get('description'),
+        'colors': brand_data.get('colors', []),
+        'fonts': brand_data.get('fonts', []),
+        'links': brand_data.get('links', []),
+        'claimed': brand_data.get('claimed'),
+    }
+    info_file = output_folder / "brand_info.json"
+    with open(info_file, 'w', encoding='utf-8') as f:
+        json.dump(info, f, indent=2, ensure_ascii=False)
 
 
-class ModernLabel(ctk.CTkLabel):
-    """Styled label matching Jolly.com theme."""
-    def __init__(self, master, **kwargs):
-        defaults = {
-            'text_color': JOLLY_COLORS['neutral_gray'],
-            'font': ('Segoe UI', 12)
-        }
-        defaults.update(kwargs)
-        super().__init__(master, **defaults)
+def run_cli(api_key: str, brand: str, output: str) -> None:
+    """Run the full download pipeline in headless CLI mode."""
+    output_folder = Path(output)
+
+    print("=" * 70)
+    print(f"Brandfetch Logo Downloader (CLI)")
+    print(f"Brand:  {brand}")
+    print(f"Output: {output_folder}")
+    print("=" * 70 + "\n")
+
+    output_folder.mkdir(parents=True, exist_ok=True)
+
+    # 1 — Resolve brand domain
+    print("[1/4] Searching for brand on Brandfetch...")
+    domain = _search_brand_cli(api_key, brand)
+    if not domain:
+        print("[FAIL] Could not find brand. Try a different name or website.")
+        sys.exit(1)
+    print(f"[OK]   Found brand: {domain}")
+
+    # 2 — Fetch brand data
+    print("\n[2/4] Fetching brand data...")
+    brand_data = _fetch_brand_data_cli(api_key, domain)
+    if not brand_data:
+        print("[FAIL] Could not fetch brand data.")
+        sys.exit(1)
+    brand_name = brand_data.get('name', brand)
+    print(f"[OK]   Brand: {brand_name}")
+
+    brand_folder = output_folder / _sanitize_filename(brand_name)
+    brand_folder.mkdir(parents=True, exist_ok=True)
+    print(f"[OK]   Saving to: {brand_folder}\n")
+
+    # 3 — Download logos (parallel)
+    print("[3/4] Downloading logo files...")
+    logos_downloaded = _download_logos_parallel(brand_data, brand_folder)
+
+    # 4 — Save brand info JSON
+    print("\n[4/4] Saving brand information...")
+    _save_brand_info(brand_data, brand_folder)
+    print("[OK]   Brand info saved to brand_info.json")
+
+    print(f"\n{'=' * 70}")
+    if logos_downloaded > 0:
+        print(f"SUCCESS! Downloaded {logos_downloaded} logo file(s)")
+    else:
+        print("WARNING: No logo files were downloaded")
+    print(f"Location: {brand_folder}")
+    print("=" * 70)
+
+
+# ===================================================================
+# GUI mode — classes defined inside a factory so that `ctk` is only
+# resolved after _ensure_gui_imports() has run.
+# ===================================================================
+
+def _build_gui_classes():
+    """Return (ModernButton, ModernEntry, ModernLabel) bound to the live ctk module."""
+
+    class ModernButton(ctk.CTkButton):
+        """Styled button matching Jolly.com theme."""
+        def __init__(self, master, **kwargs):
+            defaults = {
+                'fg_color': JOLLY_COLORS['primary_blue'],
+                'hover_color': JOLLY_COLORS['hover_blue'],
+                'text_color': JOLLY_COLORS['white'],
+                'font': ('Segoe UI', 14, 'bold'),
+                'corner_radius': 8,
+                'height': 45,
+                'border_width': 0
+            }
+            defaults.update(kwargs)
+            super().__init__(master, **defaults)
+
+    class ModernEntry(ctk.CTkEntry):
+        """Styled entry field matching Jolly.com theme."""
+        def __init__(self, master, **kwargs):
+            defaults = {
+                'fg_color': JOLLY_COLORS['white'],
+                'text_color': JOLLY_COLORS['neutral_gray'],
+                'border_color': JOLLY_COLORS['light_gray'],
+                'font': ('Segoe UI', 12),
+                'corner_radius': 8,
+                'height': 45,
+                'border_width': 2
+            }
+            defaults.update(kwargs)
+            super().__init__(master, **defaults)
+
+    class ModernLabel(ctk.CTkLabel):
+        """Styled label matching Jolly.com theme."""
+        def __init__(self, master, **kwargs):
+            defaults = {
+                'text_color': JOLLY_COLORS['neutral_gray'],
+                'font': ('Segoe UI', 12)
+            }
+            defaults.update(kwargs)
+            super().__init__(master, **defaults)
+
+    return ModernButton, ModernEntry, ModernLabel
 
 
 class BrandfetchDownloaderGUI:
     """Main GUI application for Brandfetch logo downloader."""
 
     def __init__(self):
+        _ensure_gui_imports()
+        self.ModernButton, self.ModernEntry, self.ModernLabel = _build_gui_classes()
+
         ctk.set_appearance_mode("light")
         ctk.set_default_color_theme("blue")
 
@@ -177,30 +385,30 @@ class BrandfetchDownloaderGUI:
         input_inner.pack(fill='both', padx=25, pady=25)
 
         # API Key field
-        ModernLabel(
+        self.ModernLabel(
             input_inner, text="Brandfetch API Key (required)",
             font=('Segoe UI', 12, 'bold')
         ).grid(row=0, column=0, sticky='w', pady=(0, 5))
 
-        ModernEntry(
+        self.ModernEntry(
             input_inner, textvariable=self.api_key,
             placeholder_text="Paste your API key here...",
             show="•"  # Hide API key like a password
         ).grid(row=1, column=0, sticky='ew', pady=(0, 15))
 
         # Brand name/website field
-        ModernLabel(
+        self.ModernLabel(
             input_inner, text="Brand Name or Website",
             font=('Segoe UI', 12, 'bold')
         ).grid(row=2, column=0, sticky='w', pady=(0, 5))
 
-        ModernEntry(
+        self.ModernEntry(
             input_inner, textvariable=self.brand_query,
             placeholder_text="e.g., Nike, nike.com, apple.com"
         ).grid(row=3, column=0, sticky='ew', pady=(0, 15))
 
         # Output folder field
-        ModernLabel(
+        self.ModernLabel(
             input_inner, text="Save Logos To",
             font=('Segoe UI', 12, 'bold')
         ).grid(row=4, column=0, sticky='w', pady=(0, 5))
@@ -209,7 +417,7 @@ class BrandfetchDownloaderGUI:
         folder_frame.grid(row=5, column=0, sticky='ew')
         folder_frame.grid_columnconfigure(0, weight=1)
 
-        ModernEntry(
+        self.ModernEntry(
             folder_frame, textvariable=self.output_folder,
             placeholder_text="Select output folder..."
         ).grid(row=0, column=0, sticky='ew', padx=(0, 10))
@@ -228,7 +436,7 @@ class BrandfetchDownloaderGUI:
         action_frame = ctk.CTkFrame(parent, fg_color='transparent')
         action_frame.pack(fill='x', pady=(0, 20))
 
-        self.download_button = ModernButton(
+        self.download_button = self.ModernButton(
             action_frame, text="Download Logos", command=self.start_download,
             height=55, font=('Segoe UI', 16, 'bold')
         )
@@ -242,7 +450,7 @@ class BrandfetchDownloaderGUI:
         progress_inner = ctk.CTkFrame(progress_frame, fg_color='transparent')
         progress_inner.pack(fill='both', expand=True, padx=25, pady=25)
 
-        ModernLabel(
+        self.ModernLabel(
             progress_inner, text="Status", font=('Segoe UI', 13, 'bold')
         ).pack(anchor='w', pady=(0, 10))
 
@@ -362,15 +570,15 @@ class BrandfetchDownloaderGUI:
             self.log_message(f"[OK] Brand: {brand_name}")
 
             # Create brand-specific subfolder
-            brand_folder = output_folder / self._sanitize_filename(brand_name)
+            brand_folder = output_folder / _sanitize_filename(brand_name)
             brand_folder.mkdir(parents=True, exist_ok=True)
             self.log_message(f"[OK] Saving to: {brand_folder}\n")
 
-            # Step 3: Download logos
+            # Step 3: Download logos (parallel)
             self.update_progress(0.5)
             self.log_message("[3/4] Downloading logo files...")
 
-            logos_downloaded = self.download_logos(brand_data, brand_folder)
+            logos_downloaded = self._download_logos_gui(brand_data, brand_folder)
 
             if logos_downloaded == 0:
                 self.log_message("\n[WARN] No logo files downloaded")
@@ -379,7 +587,7 @@ class BrandfetchDownloaderGUI:
             self.update_progress(0.8)
             self.log_message("\n[4/4] Saving brand information...")
 
-            self.save_brand_info(brand_data, brand_folder)
+            _save_brand_info(brand_data, brand_folder)
             self.log_message("[OK] Brand info saved to brand_info.json")
 
             self.update_progress(1.0)
@@ -404,7 +612,7 @@ class BrandfetchDownloaderGUI:
         """Search for a brand and return its domain."""
         try:
             # If query looks like a domain, use it directly
-            if '.' in query and not ' ' in query:
+            if '.' in query and ' ' not in query:
                 return query
 
             # Otherwise, search using Brandfetch API
@@ -448,89 +656,46 @@ class BrandfetchDownloaderGUI:
             self.log_message(f"\n[FAIL] Fetch error: {str(e)}")
             return None
 
-    def download_logos(self, brand_data, output_folder):
-        """Download all available logo files."""
-        downloaded = 0
-
+    def _download_logos_gui(self, brand_data, output_folder):
+        """Download all logo files with parallel I/O, logging to the GUI."""
         logos = brand_data.get('logos', [])
         if not logos:
             self.log_message("  [WARN] No logos found in brand data")
             return 0
 
-        self.log_message(f"  Found {len(logos)} logo variations\n")
+        self.log_message(f"  Found {len(logos)} logo variation(s)\n")
 
-        for idx, logo_group in enumerate(logos):
+        # Build work items
+        tasks = []
+        for logo_group in logos:
             logo_type = logo_group.get('type', 'unknown')
-            formats = logo_group.get('formats', [])
+            for fmt in logo_group.get('formats', []):
+                src = fmt.get('src')
+                if not src:
+                    continue
+                format_type = fmt.get('format', 'unknown')
+                ext = format_type if format_type in ('svg', 'png', 'jpg', 'jpeg', 'webp') else 'png'
+                filename = f"{logo_type}_{format_type}.{ext}"
+                tasks.append((src, output_folder / filename, filename))
 
-            self.log_message(f"  [{idx+1}/{len(logos)}] Logo type: {logo_type}")
+        if not tasks:
+            return 0
 
-            for format_data in formats:
-                try:
-                    format_type = format_data.get('format', 'unknown')
-                    src = format_data.get('src')
-
-                    if not src:
-                        continue
-
-                    # Determine file extension
-                    if format_type == 'svg':
-                        ext = 'svg'
-                    elif format_type in ['png', 'jpg', 'jpeg', 'webp']:
-                        ext = format_type
-                    else:
-                        ext = 'png'  # default
-
-                    # Create filename
-                    filename = f"{logo_type}_{format_type}.{ext}"
-                    filepath = output_folder / filename
-
-                    # Download file
-                    response = requests.get(src, timeout=30)
-                    response.raise_for_status()
-
-                    with open(filepath, 'wb') as f:
-                        f.write(response.content)
-
-                    self.log_message(f"    Downloaded {filename} [OK]")
+        downloaded = 0
+        with ThreadPoolExecutor(max_workers=4) as pool:
+            futures = {
+                pool.submit(_download_one_logo, src, fp, label): label
+                for src, fp, label in tasks
+            }
+            for future in as_completed(futures):
+                label, ok = future.result()
+                if ok:
+                    self.log_message(f"    Downloaded {label} [OK]")
                     downloaded += 1
-
-                except Exception as e:
-                    self.log_message(f" [FAIL] {str(e)[:50]}")
+                else:
+                    self.log_message(f"    [FAIL] {label}")
 
         return downloaded
-
-    def save_brand_info(self, brand_data, output_folder):
-        """Save brand information to JSON file."""
-        try:
-            info_file = output_folder / "brand_info.json"
-
-            # Extract useful information
-            info = {
-                'name': brand_data.get('name'),
-                'domain': brand_data.get('domain'),
-                'description': brand_data.get('description'),
-                'colors': brand_data.get('colors', []),
-                'fonts': brand_data.get('fonts', []),
-                'links': brand_data.get('links', []),
-                'claimed': brand_data.get('claimed'),
-            }
-
-            with open(info_file, 'w', encoding='utf-8') as f:
-                json.dump(info, f, indent=2, ensure_ascii=False)
-
-        except Exception as e:
-            self.log_message(f"    [WARN] Could not save brand info: {str(e)}")
-
-    def _sanitize_filename(self, filename):
-        """Remove invalid characters from filename."""
-        import re
-        filename = re.sub(r'[<>:"/\\|?*]', '', filename)
-        filename = re.sub(r'\s+', ' ', filename)
-        filename = filename.strip('. ')
-        if len(filename) > 200:
-            filename = filename[:200]
-        return filename
 
     def finish_download(self, success, folder=None):
         """Finish download and update UI."""
@@ -551,13 +716,45 @@ class BrandfetchDownloaderGUI:
         self.root.mainloop()
 
 
+# ===================================================================
+# Entry point — CLI vs GUI routing
+# ===================================================================
+
+def _parse_args():
+    """Parse CLI arguments. Returns namespace (all None when no flags given)."""
+    parser = argparse.ArgumentParser(
+        description="Brandfetch Logo Downloader — CLI and GUI modes",
+        epilog="If no flags are passed the GUI launches instead.",
+    )
+    parser.add_argument("--api-key", default=None, help="Brandfetch API key")
+    parser.add_argument("--brand", default=None, help="Brand name or domain (e.g. nike.com)")
+    parser.add_argument("--output", default=None, help="Output directory for downloaded logos")
+    return parser.parse_args()
+
+
 def main():
-    """Main entry point."""
+    """Main entry point — routes to CLI or GUI based on arguments."""
+    args = _parse_args()
+
+    # CLI mode: --brand was provided
+    if args.brand:
+        if not args.api_key:
+            print("[ERROR] --api-key is required in CLI mode.")
+            sys.exit(1)
+        output = args.output or str(Path.home() / "Downloads" / "brandfetch_logos")
+        run_cli(api_key=args.api_key, brand=args.brand, output=output)
+        return
+
+    # GUI mode
     try:
         app = BrandfetchDownloaderGUI()
         app.run()
     except Exception as e:
-        messagebox.showerror("Error", f"Failed to start application:\n{str(e)}")
+        # If GUI imports worked, use messagebox; otherwise just print
+        if messagebox is not None:
+            messagebox.showerror("Error", f"Failed to start application:\n{str(e)}")
+        else:
+            print(f"[ERROR] Failed to start application: {e}")
         sys.exit(1)
 
 

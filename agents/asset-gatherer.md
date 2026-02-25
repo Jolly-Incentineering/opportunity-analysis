@@ -38,22 +38,26 @@ If `.com` fails try `.net`. Do NOT edit logos for transparency.
 
 ## Step 3: Download Swag (Goody Scraper)
 
+Use `icon_1024.png` from Step 2 as the logo path. If Goody doesn't recognise the domain ("No images found for this domain"), the scraper will automatically upload this logo and retry. The `--fallback` flag ensures local compositing kicks in if Goody still fails. The `--output` flag downloads directly to the client folder (no manual copy step).
+
 ```bash
-# Domain recognition ONLY — no --logo-path
+LOGO_PATH="$WS/$CLIENT_ROOT/[Company Name]/3. Company Resources/1. Logos/icon_1024.png"
+SWAG_DIR="$WS/$CLIENT_ROOT/[Company Name]/3. Company Resources/2. Swag"
+
 python "$WS/Tools/Goody Scraper/goody_scraper.py" \
   --domain "[company-domain.com]" \
-  -n "[Company Name]"
+  -n "[Company Name]" \
+  --logo-path "$LOGO_PATH" \
+  --output "$SWAG_DIR" \
+  --fallback
 ```
 
-If popup appears (Ongoody doesn't recognize domain):
-```
-POPUP DETECTED: Please select the correct logo in the browser window, click Continue, then reply "done".
-```
-
-After download:
+If `icon_1024.png` doesn't exist (Brandfetch failed), fall back to domain-only:
 ```bash
-cp ~/Downloads/goody_downloads/"[Company Name]"/*.png \
-   "$WS/$CLIENT_ROOT/[Company Name]/3. Company Resources/2. Swag/"
+python "$WS/Tools/Goody Scraper/goody_scraper.py" \
+  --domain "[company-domain.com]" \
+  -n "[Company Name]" \
+  --output "$SWAG_DIR"
 ```
 
 If Goody fails entirely, note it and move on — do not block.

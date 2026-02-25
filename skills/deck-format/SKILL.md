@@ -240,22 +240,88 @@ Campaign slide checklist -- complete each step in the open deck, then type "done
 
 ---
 
-## Step 6: Brand Assets -- Manual Step Checklist
+## Step 6: Brand Assets and Inbox Feed
+
+### Step 6a: Logo Check
 
 ```
-Brand asset checklist -- complete each step, then type "done":
+Brand asset checklist:
 
 1. Navigate to the title slide. Confirm the company logo is placed correctly. If not, find the logo at:
    [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/3. Company Resources/1. Logos/
    and insert it.
    > [wait for "done"]
-
-2. Check the color scheme. If the template colors do not match [COMPANY_NAME]'s brand colors (check brand_info.json in the 1. Logos/ folder), update the theme colors manually.
-   > [wait for "done"]
-
-3. If swag images are available at [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/3. Company Resources/2. Swag/, insert the most relevant one on the swag/merchandise slide (if present).
-   > [wait for "done"]
 ```
+
+### Step 6b: Generate Inbox Feed Notification Copy
+
+Generate branded notification copy for the Figma inbox feed frame. This frame shows a mock mobile notification feed with the company's logo and Jolly-style campaign notifications.
+
+Read the campaign list and incentive costs:
+
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+python3 -c "
+import json, sys
+r = json.load(open('$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research_output_[company_slug].json'))
+camps = r.get('campaigns_selected', [])
+details = r.get('campaign_details', {})
+for c in camps:
+    name = c.get('name', c) if isinstance(c, dict) else c
+    d = details.get(name, {})
+    cost = d.get('incentive_cost_base', 0)
+    print(f'{name}|{cost}')
+"
+```
+
+For each campaign, generate one notification row:
+
+- **Title:** A short, employee-facing push notification headline (past tense, celebrating an achievement). Include one relevant emoji. Examples: "Zero returns this week! 🎯", "Perfect orders today ⭐", "Your suggestion was approved! 💡"
+- **Subtitle:** One sentence of encouraging flavor text, truncated with "..." to mimic a mobile notification preview.
+- **Points:** Calculate from incentive cost: `incentive_cost_per_unit * 200` (200 Jolly Points per dollar). For per-task incentives (daily campaigns like upsell/order accuracy), multiply by 5 to show a weekly total. Round to the nearest clean number from this set: 100, 250, 400, 500, 750, 1000, 2500, 5000.
+
+**Sorting rule:** Sort notifications by point value descending (highest points at top).
+
+Present the full table:
+
+```
+FIGMA INBOX FEED -- [COMPANY NAME]
+
+| # | Campaign | Notification Title | Subtitle | Points |
+|---|----------|-------------------|----------|--------|
+| 1 | [Campaign] | [Title with emoji] | [Truncated subtitle...] | +[N] |
+| 2 | ... | ... | ... | +[N] |
+...
+
+Point derivation:
+  [Campaign 1]: $[incentive] x 200 pts/$ = [raw] -> [rounded] pts
+  [Campaign 2]: $[incentive] x 200 pts/$ x 5 days = [raw] -> [rounded] pts
+  ...
+
+Copy these into the Figma inbox feed frame, then export.
+Type "done" when the inbox feed is populated, or "adjust" to change any row.
+```
+
+Wait for "done" or adjustments. If the user adjusts, update and re-present.
+
+### Step 6c: Figma Frame Export
+
+Tell the user:
+
+```
+Export the branded Figma frames for [COMPANY_NAME]:
+  1. Inbox feed frame (populated in Step 6b)
+  2. Any other branded frames (swag mockups, app screenshots, etc.)
+
+Export as PNG and save to:
+  [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/3. Company Resources/
+
+Insert exported frames into the appropriate deck slides.
+Type "done" when all frames are inserted.
+```
+
+Wait for "done".
 
 ---
 
