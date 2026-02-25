@@ -78,7 +78,7 @@ Display the QA scope table to the user:
 
 **All contexts use the unified Intro Deck template — 11 focused checks run:**
 ```
-  Run:   M1 M2 M3 M4 M5 M6  D2 D3 D4 D5 D7
+  Run:   M1 M2 M3 M4 M5 M6  D2 D3 D4 D5 D6
 ```
 
 All required checks to ensure the model and presentation are delivery-ready.
