@@ -136,15 +136,18 @@ Slide [N] | Shape: "[current text]" -> "$[value]" ([source campaign])
 
 Wait for "approve" before writing. If the user requests changes, update and re-present.
 
-Use `figma_editor.py` or `deck_format.py` to write banner values:
+Use `pptx_editor.py` to write banner values programmatically. Open the deck with python-pptx, find the banner shapes identified above, replace placeholder text with the approved values, and save:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-python3 "$WS/.claude/scripts/deck_format.py" \
-  --company "[COMPANY_NAME]" \
-  --step banners
+python3 "$WS/.claude/agents/pptx_editor.py" \
+  --file "$WS/$CLIENT_ROOT/[COMPANY_NAME]/[deck_folder]/[deck_filename]" \
+  --action fill-banners \
+  --values '[JSON of banner replacements]'
 ```
+
+If `pptx_editor.py` does not support `--action fill-banners`, use inline python-pptx to open the file, iterate shapes, replace matching text, preserve formatting, and save.
 
 ---
 
@@ -247,15 +250,6 @@ Brand asset checklist -- complete each step, then type "done":
 
 3. If swag images are available at [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/3. Company Resources/2. Swag/, insert the most relevant one on the swag/merchandise slide (if present).
    > [wait for "done"]
-
-4. Open Figma and export the branded frames for [COMPANY_NAME]:
-   - Open the Jolly Figma template file
-   - Find the [COMPANY_NAME] brand frames (title slide background, section headers, etc.)
-   - Export them as PNG or copy-paste directly into the appropriate slides in the open deck
-   - Resize and position each frame to match the template layout
-   - Save the deck (Ctrl+S)
-   Type "skip" if no Figma frames are needed.
-   > [wait for "done" or "skip"]
 ```
 
 ---

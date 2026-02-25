@@ -141,8 +141,8 @@ TROUBLESHOOTING
       that you restarted Claude Code after setting it.
 
   "Python not found" or package errors
-    → Run Tools/setup.bat (double-click it in File Explorer) to install all
-      required packages.
+    → Run: pip install openpyxl python-pptx requests
+      Or re-run /jolly-onboarding to install packages step by step.
 
   Research taking too long
     → Normal: research runs 3 agents simultaneously and takes 3-5 minutes.

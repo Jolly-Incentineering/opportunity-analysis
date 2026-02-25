@@ -2,18 +2,18 @@
 
 The Jolly Opportunity Analysis plugin for Claude. Give it a company name and it handles the research, builds the financial model, and formats the presentation — start to finish.
 
-> **Internal tool.** Maintained by the Incentineering team. Requires access to the private `nishant-jolly/opportunity-analysis` repo and the Jolly shared workspace.
+> **Internal tool.** Maintained by the Incentineering team. Requires access to the private `Jolly-Incentineering/opportunity-analysis` repo and the Jolly shared workspace.
 
 **Intro Deck workflow** — a streamlined template that works for both pre-call and post-call contexts. Claude captures whether it's pre-call or post-call to inform the research phase, but uses the same workflow and template throughout (~10–15 min). **Two ways to run it:** automatically with `/deck-auto [Company]`, or step-by-step yourself. Both are covered below.
 
-**Latest features (v2.0.2):**
+**Latest features (v2.1.0):**
 - **Attio REST API preferred:** CRM reads now use the direct Attio REST API (via `ATTIO_API_KEY`) for faster, more reliable data retrieval, with automatic MCP fallback if no key is configured.
 - **Windows file locking fixed:** Programmatic checks (openpyxl, python-pptx) now run before files are opened, preventing `start ""` lock conflicts.
 - **Bundled scripts:** All Python scripts, agent specs, template configs, and tools ship with the plugin. `/deck-setup` installs them into your workspace automatically — no external `.claude/` dependencies needed.
 - **Template config system:** `template_scanner.py` auto-matches your model against known templates (QSR, Retail, etc.) and extracts campaign names, cell addresses, and formula counts. No more hardcoded values.
 - **Guardrails on every skill:** 10 hard rules prevent Claude from inventing campaign names, overwriting formulas, or expanding scope.
 
-**[→ See full v2.0.2 release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v2.0.2)**
+**[→ See full v2.1.0 release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v2.1.0)**
 
 ---
 
@@ -130,7 +130,7 @@ The diagram shows how an Opportunity Analysis moves from setup through research,
 Open Claude Code (the chat interface you use for Claude) and type:
 
 ```
-/plugin install nishant-jolly/opportunity-analysis --scope user
+/plugin install opportunity-analysis@Jolly-Incentineering --scope user
 ```
 
 You need access to the private Jolly GitHub repo for this to work. If you get an error, ask Incentineering.
@@ -211,7 +211,7 @@ Claude will find your client folder, confirm the location, save configuration fo
 - Creates the numbered subfolder structure (1. Logos/, 2. Swag/, 1. Call Summaries/, 2. Public Filings/, 3. Slack/)
 - Opens both files on your screen
 - Figures out whether this is an existing client (has prior calls, emails, or CRM records) or a brand-new prospect — this affects how research runs later
-- Starts downloading logos, swag images, and branded slide frames in the background
+- Starts downloading logos and swag images in the background
 
 **Output:** Templates in the client folder, assets downloading in the background.
 
@@ -275,8 +275,7 @@ All applicable tasks run in parallel and report back with their findings. Claude
 **What you do:** There are a few manual steps only you can do in PowerPoint (like refreshing a data link). Claude will stop at each one, give you clear step-by-step instructions, and wait for you to type "done" before moving on.
 
 **What Claude does:**
-- Exports company-branded slide frames from Figma (the design tool where slide templates live)
-- Scans every slide for placeholder text (like `[Company Name]` or `[Revenue]`) and replaces with correct values and narrative. Formats all dollar amounts correctly — under $1M shows as `$516K`, $1M and above shows as `$1.96MM`.
+- Scans every slide for placeholder text (like `[Company Name]` or `[Revenue]`) and replaces with correct values and narrative. Formats all dollar amounts correctly — under $1M shows as `$516k`, $1M and above shows as `$1.96MM`.
 - Presents the replacement plan and waits for your approval before writing
 - Walks through placing logos, swag images, and banner graphics
 - Exports the final PDF to the Presentations folder and opens it for your review
@@ -340,15 +339,15 @@ If any of these are not connected, Claude will not be able to pull data from tha
 ### For the Incentineering team
 
 <details>
-<summary>Python packages (technical setup — AEs do not need this)</summary>
+<summary>Python packages (auto-installed during onboarding, or install manually)</summary>
 
 ```bash
-pip install openpyxl python-pptx requests edgartools
+pip install openpyxl python-pptx requests
 ```
 
-Also install the superpowers plugin in Claude Code:
-```
-/plugin install superpowers@mbenhamd --scope user
+Optional (for SEC filings and cheat sheets):
+```bash
+pip install edgartools pypdf playwright
 ```
 
 Set `JOLLY_WORKSPACE` as a system environment variable (not just in `.env`) so it is available when Claude Code launches. On Windows, set it via System Properties > Environment Variables.
@@ -410,6 +409,14 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 
 ## Changelog
 
+### v2.1.0 (Feb 25, 2026)
+
+- **Namespace renamed:** `nishant-jolly` → `Jolly-Incentineering` across all manifests, install commands, and docs
+- **Figma step removed:** Asset gatherer and deck-format no longer attempt Figma export (was always failing for new companies)
+- **Pip auto-install in onboarding:** `/jolly-onboarding` now guides users through installing required Python packages
+- **Requirements split:** `requirements.txt` separates required (openpyxl, python-pptx, requests) from optional (edgartools, pypdf, playwright)
+- **Dead references cleaned:** Removed `figma_editor.py`, `export_company_frames.py`, and banner step references that pointed to nonexistent scripts
+
 ### v2.0.2 (Feb 24, 2026)
 
 - Attio reads now prefer direct REST API (`ATTIO_API_KEY` from env/.env) with MCP fallback
@@ -424,7 +431,7 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 
 ### v2.0.0 (Feb 23, 2026)
 
-**Release notes** — [View on GitHub](https://github.com/nishant-jolly/opportunity-analysis/releases/tag/v2.0.0)
+**Release notes** — [View on GitHub](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v2.0.0)
 
 - Bundled all scripts, agents, template configs, and tools with plugin (fully self-contained)
 - Added template config system via `template_scanner.py` — auto-matches models, extracts campaign names/cell addresses/formula counts

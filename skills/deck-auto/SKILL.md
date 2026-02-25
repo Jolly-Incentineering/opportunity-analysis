@@ -266,7 +266,7 @@ Walk through campaign slide checklist. Wait for "done" after each.
 
 ### 4.5 Brand Assets
 
-Checklist: logo (`3. Company Resources/1. Logos/`), colors, swag (`2. Swag/`), Figma frames. Wait for "done"/"skip".
+Checklist: logo (`3. Company Resources/1. Logos/`), colors, swag (`2. Swag/`). Wait for "done"/"skip".
 
 ### 4.6 Step 8a: Macabacus Refresh (Manual)
 

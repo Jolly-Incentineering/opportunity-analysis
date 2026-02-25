@@ -352,21 +352,30 @@ Client root (CLIENT_ROOT): [CLIENT_ROOT]
 
 Your job: run Slack research and write a clean JSON output.
 
+CRITICAL RULE: Only extract data that is DIRECTLY ABOUT [COMPANY_NAME] itself.
+- If a message mentions [COMPANY_NAME] in the context of another company (e.g., "[COMPANY_NAME] is acquiring OtherCo" — the revenue figure in that message likely belongs to OtherCo, not [COMPANY_NAME]), DISCARD that data point.
+- For each data point you extract, verify the subject of the sentence is [COMPANY_NAME]. If the data describes a different company, do not include it.
+- When in doubt, discard the data point rather than risk attributing another company's data to [COMPANY_NAME].
+
 If Branch B, skip all Slack calls and write an empty findings output.
 
+--- SEARCH (max 2 Slack API calls) ---
+
 Fire both keyword searches in parallel:
-1. mcp__claude_ai_Slack__slack_search_public_and_private: query="[COMPANY_NAME] revenue"
-2. mcp__claude_ai_Slack__slack_search_public_and_private: query="[COMPANY_NAME] locations headcount turnover"
+1. mcp__claude_ai_Slack__slack_search_public_and_private: query="[COMPANY_NAME] revenue OR locations OR headcount"
+2. mcp__claude_ai_Slack__slack_search_public_and_private: query="[COMPANY_NAME] turnover OR pricing OR campaign"
 
-If either search returns zero useful results (no messages with data points), then and only then read the channel directly:
-- mcp__claude_ai_Slack__slack_read_channel: limit=50, for the most relevant channel found
+For each result, check: is this message ABOUT [COMPANY_NAME], or does it just mention the name in passing? Only extract data from messages where [COMPANY_NAME] is the subject.
 
-Do not read the channel if keyword searches return useful results.
+--- CHANNEL FALLBACK (only if both searches return zero usable results) ---
 
-Extract from results: revenue figures, headcount, location counts, pricing signals, pain points, campaign mentions.
+If and only if BOTH searches returned zero data points about [COMPANY_NAME]:
+- mcp__claude_ai_Slack__slack_read_channel: limit=20, for the most relevant channel found
+- Do NOT use channel fallback if keyword searches returned any usable data.
+
+--- OUTPUT ---
 
 Create output directory before writing: mkdir -p "[WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/3. Slack"
-Save findings immediately after each source completes -- do not wait until all sources are done.
 Write output to: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/3. Slack/ws_slack_[company_slug].json
 
 Schema:
@@ -384,7 +393,8 @@ Schema:
     "employee_count_source": "",
     "pain_points": [],
     "campaigns_mentioned": [],
-    "other_data_points": {}
+    "other_data_points": {},
+    "discarded_other_company": []
   },
   "source_summary": {
     "slack_available": true,
@@ -393,6 +403,8 @@ Schema:
     "skip_reason": ""
   }
 }
+
+If you discarded data that belonged to a different company, log it in discarded_other_company with the company name and reason (e.g., "Revenue $2B mentioned in context of US Merchants, not [COMPANY_NAME]").
 
 Write the file. Do not output a long summary -- just confirm the file path written.
 ```

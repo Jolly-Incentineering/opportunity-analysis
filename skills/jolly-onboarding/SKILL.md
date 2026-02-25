@@ -63,6 +63,29 @@ If you see a commit hash, you're good. If you get an authentication error, you n
 
 ---
 
+## Section 0.5: Install Python Packages
+
+The plugin uses Python scripts to read and write Excel and PowerPoint files. Run this once:
+
+```bash
+pip install openpyxl python-pptx requests
+```
+
+If this fails, try `pip3` instead of `pip`. If you get a "pip not found" error:
+
+**Windows:** Python is usually bundled with Claude Code. Try: `python -m pip install openpyxl python-pptx requests`
+
+**Mac:** Try: `python3 -m pip install openpyxl python-pptx requests`
+
+Optional packages (for SEC filings and cheat sheet PDFs — skip if unsure):
+```bash
+pip install edgartools pypdf
+```
+
+→ Type "done" when packages are installed
+
+---
+
 ## Section 1: Connect Integrations in Claude
 
 Before running any deck commands, you need to connect two tools in Claude. This is a one-time setup per workspace.

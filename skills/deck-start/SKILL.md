@@ -456,7 +456,7 @@ Context: [pre-call / post-call]
 Branch: [A - Existing Relationship / B - Cold Prospect]
 Reason: [which of Gong / Attio / Slack had data, or "no prior data found"]
 
-Assets: gathering in background (logos, swag, Figma frames).
+Assets: gathering in background (logos, swag).
 
 Next step: run /deck-research
 ```

@@ -1,6 +1,6 @@
 ---
 name: asset-gatherer
-description: Gather all company assets in parallel with the research + model session — logos, swag, Figma frames, and banner alert.
+description: Gather all company assets in parallel with the research + model session — logos and swag.
 model: haiku
 ---
 
@@ -18,7 +18,6 @@ You are gathering assets for **[COMPANY_NAME]**. Run in parallel with the resear
 ```bash
 ls "$WS/$CLIENT_ROOT/[Company Name]/3. Company Resources/1. Logos/" 2>/dev/null
 ls "$WS/$CLIENT_ROOT/[Company Name]/3. Company Resources/2. Swag/" 2>/dev/null
-ls "$WS/$CLIENT_ROOT/[Company Name]/3. Company Resources/" 2>/dev/null | grep -i banner
 ```
 
 If assets already exist and look complete, ask user if they want to refresh or skip.
@@ -27,7 +26,7 @@ If assets already exist and look complete, ask user if they want to refresh or s
 
 ```bash
 BRANDFETCH_API_KEY=$(grep BRANDFETCH_API_KEY "$WS/.claude/.env" | cut -d '=' -f2)
-python "$WS/Tools/Brandfetch Logo Downloader/brandfetch_cli.py" \
+python "$WS/Tools/brandfetch_downloader.py" \
   --api-key "$BRANDFETCH_API_KEY" \
   --brand "[company-domain.com]" \
   --output "$WS/$CLIENT_ROOT/[Company Name]/3. Company Resources/1. Logos"
@@ -37,9 +36,7 @@ Expected: `icon_512.png`, `icon_1024.png`, `logo_400.png`, SVGs, `brand_info.jso
 
 If `.com` fails try `.net`. Do NOT edit logos for transparency.
 
-## Step 3: (Banner step removed - deck-start skips banner.)
-
-## Step 4: Download Swag (Goody Scraper)
+## Step 3: Download Swag (Goody Scraper)
 
 ```bash
 # Domain recognition ONLY — no --logo-path
@@ -61,21 +58,11 @@ cp ~/Downloads/goody_downloads/"[Company Name]"/*.png \
 
 If Goody fails entirely, note it and move on — do not block.
 
-## Step 5: Export Figma Frames
-
-Automatically attempt Figma export. If it fails, note the failure and move on.
-
-```bash
-python "$WS/.claude/export_company_frames.py" --company "[Company Name]"
-```
-
-## Step 6: Verify and Report
+## Step 4: Verify and Report
 
 ```bash
 echo "Logos:" && ls "$WS/$CLIENT_ROOT/[Company Name]/3. Company Resources/1. Logos/"
-echo "Banner:" && ls "$WS/$CLIENT_ROOT/[Company Name]/3. Company Resources/" | grep -i banner
 echo "Swag:" && ls "$WS/$CLIENT_ROOT/[Company Name]/3. Company Resources/2. Swag/" | wc -l
-echo "Figma:" && ls "$WS/$CLIENT_ROOT/[Company Name]/3. Company Resources/" | grep -iE "(earn|shop|wallet|sticky|quick)"
 ```
 
 Report status clearly — what succeeded, what failed, what still needs user action.
