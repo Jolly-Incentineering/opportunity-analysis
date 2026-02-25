@@ -69,6 +69,8 @@ On every slide EXCEPT the summary slide, replace any raw dollar amounts (5+ digi
 
 Use regex: `\$[\d,]{5,}(?:\.\d+)?` to find candidates.
 
+**Skip Macabacus-linked runs.** Before editing any text run, check `run.font.color`. If the font color is red (R>200, G<100, B<100), skip it — those values were populated by Macabacus and should not be reformatted. The `finalize()` pass handles their color conversion separately.
+
 **Do not touch the summary slide** — it is handled in Step 5.
 
 ## Step 5: Fill the Banner
@@ -139,3 +141,4 @@ Report:
 - Always use `os.path.abspath()` on file paths before opening with python-pptx
 - Always add `sys.stdout.reconfigure(encoding='utf-8', errors='replace')` at top of any Python
 - Do not leave temp files in client folders
+- Never edit a text run with red font color (Macabacus link) — skip it

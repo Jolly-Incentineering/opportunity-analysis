@@ -151,7 +151,7 @@ Report format:
 
 ```
 [PASS / FAIL] M4 -- Accretion ceiling
-  Total accretion: $[X.XXMM] = [X]% of $[X.XXMM] annual EBITDA
+  Total accretion: $[X.XMM] = [X]% of $[X.XMM] annual EBITDA
   [Within ceiling / EXCEEDS ceiling -- requires user approval]
 ```
 
@@ -305,7 +305,7 @@ Type "done" when complete (or report any tokens found):
 ```
 Check D2: Scroll through all slides with dollar values.
 Confirm: under $1M shows as $X.Xk (one decimal, drop if zero — e.g. $2.4k, $2k, $516k),
-         $1M+ shows as $X.XXMM (uppercase MM, e.g. $1.96MM).
+         $1M+ shows as $X.XMM (1 decimal, uppercase MM, e.g. $2.0MM).
 Report any incorrectly formatted values.
 Type "done":
 ```

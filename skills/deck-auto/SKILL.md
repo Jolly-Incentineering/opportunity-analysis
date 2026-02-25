@@ -254,11 +254,11 @@ Open master deck. Read banner values from `campaign_details` in `research_output
 
 ### 4.2 Banners
 
-Present banner replacement plan. Wait for "approve banners". Write.
+Present banner replacement plan. Skip any shape/run with red font color (Macabacus-linked — populated by refresh). Wait for "approve banners". Write.
 
 ### 4.3 Text Placeholders
 
-Scan for template tokens. Present replacement plan. Wait for "approve text". Write.
+Scan for template tokens. Skip Macabacus-linked runs (red font). Present replacement plan. Wait for "approve text". Write.
 
 ### 4.4 Campaign Slides (Post-Call Only)
 
@@ -332,7 +332,7 @@ Open model. Run:
 
 Open vF. Walk through:
 - **D1:** No template tokens (Ctrl+F "[")
-- **D2:** Dollar formatting ($X.Xk / $X.XXMM)
+- **D2:** Dollar formatting ($X.Xk / $X.XMM)
 - **D2b:** Macabacus range blanks (programmatic)
 - **D2c:** Raw integers in narrative (programmatic)
 - **D3:** Banner values match model

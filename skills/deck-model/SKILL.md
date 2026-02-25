@@ -225,7 +225,7 @@ DRY-RUN PLAN -- [COMPANY NAME]
 [N] cells to write across [N] sheets
 
 Sheet: Assumptions
-  Cell A1  | Annual Revenue         | $X.XXMM    | Source: Gong (1st party) | Comment: included
+  Cell A1  | Annual Revenue         | $X.XMM     | Source: Gong (1st party) | Comment: included
   Cell A2  | Unit Count             | XXX        | Source: SEC 10-K (2nd)   | Comment: included
   ...
 
@@ -238,7 +238,7 @@ ROPS CHECK:
   ...
 
 ACCRETION CHECK:
-  Total EBITDA accretion: $X.XXMM ([X]% of $X.XXMM annual EBITDA) -- [within ceiling / flag]
+  Total EBITDA accretion: $X.XMM ([X]% of $X.XMM annual EBITDA) -- [within ceiling / flag]
 
 FORMULA CELLS SKIPPED (do not overwrite):
   [List any formula cells that were identified and skipped]

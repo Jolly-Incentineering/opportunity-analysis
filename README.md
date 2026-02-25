@@ -6,14 +6,14 @@ The Jolly Opportunity Analysis plugin for Claude. Give it a company name and it 
 
 **Intro Deck workflow** — a streamlined template that works for both pre-call and post-call contexts. Claude captures whether it's pre-call or post-call to inform the research phase, but uses the same workflow and template throughout (~10–15 min). **Two ways to run it:** automatically with `/deck-auto [Company]`, or step-by-step yourself. Both are covered below.
 
-**Latest features (v2.1.0):**
+**Latest features (v2.1.1):**
 - **Attio REST API preferred:** CRM reads now use the direct Attio REST API (via `ATTIO_API_KEY`) for faster, more reliable data retrieval, with automatic MCP fallback if no key is configured.
 - **Windows file locking fixed:** Programmatic checks (openpyxl, python-pptx) now run before files are opened, preventing `start ""` lock conflicts.
 - **Bundled scripts:** All Python scripts, agent specs, template configs, and tools ship with the plugin. `/deck-setup` installs them into your workspace automatically — no external `.claude/` dependencies needed.
 - **Template config system:** `template_scanner.py` auto-matches your model against known templates (QSR, Retail, etc.) and extracts campaign names, cell addresses, and formula counts. No more hardcoded values.
 - **Guardrails on every skill:** 10 hard rules prevent Claude from inventing campaign names, overwriting formulas, or expanding scope.
 
-**[→ See full v2.1.0 release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v2.1.0)**
+**[→ See full v2.1.1 release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v2.1.1)**
 
 ---
 
@@ -275,7 +275,7 @@ All applicable tasks run in parallel and report back with their findings. Claude
 **What you do:** There are a few manual steps only you can do in PowerPoint (like refreshing a data link). Claude will stop at each one, give you clear step-by-step instructions, and wait for you to type "done" before moving on.
 
 **What Claude does:**
-- Scans every slide for placeholder text (like `[Company Name]` or `[Revenue]`) and replaces with correct values and narrative. Formats all dollar amounts correctly — under $1M shows as `$516k`, $1M and above shows as `$1.96MM`.
+- Scans every slide for placeholder text (like `[Company Name]` or `[Revenue]`) and replaces with correct values and narrative. Formats all dollar amounts correctly — under $1M shows as `$516k`, $1M and above shows as `$1.9MM`.
 - Presents the replacement plan and waits for your approval before writing
 - Walks through placing logos, swag images, and banner graphics
 - Exports the final PDF to the Presentations folder and opens it for your review
@@ -408,6 +408,12 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 ---
 
 ## Changelog
+
+### v2.1.1 (Feb 25, 2026)
+
+- **Dollar formatting standardized to 1 decimal:** All MM and k values now use one decimal place (`$2.0MM`, `$516k`) across all skills, agents, and scripts
+- **Macabacus-linked text protected:** All programmatic text edits (banners, placeholders, company name) now skip Macabacus-linked runs (red font color), preventing overwrites of live model links and reducing unnecessary edits
+- **`pptx_editor.py` guardrails:** New `_is_macabacus_linked()` helper; `replace_text()`, `update_company_name()`, and `fill_ebitda_placeholder()` all skip red-text runs automatically
 
 ### v2.1.0 (Feb 25, 2026)
 

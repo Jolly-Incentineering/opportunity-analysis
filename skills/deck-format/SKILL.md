@@ -14,6 +14,7 @@ HARD RULES — NEVER VIOLATE:
 8. If a tool call fails, report the error. Do NOT retry more than once.
 9. Keep all client-specific data in the client folder under 4. Reports/. Never write client data to .claude/data/.
 10. Use HAIKU for research agents unless explicitly told otherwise.
+11. Do NOT edit Macabacus-linked text runs (red font color). Macabacus refresh populates those values from the model. Skip any run where the font color is red (R>200, G<100, B<100).
 
 ---
 
@@ -116,11 +117,13 @@ Scan the deck for slides containing banner placeholder shapes. A shape is a bann
 - `$[EBITDA]`
 - `quantified Jolly`
 
+**Skip Macabacus-linked shapes.** If a shape's text runs have red font color (R>200, G<100, B<100), that value is populated by Macabacus refresh -- do not touch it. Only edit runs with non-red text.
+
 For each banner shape found, report its slide number and current text.
 
 Map each banner to the corresponding campaign EBITDA uplift value from `campaign_details` in the research output JSON at `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research_output_[company_slug].json`. Read `campaign_details.[campaign_name].ebitda_uplift_base` for each campaign. Do NOT try to extract values from the Excel model at runtime (file locking issues). Apply dollar formatting:
 - Under $1M: `$X.Xk` (one decimal, lowercase k, drop decimal if zero — e.g. `$2.4k`, `$2k`, `$516k`)
-- $1M and above: `$X.XXMM` (uppercase MM, no space, e.g. `$1.96MM`)
+- $1M and above: `$X.XMM` (1 decimal, uppercase MM, no space, e.g. `$2.0MM`)
 
 Present the banner replacement plan to the user before writing anything:
 
@@ -147,7 +150,7 @@ python3 "$WS/.claude/agents/pptx_editor.py" \
   --values '[JSON of banner replacements]'
 ```
 
-If `pptx_editor.py` does not support `--action fill-banners`, use inline python-pptx to open the file, iterate shapes, replace matching text, preserve formatting, and save.
+If `pptx_editor.py` does not support `--action fill-banners`, use inline python-pptx to open the file, iterate shapes, replace matching text, preserve formatting, and save. Always check `run.font.color` before editing -- skip any run with red font color (Macabacus link).
 
 ---
 
@@ -196,7 +199,9 @@ Continue to Step 4 normally (full flow including campaign slides).
 
 Scan all slides for text placeholders that contain template tokens (e.g., `[Company Name]`, `[Revenue]`, `[Unit Count]`, `[Year]`, `[Vertical]`).
 
-For each placeholder found, map it to the correct value from `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research_output_[company_slug].json`. Apply dollar formatting where applicable.
+**Skip Macabacus-linked runs.** Any text run with red font color is a Macabacus link that pulls its value from the Excel model during refresh. Do not edit these -- they will be populated automatically in Step 8a.
+
+For each non-Macabacus placeholder found, map it to the correct value from `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research_output_[company_slug].json`. Apply dollar formatting where applicable.
 
 Present the text replacement plan to the user:
 
@@ -204,7 +209,7 @@ Present the text replacement plan to the user:
 TEXT REPLACEMENT PLAN -- [COMPANY NAME]
 
 Slide [N] | "[Company Name]" -> "[COMPANY_NAME]"
-Slide [N] | "[Revenue]" -> "$X.XXMM"
+Slide [N] | "[Revenue]" -> "$X.XMM"
 Slide [N] | "[Unit Count]" -> "XXX locations"
 ...
 
@@ -371,12 +376,12 @@ Prompt (substitute actual values):
 
   Scan for any remaining unfilled placeholders (text matching patterns like $[ ], [ ] quantified,
   [Company Name], [Revenue], etc.) and fill them from model and research data. If none are found,
-  skip silently.
+  skip silently. Skip any text run with red font color (Macabacus link) — do not edit those.
 
-  Apply dollar formatting to all numeric values:
+  Apply dollar formatting to all numeric values (non-Macabacus runs only):
   - Under $1M: $X.Xk — one decimal place, drop the decimal only if it is exactly zero
     (e.g. $2,400 → $2.4k, $2,000 → $2k, $516,000 → $516k)
-  - $1M and above: $X.XXMM (e.g. $1,960,000 → $1.96MM)
+  - $1M and above: $X.XMM (1 decimal, e.g. $1,960,000 → $2.0MM)
 
   Export the finished deck as PDF to pdf_output.
   After export, set the PDF /Title metadata to pdf_title using pypdf:
@@ -409,7 +414,7 @@ Final visual review -- complete each step in the vF deck, then type "done":
 1. Run Slide Show from the beginning (F5). Check that no template tokens ([...]) remain on any slide.
    > [wait for "done"]
 
-2. Check all dollar values in the deck. Confirm formatting: under $1M = $X.Xk (one decimal, drop if zero), $1M+ = $X.XXMM.
+2. Check all dollar values in the deck. Confirm formatting: under $1M = $X.Xk (one decimal, drop if zero), $1M+ = $X.XMM (one decimal).
    > [wait for "done"]
 
 3. Check that ROPS values are not shown on prospect slides (Branch B). ROPS is internal only.

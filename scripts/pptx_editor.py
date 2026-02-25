@@ -34,6 +34,27 @@ def _require_pptx():
         )
 
 
+def _is_macabacus_linked(run):
+    """Return True if a text run is a Macabacus link (red font color).
+
+    Macabacus-linked runs have red text (R>200, G<100, B<100).
+    These are live links to the Excel model and must never be edited
+    programmatically — Macabacus refresh handles their values.
+    """
+    try:
+        if run.font.color and run.font.color.type == 1:  # RGB
+            rgb_hex = str(run.font.color.rgb)
+            if len(rgb_hex) == 6:
+                r = int(rgb_hex[0:2], 16)
+                g = int(rgb_hex[2:4], 16)
+                b = int(rgb_hex[4:6], 16)
+                if r > 200 and g < 100 and b < 100:
+                    return True
+    except Exception:
+        pass
+    return False
+
+
 class PptxEditor:
     """Creates and edits Jolly PowerPoint intro decks."""
 
@@ -67,6 +88,7 @@ class PptxEditor:
            with just [ ] quantified Jolly incentive campaigns"
 
         Replaces $[ ] with dollar amount and [ ] with campaign count.
+        Skips runs that are Macabacus-linked (red text).
         """
         prs = Presentation(str(ppt_path))
         filled = False
@@ -75,6 +97,9 @@ class PptxEditor:
             for shape in slide.shapes:
                 if shape.name == "Rectangle 80" and shape.has_text_frame:
                     for para in shape.text_frame.paragraphs:
+                        # Skip if any run in this paragraph is Macabacus-linked
+                        if any(_is_macabacus_linked(r) for r in para.runs):
+                            continue
                         full_text = "".join(run.text for run in para.runs)
                         if "$[ ]" in full_text:
                             new_text = full_text.replace(
@@ -97,7 +122,11 @@ class PptxEditor:
                 "campaigns": campaign_count}
 
     def update_company_name(self, ppt_path, old_name, new_name):
-        """Replace all occurrences of old_name with new_name in text."""
+        """Replace all occurrences of old_name with new_name in text.
+
+        Skips Macabacus-linked runs (red text) — those are populated
+        by Macabacus refresh and must not be edited programmatically.
+        """
         prs = Presentation(str(ppt_path))
         replacements = 0
 
@@ -106,6 +135,8 @@ class PptxEditor:
                 if shape.has_text_frame:
                     for para in shape.text_frame.paragraphs:
                         for run in para.runs:
+                            if _is_macabacus_linked(run):
+                                continue
                             if old_name in run.text:
                                 run.text = run.text.replace(
                                     old_name, new_name
@@ -120,6 +151,9 @@ class PptxEditor:
         """Replace multiple text strings in the deck.
 
         *replacements_dict*: {"old_text": "new_text", ...}
+
+        Skips Macabacus-linked runs (red text) — those are populated
+        by Macabacus refresh and must not be edited programmatically.
         """
         prs = Presentation(str(ppt_path))
         counts = {k: 0 for k in replacements_dict}
@@ -129,6 +163,8 @@ class PptxEditor:
                 if shape.has_text_frame:
                     for para in shape.text_frame.paragraphs:
                         for run in para.runs:
+                            if _is_macabacus_linked(run):
+                                continue
                             for old, new in replacements_dict.items():
                                 if old in run.text:
                                     run.text = run.text.replace(old, new)
