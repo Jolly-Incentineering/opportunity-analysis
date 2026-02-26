@@ -131,19 +131,11 @@ Do not tell the user which folders were created. Do not stop or ask for input. C
 
 Ask the user:
 
-```
-Context
+Use AskUserQuestion:
+- Question: "What context is this deck for?"
+- Options: ["Pre-call — no call yet (Slack + Public, ~8-12 min)", "Post-call — after a call or internal notes (Full Attio + Gong + Slack + Public, ~14-20 min)"]
 
-  [1] Pre-call — no call yet
-      Slack + Public data only (~8-12 min)
-
-  [2] Post-call — after a call or internal notes
-      Full Attio + Gong + Slack + Public (~14-20 min)
-
-→ 1 or 2
-```
-
-Wait for the user's reply. Store `context = "pre_call"` or `"post_call"` based on their choice. This will inform the research phase but will not change the template or workflow.
+Store `context = "pre_call"` or `"post_call"` based on their choice. This will inform the research phase but will not change the template or workflow.
 
 ---
 

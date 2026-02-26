@@ -182,9 +182,13 @@ source "$WS/.claude/scripts/ws_env.sh"
 start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[model filename]"
 ```
 
-Tell the user: "Model opened. Review the M1–M6 results above. Type 'done' when satisfied, or report any issues."
+Tell the user: "Model opened. Review the M1–M6 results above."
 
-Wait for "done" before continuing.
+Use AskUserQuestion:
+- Question: "Model QA checks (M1–M6) — results look correct?"
+- Options: ["All good — proceed to deck checks", "Found issues — need to fix"]
+
+If issues found, resolve before continuing.
 
 ---
 
@@ -284,61 +288,20 @@ start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/[deck_folder]/[vf_deck_filename]"
 
 Tell the user: "vF opened. Walking through manual checks now."
 
-Walk through each remaining deck check. Instruct the user to check manually in the open file, and wait for "done" after each item.
+Present the manual check instructions to the user:
+- **D1:** Ctrl+F search for "[" — any remaining template tokens?
+- **D2:** Dollar formatting — under $1M = $XXXk, $1M+ = $X.XMM
+- **D3:** Banner values match the model
+- **D4:** Campaign list matches approved: [list from session state]
+- **D5:** Company logo on title slide, no placeholders
+- **D6:** PDF at [deck_folder]/[pdf_filename] matches the deck
 
-**Check D1 -- No template tokens remaining:**
+Then use AskUserQuestion with 3 questions (batching related checks):
+1. "D1 + D2: No template tokens [...] remaining AND dollar formatting correct?" — Options: ["Both pass", "Found tokens", "Found formatting issues", "Both have issues"]
+2. "D3 + D4: Banner values match model AND campaign list matches approved?" — Options: ["Both pass", "Banner mismatch", "Campaign list mismatch", "Both have issues"]
+3. "D5 + D6: Logo/brand assets correct AND PDF matches deck?" — Options: ["Both pass", "Logo issues", "PDF mismatch", "Both have issues"]
 
-Scan all slides for any remaining template tokens (e.g., `[Company Name]`, `[Revenue]`).
-
-```
-Check D1: Search the deck for any remaining template tokens.
-In PowerPoint, press Ctrl+F and search for "[". Report any matches found.
-Type "done" when complete (or report any tokens found):
-```
-
-**Check D2 -- Dollar formatting:**
-
-```
-Check D2: Scroll through all slides with dollar values.
-Confirm: under $1M shows as $XXXk (integer, no decimal — e.g. $516k, $2k),
-         $1M+ shows as $X.XMM (1 decimal, uppercase MM, e.g. $2.0MM).
-Report any incorrectly formatted values.
-Type "done":
-```
-
-**Check D3 -- Banner values match model:**
-
-```
-Check D3: Find the banner shapes on slides with large dollar callouts.
-Confirm each banner value matches what the model shows for that campaign.
-Report any mismatches.
-Type "done":
-```
-
-**Check D4 -- Campaign list matches approved list:**
-
-```
-Check D4: Check the Campaign Summary slide and individual campaign slides.
-Approved campaigns: [list from session state]
-Confirm all approved campaigns appear, and no excluded campaigns appear.
-Type "done":
-```
-
-**Check D5 -- Logo and brand assets:**
-
-```
-Check D5: Confirm the company logo appears on the title slide and any other slides where expected.
-Confirm no placeholder logo images remain.
-Type "done":
-```
-
-**Check D6 -- PDF matches deck:**
-
-```
-Check D6: Open the PDF at: [deck_folder]/[pdf_filename]
-Confirm it matches the current state of the deck (same number of slides, all values visible).
-Type "done":
-```
+If any issues found, walk the user through fixes and re-check the specific items.
 
 ---
 

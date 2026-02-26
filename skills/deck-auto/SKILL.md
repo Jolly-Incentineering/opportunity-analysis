@@ -59,7 +59,13 @@ Context
 → 1 or 2
 ```
 
-Wait for context selection. Store as `context`. Then show phase plan and wait for "go".
+Use AskUserQuestion:
+- Question: "What context is this deck for?"
+- Options: ["Pre-call — no call yet", "Post-call — after a call or internal notes"]
+
+Store as `context`. Then show phase plan and use AskUserQuestion:
+- Question: "Ready to start?"
+- Options: ["Go", "Stop — I need to check something first"]
 
 ---
 
@@ -172,7 +178,11 @@ Read campaign names from `template_config.json`. Do NOT generate names.
 **Branch A:** Rank by evidence. Present RECOMMENDED / STANDARD / EXCLUDE.
 **Branch B:** Show all template campaigns.
 
-Wait for "confirm".
+Use AskUserQuestion:
+- Question: "Confirm campaign selection?"
+- Options: ["Confirm — proceed with these campaigns", "I need to make changes"]
+
+If changes requested, update and re-present.
 
 ### 2.6 Save Research Output
 
@@ -189,7 +199,9 @@ Tell the user: "Phase 3: Model — running."
 
 ### 3.1 Ensure Model is Closed
 
-Tell user to close the model file. Wait for "ready".
+Tell user to close the model file. Use AskUserQuestion:
+- Question: "Is the model file closed?"
+- Options: ["Yes, model is closed", "Not yet — give me a moment"]
 
 ### 3.2 Load Template Config
 
@@ -205,7 +217,9 @@ Apply rounding standards. ROPS check (10x–30x). Accretion ceiling (≤15% EBIT
 
 ### 3.5 GATE: Dry-Run Approval
 
-Present complete plan with cells, values, sources, ROPS, accretion, skipped formulas. Wait for "approve".
+Present complete plan with cells, values, sources, ROPS, accretion, skipped formulas. Use AskUserQuestion:
+- Question: "Approve the dry-run plan?"
+- Options: ["Approve — write all cells", "I need to make changes first"]
 
 ### 3.6 Write to Excel
 
@@ -217,14 +231,13 @@ Compare against `template_config.json` (NOT hardcoded numbers). Alert if counts 
 
 ### 3.8 Open Model for Review
 
-Open model. Walk through 5-item checklist:
-1. Inputs sheet — all column E cells filled
-2. Campaigns — all selected campaigns have non-zero assumption values
-3. ROPS — all in 10x–30x range
-4. Summary inputs — correct company name, revenue, unit count
-5. Save (Ctrl+S)
+Open model. Use AskUserQuestion with 4 questions:
+1. "Inputs sheet — all column E cells filled?" — Options: ["All filled", "Found empty cells"]
+2. "Campaigns — all selected campaigns have non-zero values?" — Options: ["All non-zero", "Found zero values"]
+3. "ROPS — all in 10x–30x range?" — Options: ["All in range", "Found out-of-range"]
+4. "Summary inputs — company name, revenue, unit count correct?" — Options: ["All correct", "Found errors"]
 
-Wait for "done" after each.
+Resolve any issues. Then ask user to save (Ctrl+S).
 
 ### 3.9 Save State
 
@@ -265,19 +278,30 @@ Comprehensive scan of ALL `[...]` patterns, raw dollars, and wrong-vertical narr
 - **E. Token replacements** — write now (`[Year]`, `[Vertical]`, etc.)
 - **F. Raw dollars** — show, defer to Step 4.9
 
-Present the full audit. Wait for "approve". Write C/D/E only.
+Present the full audit. Use AskUserQuestion:
+- Question: "Approve writing C/D/E placeholder items to the deck?"
+- Options: ["Approve — write all", "I need to make changes first"]
+
+Write C/D/E only after approval.
 
 ### 4.4 Campaign Slides (Post-Call Only)
 
-Walk through campaign slide checklist. Wait for "done" after each.
+Use AskUserQuestion with 3 questions for campaign slide checklist:
+1. "Campaign Summary slide — approved campaigns shown in correct order?" — Options: ["Done", "Needs adjustment"]
+2. "Evidence callouts added for RECOMMENDED campaigns?" — Options: ["Done", "Not applicable"]
+3. "EXCLUDED campaign slides hidden or removed?" — Options: ["Done", "Not applicable"]
 
 ### 4.5 Brand Assets
 
-1. Logo check: confirm logo on title slide (`3. Company Resources/1. Logos/`). Wait for "done".
+1. Logo check: confirm logo on title slide (`3. Company Resources/1. Logos/`). Use AskUserQuestion:
+   - Question: "Company logo placed correctly on the title slide?"
+   - Options: ["Done — logo looks good", "No logo found — need help"]
 
 ### 4.6 Step 8a: Macabacus Refresh (Manual)
 
-User refreshes in master, saves, closes master. Wait for "ready".
+User refreshes in master, saves, closes master. Use AskUserQuestion:
+- Question: "Macabacus refresh complete? (Refreshed, checked values, saved, and closed master)"
+- Options: ["Ready — master saved and closed", "Need help with Macabacus"]
 
 ### 4.7 Step 8b: Create vF Copy (Automated)
 
@@ -285,7 +309,9 @@ Copy master to vF filename. Update title metadata.
 
 ### 4.8 Step 8c: Break Links (Manual)
 
-User opens vF, breaks Macabacus links, spot-checks values match the master (not banners — those are still placeholders), saves, closes. Wait for "ready".
+User opens vF, breaks Macabacus links, spot-checks values match the master (not banners — those are still placeholders), saves, closes. Use AskUserQuestion:
+- Question: "Links broken in vF? (Broke links, spot-checked values, saved, and closed vF)"
+- Options: ["Ready — vF saved and closed", "Values don't match — need help"]
 
 ### 4.9 Step 8d: Run Deck Formatter (Automated)
 
@@ -293,19 +319,22 @@ Launch deck-formatter subagent on vF. This is the primary banner fill — popula
 
 ### 4.10 Step 7: Final Visual Review (Manual)
 
-User reviews vF: no tokens, dollar formatting. Wait for "done".
+Use AskUserQuestion with 3 questions for final visual review:
+1. "Slide show check (F5) — any template tokens [...] remaining?" — Options: ["All clear", "Found tokens — need fix"]
+2. "Dollar formatting correct? ($X.XMM for $1M+, $XXXk for $1K–$999K)" — Options: ["Looks good", "Found formatting issues"]
+3. "vF deck saved (Ctrl+S)?" — Options: ["Saved", "Not yet"]
 
 ### 4.11 Step 9: Export PDF (Manual)
 
-```
-Export PDF manually:
-1. Open vF in PowerPoint
-2. File → Export → Create PDF/XPS
-3. Save as [pdf_filename]
-Type "done" when exported.
-```
+Tell user to export PDF manually (File → Export → Create PDF/XPS, save as [pdf_filename]).
 
-Set PDF title metadata with pypdf after export.
+Use AskUserQuestion:
+- Question: "PDF exported to the correct location?"
+- Options: ["Done — PDF exported", "Need help exporting"]
+
+Set PDF title metadata with pypdf after export. Then open PDF for review and use AskUserQuestion:
+- Question: "PDF review — pages correct, no blank slides, banner values readable?"
+- Options: ["Looks good — proceed", "Found issues — need to re-export"]
 
 ### 4.12 Cheat Sheets and Save State
 

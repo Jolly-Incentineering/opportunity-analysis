@@ -87,11 +87,13 @@ Tell the user:
 ```
 Close the model file if it's open. I need it closed to write values programmatically.
 All writes will happen in a single batch in Step 5. You can open and review the model after writes complete in Step 7.
-
-Type "ready" when the model file is closed.
 ```
 
-Wait for "ready" before proceeding.
+Use AskUserQuestion:
+- Question: "Is the model file closed?"
+- Options: ["Yes, model is closed", "Not yet — give me a moment"]
+
+If "Not yet", wait for the user and re-ask. Proceed only after confirmation.
 
 ---
 
@@ -259,10 +261,13 @@ ACCRETION CHECK:
 FORMULA CELLS SKIPPED (do not overwrite):
   [List any formula cells that were identified and skipped]
 
-→ "approve" to write all cells, or tell me what to adjust
 ```
 
-Wait for the user to type "approve" before writing anything. If the user requests changes, update the plan and re-present. Repeat until "approve" is received.
+Use AskUserQuestion:
+- Question: "Approve the dry-run plan? All cells above will be written to the model."
+- Options: ["Approve — write all cells", "I need to make changes first"]
+
+If changes requested, update the plan and re-present. Repeat until approved.
 
 ---
 
@@ -318,30 +323,17 @@ source "$WS/.claude/scripts/ws_env.sh"
 start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[model filename]"
 ```
 
-Present a checklist of manual steps the user must complete in Excel before the model is considered final. Wait for the user to type "done" after each item before presenting the next.
+Present the checklist, then use AskUserQuestion with 4 questions:
+1. "Inputs sheet — all column E cells have values (no placeholders)?" — Options: ["All filled", "Found empty cells"]
+2. "Campaigns sheet — all selected campaigns ([list]) have non-zero assumption values?" — Options: ["All non-zero", "Found zero values"]
+3. "ROPS column — all active campaigns between 10x and 30x?" — Options: ["All in range", "Found out-of-range"]
+4. "Summary inputs — company name, revenue, and unit count correct?" — Options: ["All correct", "Found errors"]
 
-Checklist:
+If any issues found, help the user resolve before continuing.
 
-```
-Manual review checklist -- complete each step in the open model, then type "done":
-
-1. Scroll through the Inputs sheet. Confirm all hard-coded input cells in column E have values. Any still showing placeholders?
-   > [wait for "done"]
-
-2. Check the Campaigns sheet. Confirm all selected campaigns ([list]) have non-zero values in their assumption rows.
-   > [wait for "done"]
-
-3. Check ROPS column. Confirm all active campaigns show ROPS between 10x and 30x. Any outside range?
-   > [wait for "done"]
-
-4. Check the Summary slide inputs tab (if present). Confirm company name, revenue, and unit count are correct.
-   > [wait for "done"]
-
-5. Save the model (Ctrl+S).
-   > [wait for "done"]
-```
-
-If the user reports an issue at any step, address it before marking that step done and moving to the next.
+After all checks pass, tell the user: "Save the model (Ctrl+S)." Use AskUserQuestion:
+- Question: "Model saved?"
+- Options: ["Saved", "Not yet"]
 
 ---
 

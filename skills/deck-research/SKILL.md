@@ -573,7 +573,11 @@ GAPS:
 - [Field]: No data found across all workstreams. Please provide a value or confirm [benchmark default].
 ```
 
-Wait for the user to resolve any conflicts and gaps before proceeding to the campaign gate. If there are none, proceed immediately.
+If there are conflicts or gaps, use AskUserQuestion:
+- Question: "Resolve conflicts and gaps above before proceeding?"
+- Options: ["All resolved — proceed to campaigns", "I need to provide values"]
+
+If "I need to provide values", wait for the user's input then re-merge. If no conflicts or gaps, proceed immediately.
 
 ---
 
@@ -613,8 +617,11 @@ STANDARD (include in model, exclude from summary slide):
 EXCLUDE:
 - [Campaign Name from config] -- [reason for exclusion]
 
-→ "confirm" to proceed, or tell me what to change
 ```
+
+Use AskUserQuestion:
+- Question: "Confirm campaign selection?"
+- Options: ["Confirm — proceed with these campaigns", "I need to make changes"]
 
 **Branch B format:**
 
@@ -629,10 +636,13 @@ Campaign Selection — [COMPANY NAME]
 
   All [N] campaigns included (prospect deck — illustrative).
 
-→ "confirm" to proceed, or list campaigns to remove
 ```
 
-**Revision loop:** If the user requests changes, apply them and re-present the full campaign list. Repeat until the user types "confirm". Only proceed after "confirm" is received.
+Use AskUserQuestion:
+- Question: "Confirm campaign selection?"
+- Options: ["Confirm — proceed with all campaigns", "I need to remove some campaigns"]
+
+**Revision loop:** If the user requests changes, apply them and re-present the full campaign list. Repeat until confirmed.
 
 ---
 

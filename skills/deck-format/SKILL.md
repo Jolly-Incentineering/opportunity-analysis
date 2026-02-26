@@ -98,11 +98,11 @@ PHASE 4 FILE MANAGEMENT:
 
 Sequence: Automated banner scan + write (files closed) → open master + model → brand + refresh → close master → vF copy (auto) → open vF → break links → close vF → open PDF
 
-```
-→ Type "ready" when all files are closed
-```
+Use AskUserQuestion:
+- Question: "Are all Excel and PowerPoint files closed?"
+- Options: ["Yes, all closed", "Not yet — give me a moment"]
 
-Wait for "ready" before continuing.
+If "Not yet", wait for the user and re-ask. Proceed only after confirmation.
 
 ---
 
@@ -247,30 +247,27 @@ F. RAW DOLLARS (reformatted in Step 7d):
 
 SUMMARY: [N] items to write now (C + D + E) | [N] deferred to Step 7d (B + F) | [N] skipped (A)
 
-→ "approve" to write C/D/E items now, or tell me what to change
+SUMMARY: [N] items to write now (C + D + E) | [N] deferred to Step 7d (B + F) | [N] skipped (A)
 ```
 
-Wait for "approve" before writing. Only write items in categories C, D, and E. Categories A, B, and F are handled later in the workflow.
+Use AskUserQuestion:
+- Question: "Approve writing C/D/E placeholder items to the deck?"
+- Options: ["Approve — write all", "I need to make changes first"]
+
+If changes requested, update the plan and re-present. Only write items in categories C, D, and E after approval. Categories A, B, and F are handled later in the workflow.
 
 ---
 
 ## Step 5: Campaign Slides -- Manual Step Checklist
 
-Campaign slide population requires the user to do manual formatting steps in the open deck. Walk through each step and wait for "done" before presenting the next.
+Campaign slide population requires the user to do manual formatting steps in the open deck.
 
-```
-Campaign slide checklist -- complete each step in the open deck, then type "done":
+Present the instructions, then use AskUserQuestion with 3 questions:
+1. "Campaign Summary slide — approved campaigns ([list]) shown in correct order?" — Options: ["Done", "Needs adjustment"]
+2. "Evidence callouts added to speaker notes for RECOMMENDED campaigns?" — Options: ["Done", "Not applicable"]
+3. "EXCLUDED campaign slides hidden or removed?" — Options: ["Done", "Not applicable"]
 
-1. Navigate to the Campaign Summary slide. Confirm the approved campaigns ([list]) are shown and in the correct order.
-   > [wait for "done"]
-
-2. For each RECOMMENDED campaign (highlighted evidence from Gong/Attio):
-   Add the verbatim quote or evidence callout to the speaker notes or evidence text box on that slide.
-   > [wait for "done"]
-
-3. For any campaigns in the EXCLUDE list, confirm their slides are hidden or removed from the deck.
-   > [wait for "done"]
-```
+If any answer is "Needs adjustment", help the user resolve before continuing.
 
 ---
 
@@ -278,14 +275,14 @@ Campaign slide checklist -- complete each step in the open deck, then type "done
 
 ### Step 6a: Logo Check
 
-```
-Brand asset checklist:
+Tell the user to check the title slide for the company logo. If missing, it should be at:
+`[WS]/[CLIENT_ROOT]/[COMPANY_NAME]/3. Company Resources/1. Logos/`
 
-1. Navigate to the title slide. Confirm the company logo is placed correctly. If not, find the logo at:
-   [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/3. Company Resources/1. Logos/
-   and insert it.
-   > [wait for "done"]
-```
+Use AskUserQuestion:
+- Question: "Company logo placed correctly on the title slide?"
+- Options: ["Done — logo looks good", "No logo found — need help"]
+
+If "No logo found", help the user locate or download the logo before continuing.
 
 ---
 
@@ -296,7 +293,7 @@ Refresh all live Macabacus links in the master deck so values are current before
 Tell the user:
 
 ```
-Macabacus refresh — complete these steps in the master deck, then type "ready":
+Macabacus refresh — complete these steps in the master deck:
 
 1. Click the Macabacus tab in the PowerPoint ribbon
 2. Click Refresh All (or Refresh)
@@ -309,7 +306,11 @@ The master will keep its live Macabacus links. Do NOT break links here.
 The master must be saved and closed before the vF copy is created.
 ```
 
-Wait for "ready" before continuing.
+Use AskUserQuestion:
+- Question: "Macabacus refresh complete? (Refreshed, checked values, saved, and closed master)"
+- Options: ["Ready — master saved and closed", "Need help with Macabacus"]
+
+If "Need help", troubleshoot before continuing.
 
 ---
 
@@ -352,7 +353,7 @@ start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/[deck_folder]/[vf_deck_filename]"
 Tell the user:
 
 ```
-Break Macabacus links in the vF — complete these steps, then type "ready":
+Break Macabacus links in the vF — complete these steps:
 
 1. Click the Macabacus tab in the PowerPoint ribbon
 2. Click Break Links → confirm the dialog
@@ -364,7 +365,11 @@ Break Macabacus links in the vF — complete these steps, then type "ready":
 Do NOT break links in the master deck. The master always retains live links.
 ```
 
-Wait for "ready" before continuing.
+Use AskUserQuestion:
+- Question: "Links broken in vF? (Broke links, spot-checked values, saved, and closed vF)"
+- Options: ["Ready — vF saved and closed", "Values don't match — need help"]
+
+If values don't match, troubleshoot before continuing.
 
 ---
 
@@ -403,20 +408,12 @@ Do not edit the vF directly — make changes in the master, re-run Steps 7a–7d
 
 ## Step 8: Final Visual Review -- Manual Step Checklist
 
-Walk through each item in the open vF deck and wait for "done" before presenting the next.
+Tell the user to review the open vF deck, then use AskUserQuestion with 3 questions:
+1. "Slide show check (F5) — any template tokens [...] remaining?" — Options: ["All clear", "Found tokens — need fix"]
+2. "Dollar formatting correct? ($X.XMM for $1M+, $XXXk for $1K–$999K)" — Options: ["Looks good", "Found formatting issues"]
+3. "vF deck saved (Ctrl+S)?" — Options: ["Saved", "Not yet"]
 
-```
-Final visual review -- complete each step in the vF deck, then type "done":
-
-1. Run Slide Show from the beginning (F5). Check that no template tokens ([...]) remain on any slide.
-   > [wait for "done"]
-
-2. Check all dollar values in the deck. Confirm formatting: $1M+ = $X.XMM (one decimal), $1K–$999K = $XXXk (integer, no decimal).
-   > [wait for "done"]
-
-3. Save the vF deck (Ctrl+S).
-   > [wait for "done"]
-```
+If any issues found, help the user resolve before continuing.
 
 ---
 
@@ -430,11 +427,13 @@ Export PDF manually:
 2. File → Export → Create PDF/XPS
 3. Save to: [deck_folder]/[pdf_filename]
 Takes ~15 seconds.
-
-After exporting, type "done".
 ```
 
-Wait for "done". Then set the PDF title and open it:
+Use AskUserQuestion:
+- Question: "PDF exported to the correct location?"
+- Options: ["Done — PDF exported", "Need help exporting"]
+
+If "Need help", troubleshoot before continuing. Then set the PDF title and open it:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
@@ -445,19 +444,11 @@ python3 "$WS/.claude/scripts/deck_engine.py" set-pdf-title \
 start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/[deck_folder]/[pdf_filename]"
 ```
 
-Tell the user:
+Tell the user to review the PDF, then use AskUserQuestion:
+- Question: "PDF review — pages correct, no blank slides, banner values readable?"
+- Options: ["Looks good — proceed", "Found issues — need to re-export"]
 
-```
-PDF opened. Confirm the export is clean:
-
-1. Correct number of pages (matches slide count)
-2. No blank or corrupted slides
-3. Banner values are readable and not cut off
-
-Type "done" when the PDF looks good.
-```
-
-Wait for "done" before continuing to Step 10.
+If issues found, help the user fix and re-export before continuing to Step 10.
 
 ---
 
