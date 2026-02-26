@@ -6,13 +6,15 @@ The Jolly Opportunity Analysis plugin for Claude. Give it a company name and it 
 
 **Intro Deck workflow** — a streamlined template that works for both pre-call and post-call contexts. Claude captures whether it's pre-call or post-call to inform the research phase, but uses the same workflow and template throughout (~10–15 min). **Two ways to run it:** automatically with `/deck-auto [Company]`, or step-by-step yourself. Both are covered below.
 
-**Latest features (v3.0.0):**
-- **Two commands:** `/deck-auto [Company]` starts a new deck, `/deck-continue` resumes from where you left off. Individual phase commands still work but are hidden under "Advanced".
-- **`deck_engine.py`:** Standalone CLI replacing all inline Python in skills — 7 actions (fill-banners, format-dollars, find-placeholders, set-title, set-pdf-title, finalize, copy-vf). Skills are now thin orchestrators.
-- **Portable scripts:** `jolly_utils.py`, `qa_check.py`, `excel_editor.py`, and `template_scanner.py` all resolve paths from `JOLLY_WORKSPACE` env var + workspace config. No hardcoded developer paths.
-- **CLI interfaces on all scripts:** `excel_editor.py` (scan-formulas, write-cells, read-summary), `template_scanner.py` (scan, match, create configs) — skills call them via argparse, not class imports.
+**Latest features (v3.1.0):**
+- **Token optimization:** New `ws_env.sh` replaces 39 inline preamble blocks with a single `source` one-liner. Hard rules trimmed from 11 to 8 per skill.
+- **Critical bug fixes:** Missing `--action` flag in deck-model, broken heredoc invocations in deck-qa checks, Cyrillic character in benchmark data.
+- **Dead code removed:** 540+ lines of unused GUI code from brandfetch_downloader, dead template refs from jolly_utils.
+- **Retail vertical support:** `jolly_utils.py`, `qa_check.py`, and plugin keywords now recognize Retail templates.
+- **Hardened imports:** `goody_scraper.py` no longer crashes on import if selenium/Pillow are missing.
+- **Read-only MCP guardrail:** All Attio, Slack, and other MCP tools are explicitly read-only in every skill.
 
-**[→ See full v3.0.0 release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v3.0.0)**
+**[→ See full v3.1.0 release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v3.1.0)**
 
 ---
 
@@ -305,7 +307,7 @@ All applicable tasks run in parallel and report back with their findings. Claude
 | D3 | Banner numbers on the presentation match the model output |
 | D4 | Campaign slides match the approved campaign list |
 | D5 | Logo and brand assets are placed |
-| D7 | The exported PDF matches the current state of the presentation |
+| D6 | The exported PDF matches the current state of the presentation |
 
 After all checks pass, Claude cleans up any temporary lock files and gives you the final list of delivery-ready files.
 
@@ -408,6 +410,33 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 
 ## Changelog
 
+### v3.1.0 (Feb 26, 2026)
+
+- **`ws_env.sh` preamble helper:** New shell script replaces 39 inline preamble blocks across 7 skills with a single `source` one-liner. Saves ~150 tokens per bash block.
+- **Hard rules trimmed:** 11 rules → 8 (9 for agent-dispatching skills). Merged redundant rules; moved HAIKU rule to only deck-auto, deck-research, deck-start.
+- **Critical bug fixes:** Missing `--action write-cells` flag in deck-model Step 5 (would fail at runtime). Broken heredoc invocations in deck-qa D2b/D2c checks (path argument on wrong line). Cyrillic `у` in `vertical_benchmarks.json` keys replaced with ASCII `u`.
+- **Dead code removed:** Brandfetch GUI class (540 lines), dead template refs in jolly_utils (Automotive Services, Taxis), `__pycache__` removed from tracking.
+- **Retail vertical support:** Added to `jolly_utils.py` (template paths, formula counts placeholder), `qa_check.py` (detect_industry), and plugin.json keywords.
+- **Optional imports in goody_scraper:** selenium/Pillow wrapped in try/except — no crash on import if not installed.
+- **Portable SEC identity:** `sec_filings.py` reads from env/config instead of hardcoded email.
+- **deck-format steps renumbered:** Sequential order (3b, 7a–7d, 8) replacing old non-sequential (3.5, 8a–8d, 7).
+- **deck-continue fixed:** "14 quality checks" → "11 quality checks".
+- **`.gitignore` added** to prevent future `__pycache__`, `.env`, and temp file commits.
+
+**[→ Release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v3.1.0)**
+
+### v3.0.3 (Feb 26, 2026)
+
+- **Read-only MCP guardrail:** Added hard rule 11 to all 9 skills — Attio, Slack, and other MCP tools are explicitly read-only. No create, update, or delete actions permitted.
+
+### v3.0.2 (Feb 25, 2026)
+
+- Fix cheat sheet: company profile fields, campaign assumption alignment.
+
+### v3.0.1 (Feb 25, 2026)
+
+- Remove dead code, red-font detection, and finalize action cleanup.
+
 ### v3.0.0 (Feb 25, 2026)
 
 - **`deck_engine.py` built:** Consolidated CLI tool (7 actions) replacing all inline python-pptx/openpyxl in skill prompts. Skills call it via bash instead of embedding 20+ line heredocs.
@@ -468,9 +497,9 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 
 - Bundled all scripts, agents, template configs, and tools with plugin (fully self-contained)
 - Added template config system via `template_scanner.py` — auto-matches models, extracts campaign names/cell addresses/formula counts
-- Added guardrails block to every skill (10 hard rules)
+- Added guardrails block to every skill (8 hard rules; 9 for agent-dispatching skills)
 - Fixed deck-auto: 3 agents (not 4), Haiku model, correct folder names, correct step order, template config
-- Fixed deck-format step order: 8a→8b→8c→8d→7→9
+- Fixed deck-format step order: 7a→7b→7c→7d→8→9
 - Fixed file locking: model closed during writes, banner values read from JSON not Excel
 - Replaced all hardcoded formula counts with template config references
 - PDF export is now manual step (more reliable)
