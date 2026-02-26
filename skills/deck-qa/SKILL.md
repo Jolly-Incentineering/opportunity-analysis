@@ -226,7 +226,7 @@ if found:
     print(f"FAIL D2b: {len(found)} Macabacus range blank(s) found.")
     for slide_num, shape_name, text in found:
         print(f"  Slide {slide_num} | Shape \"{shape_name}\": \"{text}\"")
-    print("Fix: refresh Macabacus on the master deck, recreate the vF (Steps 8a-8d), and re-run deck-qa.")
+    print("Fix: refresh Macabacus on the master deck, recreate the vF (Steps 7a-7d), and re-run deck-qa.")
 else:
     print("PASS D2b")
 EOF

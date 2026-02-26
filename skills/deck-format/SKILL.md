@@ -147,7 +147,7 @@ Tell the user: "Both files opened. Do not edit the deck yet -- I will walk you t
 
 ---
 
-## Step 3.5: Context Branch
+## Step 3b: Context Branch
 
 Check the `context` from session state:
 
@@ -231,7 +231,7 @@ Brand asset checklist:
 
 ---
 
-## Step 8a: Refresh Macabacus on Master -- Manual Step
+## Step 7a: Refresh Macabacus on Master -- Manual Step
 
 Refresh all live Macabacus links in the master deck so values are current before creating the delivery copy.
 
@@ -255,7 +255,7 @@ Wait for "ready" before continuing.
 
 ---
 
-## Step 8b: Create vF Copy -- Automated
+## Step 7b: Create vF Copy -- Automated
 
 Tell the user: "Creating vF delivery copy from refreshed master..."
 
@@ -279,7 +279,7 @@ The master deck retains all live Macabacus links — do not modify it.
 
 ---
 
-## Step 8c: Break Links in vF -- Manual Step
+## Step 7c: Break Links in vF -- Manual Step
 
 The delivery copy (vF) must have all Macabacus links converted to static values. Break links in the vF only — never in the master.
 
@@ -310,7 +310,7 @@ Wait for "ready" before continuing.
 
 ---
 
-## Step 8d: Format vF Deck -- Automated
+## Step 7d: Format vF Deck -- Automated
 
 Fill banners and reformat dollars on the vF for delivery. This is the primary banner fill — banners were intentionally left as placeholders on the master so Macabacus refresh and link break happen first. The vF must be closed for this step.
 
@@ -338,12 +338,12 @@ Tell the user:
 vF formatted — banners filled, dollars reformatted.
 
 Master deck retains live Macabacus links for future refreshes.
-Do not edit the vF directly — make changes in the master, re-run Steps 8a–8d.
+Do not edit the vF directly — make changes in the master, re-run Steps 7a–7d.
 ```
 
 ---
 
-## Step 7: Final Visual Review -- Manual Step Checklist
+## Step 8: Final Visual Review -- Manual Step Checklist
 
 Walk through each item in the open vF deck and wait for "done" before presenting the next.
 

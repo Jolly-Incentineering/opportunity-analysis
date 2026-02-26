@@ -87,7 +87,7 @@ Based on the user's choice, run the corresponding skill **in full** as if the us
 | Phase 2 | `/deck-research` | Research agents, campaign selection |
 | Phase 3 | `/deck-model` | Populate Excel model |
 | Phase 4 | `/deck-format` | Banners, text, brand assets, vF, PDF |
-| Phase 5 | `/deck-qa` | 14 quality checks |
+| Phase 5 | `/deck-qa` | 11 quality checks |
 
 Read the full SKILL.md for the target phase and execute it from the beginning. The session state provides all the context the skill needs (company name, paths, vertical, branch, context).
 
