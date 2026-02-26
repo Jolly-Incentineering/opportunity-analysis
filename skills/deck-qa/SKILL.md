@@ -206,7 +206,7 @@ Run programmatically against the vF:
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-python3 - <<'EOF'
+python3 - "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[vF deck filename]" <<'EOF'
 import sys
 from pptx import Presentation
 
@@ -230,7 +230,6 @@ if found:
 else:
     print("PASS D2b")
 EOF
-python3 - "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[vF deck filename]"
 ```
 
 **Check D2c -- Raw integers in narrative text:**
@@ -242,7 +241,7 @@ Run programmatically against the vF:
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
-python3 - <<'EOF'
+python3 - "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[vF deck filename]" <<'EOF'
 import sys, re
 from pptx import Presentation
 
@@ -274,7 +273,6 @@ if found:
 else:
     print("PASS D2c")
 EOF
-python3 - "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/[vF deck filename]"
 ```
 
 ### Step 4b: Open vF for Manual Review
