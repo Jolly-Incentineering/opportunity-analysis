@@ -1,11 +1,11 @@
 {
   "name": "opportunity-analysis",
   "description": "Opportunity Analysis workflow for Jolly — research, model, and format a client intro deck. Bundled with scripts, template configs, and guardrails.",
-  "version": "3.0.3",
+  "version": "3.1.0",
   "author": {
     "name": "Jolly"
   },
   "repository": "https://github.com/Jolly-Incentineering/opportunity-analysis",
   "license": "UNLICENSED",
-  "keywords": ["jolly", "deck", "qsr", "manufacturing", "workflow"]
+  "keywords": ["jolly", "deck", "qsr", "manufacturing", "retail", "workflow"]
 }

@@ -5,16 +5,14 @@ description: Run research workstreams via 3 parallel agents, merge results, and 
 
 HARD RULES — NEVER VIOLATE:
 1. Do NOT generate or invent campaign names. Read them from the template config JSON.
-2. Do NOT make tool calls not listed in these instructions.
+2. Do NOT make tool calls or add steps not listed in these instructions.
 3. Do NOT write to formula cells under any circumstances.
 4. Do NOT skip gates — wait for user confirmation at every gate.
 5. Do NOT open files you are about to write to programmatically. Keep them closed during writes.
-6. Do NOT add features, steps, or checks not specified here.
-7. Do NOT proceed past a failed step — stop and report the failure.
-8. If a tool call fails, report the error. Do NOT retry more than once.
-9. Keep all client-specific data in the client folder under 4. Reports/. Never write client data to .claude/data/.
-10. Use HAIKU for research agents unless explicitly told otherwise.
-11. All Attio, Slack, and other MCP tools are READ-ONLY. Never use create, update, or delete MCP actions.
+6. Do NOT proceed past a failed step — stop and report. Do NOT retry more than once.
+7. Keep all client-specific data in the client folder under 4. Reports/. Never write client data to .claude/data/.
+8. All Attio, Slack, and other MCP tools are READ-ONLY. Never use create, update, or delete MCP actions.
+9. Use HAIKU for research agents unless explicitly told otherwise.
 
 ---
 
@@ -24,7 +22,7 @@ Set workspace root and client root:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+source "$WS/.claude/scripts/ws_env.sh"
 ```
 
 If `workspace_config.json` does not exist, tell the user: "Workspace is not configured. Run /deck-setup first." Then stop.
@@ -139,7 +137,7 @@ Check whether a recent `gong_insights_*.json` file already exists:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-CLIENT_ROOT=$(python3 -c "import json; c=json.load(open('$WS/.claude/data/workspace_config.json')); print(c['client_root'])" 2>/dev/null || echo "Clients")
+source "$WS/.claude/scripts/ws_env.sh"
 find "$WS/$CLIENT_ROOT/[COMPANY_NAME]/5. Call Transcripts" -name "gong_insights_*.json" 2>/dev/null
 ```
 
@@ -585,7 +583,7 @@ Read campaign names from the template config saved by deck-start:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+source "$WS/.claude/scripts/ws_env.sh"
 cat "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/template_config.json"
 ```
 

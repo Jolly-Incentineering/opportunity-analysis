@@ -5,16 +5,14 @@ description: Initialize a new intro deck engagement -- verify folder, copy templ
 
 HARD RULES — NEVER VIOLATE:
 1. Do NOT generate or invent campaign names. Read them from the template config JSON.
-2. Do NOT make tool calls not listed in these instructions.
+2. Do NOT make tool calls or add steps not listed in these instructions.
 3. Do NOT write to formula cells under any circumstances.
 4. Do NOT skip gates — wait for user confirmation at every gate.
 5. Do NOT open files you are about to write to programmatically. Keep them closed during writes.
-6. Do NOT add features, steps, or checks not specified here.
-7. Do NOT proceed past a failed step — stop and report the failure.
-8. If a tool call fails, report the error. Do NOT retry more than once.
-9. Keep all client-specific data in the client folder under 4. Reports/. Never write client data to .claude/data/.
-10. Use HAIKU for research agents unless explicitly told otherwise.
-11. All Attio, Slack, and other MCP tools are READ-ONLY. Never use create, update, or delete MCP actions.
+6. Do NOT proceed past a failed step — stop and report. Do NOT retry more than once.
+7. Keep all client-specific data in the client folder under 4. Reports/. Never write client data to .claude/data/.
+8. All Attio, Slack, and other MCP tools are READ-ONLY. Never use create, update, or delete MCP actions.
+9. Use HAIKU for research agents unless explicitly told otherwise.
 
 ---
 
@@ -50,7 +48,7 @@ Set the workspace root and read the client root from workspace config:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+source "$WS/.claude/scripts/ws_env.sh"
 ```
 
 If `workspace_config.json` does not exist, tell the user:
@@ -96,7 +94,7 @@ Run:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+source "$WS/.claude/scripts/ws_env.sh"
 find "$WS/$CLIENT_ROOT/[COMPANY_NAME]" -type d -maxdepth 4 2>/dev/null
 ```
 
@@ -114,7 +112,7 @@ If any are missing, create them silently:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+source "$WS/.claude/scripts/ws_env.sh"
 mkdir -p "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model"
 mkdir -p "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations"
 mkdir -p "$WS/$CLIENT_ROOT/[COMPANY_NAME]/3. Company Resources/1. Logos"
@@ -155,7 +153,6 @@ Run:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-TEMPLATES_ROOT=$(python3 -c "import json; c=json.load(open('$WS/.claude/data/workspace_config.json')); print(c.get('templates_root', 'Templates'))" 2>/dev/null || echo "Templates")
 find "$WS/$TEMPLATES_ROOT" -type f \( -name "*.xlsx" -o -name "*.pptx" \) | sort
 ```
 
@@ -191,7 +188,7 @@ Create the Presentations subfolder with numbering:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+source "$WS/.claude/scripts/ws_env.sh"
 mkdir -p "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/1. [COMPANY_NAME] Intro Deck (YYYY.MM.DD)"
 ```
 
@@ -199,7 +196,7 @@ Copy the files:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+source "$WS/.claude/scripts/ws_env.sh"
 cp "[full source .xlsx path]" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model (YYYY.MM.DD).xlsx"
 cp "[full source .pptx path]" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/1. [COMPANY_NAME] Intro Deck (YYYY.MM.DD)/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx"
 ```
@@ -208,7 +205,7 @@ Update the document title metadata on both files to match the filename (without 
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+source "$WS/.claude/scripts/ws_env.sh"
 python3 "$WS/.claude/scripts/deck_engine.py" set-title \
   --file "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model (YYYY.MM.DD).xlsx" \
   --title "[COMPANY_NAME] Intro Model (YYYY.MM.DD)"
@@ -221,7 +218,7 @@ Then open both files:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+source "$WS/.claude/scripts/ws_env.sh"
 start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model (YYYY.MM.DD).xlsx"
 start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/2. Presentations/1. [COMPANY_NAME] Intro Deck (YYYY.MM.DD)/[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx"
 ```
@@ -244,7 +241,7 @@ Run `template_scanner.py` on the copied model file to identify the template type
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+source "$WS/.claude/scripts/ws_env.sh"
 python3 "$WS/.claude/agents/template_scanner.py" \
   --file "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model (YYYY.MM.DD).xlsx" \
   --configs-dir "$WS/.claude/agents/templates/" \
@@ -256,7 +253,7 @@ python3 "$WS/.claude/agents/template_scanner.py" \
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+source "$WS/.claude/scripts/ws_env.sh"
 python3 -c "
 import json, os, datetime
 cfg = json.load(open('$WS/.claude/agents/templates/[matched_config].json'))
@@ -285,7 +282,7 @@ Tell the user: "Template newer than config — re-scanned [matched_config].json.
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+source "$WS/.claude/scripts/ws_env.sh"
 cp "$WS/.claude/agents/templates/[matched_config].json" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/template_config.json"
 ```
 
@@ -294,7 +291,7 @@ cp "$WS/.claude/agents/templates/[matched_config].json" "$WS/$CLIENT_ROOT/[COMPA
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+source "$WS/.claude/scripts/ws_env.sh"
 python3 "$WS/.claude/agents/template_scanner.py" \
   --file "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model (YYYY.MM.DD).xlsx" \
   --create \
@@ -320,7 +317,7 @@ Run all three checks at the same time (do not wait for one before starting the o
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+source "$WS/.claude/scripts/ws_env.sh"
 find "$WS/$CLIENT_ROOT/[COMPANY_NAME]/5. Call Transcripts" -name "gong_insights_*.json" 2>/dev/null
 ```
 
@@ -384,7 +381,7 @@ Do not wait for the subagent to finish. Continue immediately to Step 9.
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+source "$WS/.claude/scripts/ws_env.sh"
 ```
 
 Write a session state file to `$WS/.claude/data/session_state_[company_slug]_YYYY-MM-DD.md` (use today's date). Contents:
