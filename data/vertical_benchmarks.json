@@ -16,7 +16,7 @@
         "operating_income": 165616000,
         "operating_margin_pct": 0.265,
         "system_unit_count": 2385,
-        "aуv_system": 1850000,
+        "auv_system": 1850000,
         "employees_approx": 900,
         "notes": "Franchise-heavy (~98% franchised). Revenue includes royalties, ad fees, company-owned sales."
       },
@@ -28,14 +28,14 @@
         "operating_income": null,
         "operating_margin_pct": null,
         "system_unit_count": null,
-        "aуv_system": null,
+        "auv_system": null,
         "employees_approx": null,
         "notes": "Cache empty. Run: python .claude/scripts/sec_filings.py --ticker JACK --output .claude/data/sec_JACK.json"
       }
     ],
     "benchmark_ranges": {
       "_note": "Based on WING only until JACK is refreshed. Widen ranges once multiple comps available.",
-      "aуv_system": {
+      "auv_system": {
         "low": 1400000,
         "mid": 1700000,
         "high": 2200000,
