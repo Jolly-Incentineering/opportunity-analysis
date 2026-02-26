@@ -259,6 +259,7 @@ After "approve" is received, write all planned values to the Excel file using `e
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
 python3 "$WS/.claude/agents/excel_editor.py" \
+  --action write-cells \
   --file "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[model filename]" \
   --cells "[JSON of cell writes]"
 ```
