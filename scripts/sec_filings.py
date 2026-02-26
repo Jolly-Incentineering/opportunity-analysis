@@ -21,6 +21,7 @@ sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
 import argparse
 import json
+import os
 from datetime import datetime
 from pathlib import Path
 
@@ -30,12 +31,13 @@ from pathlib import Path
 # ---------------------------------------------------------------------------
 
 def get_identity():
-    env_path = Path('.claude/.env')
+    ws = Path(os.environ.get('JOLLY_WORKSPACE', '.')).resolve()
+    env_path = ws / '.claude' / '.env'
     if env_path.exists():
         for line in env_path.read_text(encoding='utf-8').splitlines():
             if line.startswith('SEC_IDENTITY='):
                 return line.split('=', 1)[1].strip()
-    return 'nishant@jolly.com'
+    return os.environ.get('SEC_IDENTITY', 'research@company.com')
 
 
 def safe_pct(a, b):
