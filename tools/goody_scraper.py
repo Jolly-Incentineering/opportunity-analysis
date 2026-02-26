@@ -26,16 +26,21 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from io import BytesIO
 from pathlib import Path
 
-import requests
-from PIL import Image
-from selenium import webdriver
-from selenium.common.exceptions import TimeoutException, WebDriverException
-from selenium.webdriver.chrome.options import Options as ChromeOptions
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.edge.options import Options as EdgeOptions
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
+try:
+    import requests
+    from PIL import Image
+    from selenium import webdriver
+    from selenium.common.exceptions import TimeoutException, WebDriverException
+    from selenium.webdriver.chrome.options import Options as ChromeOptions
+    from selenium.webdriver.common.by import By
+    from selenium.webdriver.common.keys import Keys
+    from selenium.webdriver.edge.options import Options as EdgeOptions
+    from selenium.webdriver.support import expected_conditions as EC
+    from selenium.webdriver.support.ui import WebDriverWait
+    _DEPS_AVAILABLE = True
+except ImportError as e:
+    _DEPS_AVAILABLE = False
+    _DEPS_ERROR = str(e)
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -419,6 +424,10 @@ class GoodySwagScraper:
 # CLI
 # ---------------------------------------------------------------------------
 def main():
+    if not _DEPS_AVAILABLE:
+        print(f"ERROR: Missing dependency: {_DEPS_ERROR}. Run: pip install selenium Pillow requests", file=sys.stderr)
+        sys.exit(1)
+
     parser = argparse.ArgumentParser(
         description="Download branded swag mockups from ongoody.com/swag")
     parser.add_argument("--domain", "-d", help="Company domain (e.g. starbucks.com)")
