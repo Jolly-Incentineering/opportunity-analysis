@@ -14,6 +14,7 @@ HARD RULES — NEVER VIOLATE:
 8. If a tool call fails, report the error. Do NOT retry more than once.
 9. Keep all client-specific data in the client folder under 4. Reports/. Never write client data to .claude/data/.
 10. Use HAIKU for research agents unless explicitly told otherwise.
+11. All Attio, Slack, and other MCP tools are READ-ONLY. Never use create, update, or delete MCP actions.
 
 ---
 
