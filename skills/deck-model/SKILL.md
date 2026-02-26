@@ -171,11 +171,12 @@ When building Base / Upside / Downside scenarios for any campaign:
 
 For each cell to be written, prepare:
 - Sheet name
-- Cell address
+- Cell address (columns C/D/E for values)
 - Value (rounded)
 - Source (from research_output)
 - Source tier
 - Comment text (see comment format below)
+- Column H note (see notes column format below)
 
 **Comment format for every hard-coded cell:**
 
@@ -197,6 +198,23 @@ DATE: [Month Year]
 ```
 
 Comment dimensions: width=420px, height=220px, font size 8.
+
+**Column H — Notes/Source column (MANDATORY for every row that receives a value):**
+
+For every row where a value is written to columns C/D/E, also write a condensed source note to column H of the same row. This gives reviewers a quick at-a-glance reference without hovering over cell comments.
+
+Format: `[Source tier]: [source name] ([date or "est."])`
+
+Examples:
+- `1st party: Gong call (Jan 2026)`
+- `2nd party: SEC 10-K FY2024`
+- `3rd party: industry benchmark (est.)`
+- `Calculated: $12M rev / 450 stores / 365 / $8.50 AOV`
+- `Adjusted: capped at $3,500 per vertical standard`
+
+Keep each note to one line (~60 chars max). If a value has multiple sources, use the primary one. The full detail lives in the cell comment — column H is the summary.
+
+Column H cells are NOT formula cells, so they are safe to write. Include them in the dry-run plan and in the `--cells` JSON passed to `excel_editor.py`.
 
 **Formula lock list -- never write to these cells:**
 
@@ -223,12 +241,12 @@ DRY-RUN PLAN -- [COMPANY NAME]
 [N] cells to write across [N] sheets
 
 Sheet: Assumptions
-  Cell A1  | Annual Revenue         | $X.XMM     | Source: Gong (1st party) | Comment: included
-  Cell A2  | Unit Count             | XXX        | Source: SEC 10-K (2nd)   | Comment: included
+  Cell E6  | Annual Revenue         | $X.XMM     | H: "1st party: Gong call (Jan 2026)"  | Comment: included
+  Cell E7  | Unit Count             | XXX        | H: "2nd party: SEC 10-K FY2024"       | Comment: included
   ...
 
 Sheet: Campaigns
-  Cell B5  | [Campaign Name] Adoption Rate | X%  | Source: benchmark (2nd)  | Comment: included
+  Cell C55 | [Campaign Name] Adoption Rate | X%  | H: "3rd party: industry benchmark"    | Comment: included
   ...
 
 ROPS CHECK:
