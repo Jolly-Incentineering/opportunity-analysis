@@ -20,9 +20,9 @@ from jolly_utils import (
     BASE_DIR, CLIENTS_DIR,
     add_comment, set_cell, set_scenario_cells,
     load_workbook_safe, save_workbook_safe, verify_formula_counts,
-    find_row_by_label, round_to_standard,
+    round_to_standard,
     calculate_ebitda_per_hour, calculate_orders_per_store_per_day,
-    calculate_accretion, get_template_paths, resolve_client_path,
+    get_template_paths, resolve_client_path,
     QSR_HIRING_COST_CAP, HOURS_PER_YEAR, COMMENT_AUTHOR,
 )
 

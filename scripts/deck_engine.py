@@ -13,7 +13,6 @@ Actions:
     find-placeholders Find all remaining [...] template tokens
     set-title         Set document title on .pptx or .xlsx
     set-pdf-title     Set PDF /Title metadata from the source presentation
-    finalize          Convert red Macabacus text to black/white for delivery
     copy-vf           Copy master deck to vF delivery copy
 
 Requirements: python-pptx, openpyxl, pypdf
@@ -69,27 +68,6 @@ def format_dollars(value):
 
 
 # ---------------------------------------------------------------------------
-# Macabacus detection
-# ---------------------------------------------------------------------------
-def is_macabacus_linked(run):
-    """Return True if a text run has red font (Macabacus live link).
-
-    Macabacus-linked runs have red text (R>200, G<100, B<100) and must
-    never be edited — Macabacus refresh populates their values.
-    """
-    try:
-        if run.font.color and run.font.color.type is not None:
-            rgb = run.font.color.rgb
-            if rgb and len(str(rgb)) >= 6:
-                h = str(rgb)
-                r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
-                return r > 200 and g < 100 and b < 100
-    except Exception:
-        pass
-    return False
-
-
-# ---------------------------------------------------------------------------
 # Bracket placeholder regex — matches any [...] token
 # ---------------------------------------------------------------------------
 BRACKET_RE = re.compile(r'\[.*?\]')
@@ -138,10 +116,6 @@ def action_fill_banners(args):
             if not shape.has_text_frame:
                 continue
             for para in shape.text_frame.paragraphs:
-                # Skip Macabacus-linked paragraphs
-                if any(is_macabacus_linked(r) for r in para.runs):
-                    continue
-
                 full_text = "".join(run.text for run in para.runs)
                 if not BRACKET_RE.search(full_text):
                     continue
@@ -181,7 +155,7 @@ def action_format_dollars(args):
     """Reformat raw dollar amounts in a deck.
 
     Finds patterns like $1234567 or $1,234,567 and reformats per standard.
-    Skips Macabacus-linked runs. Optionally skips specific slides.
+    Optionally skips specific slides.
     """
     pptx_mod = _require("pptx", "python-pptx")
     abs_path = os.path.abspath(args.file)
@@ -202,8 +176,6 @@ def action_format_dollars(args):
                 continue
             for para in shape.text_frame.paragraphs:
                 for run in para.runs:
-                    if is_macabacus_linked(run):
-                        continue
                     matches = RAW_DOLLAR_RE.findall(run.text)
                     if not matches:
                         continue
@@ -291,57 +263,6 @@ def action_set_pdf_title(args):
     print(json.dumps({"pdf": abs_pdf, "title": pdf_title}))
 
 
-def action_finalize(args):
-    """Convert red Macabacus text to black or white for client delivery.
-
-    Dark backgrounds → white text. Light/no backgrounds → black text.
-    """
-    pptx_mod = _require("pptx", "python-pptx")
-    from pptx.dml.color import RGBColor
-    from pptx.enum.dml import MSO_FILL_TYPE
-
-    abs_path = os.path.abspath(args.file)
-    prs = pptx_mod.Presentation(abs_path)
-    fixed = 0
-
-    def _bg_is_dark(shape):
-        try:
-            if hasattr(shape, "fill") and shape.fill.type == MSO_FILL_TYPE.SOLID:
-                rgb_hex = str(shape.fill.fore_color.rgb)
-                if len(rgb_hex) >= 6:
-                    r, g, b = int(rgb_hex[0:2], 16), int(rgb_hex[2:4], 16), int(rgb_hex[4:6], 16)
-                    return (r + g + b) / 3 < 100
-        except Exception:
-            pass
-        return False
-
-    for slide in prs.slides:
-        for shape in slide.shapes:
-            frames = []
-            if hasattr(shape, "text_frame") and shape.has_text_frame:
-                frames.append((shape.text_frame, shape))
-            if shape.shape_type == 19:  # Table
-                try:
-                    for row in shape.table.rows:
-                        for cell in row.cells:
-                            frames.append((cell.text_frame, shape))
-                except Exception:
-                    pass
-
-            dark = _bg_is_dark(shape)
-            target_color = RGBColor(255, 255, 255) if dark else RGBColor(0, 0, 0)
-
-            for tf, _ in frames:
-                for para in tf.paragraphs:
-                    for run in para.runs:
-                        if run.text.strip() and is_macabacus_linked(run):
-                            run.font.color.rgb = target_color
-                            fixed += 1
-
-    prs.save(abs_path)
-    print(json.dumps({"red_text_fixed": fixed}))
-
-
 def action_copy_vf(args):
     """Copy master deck to vF delivery copy and update its title."""
     pptx_mod = _require("pptx", "python-pptx")
@@ -396,10 +317,6 @@ def main():
     p.add_argument("--file", required=True, help="Path to .pdf file")
     p.add_argument("--from-pptx", required=True, help="Path to source .pptx")
 
-    # finalize
-    p = sub.add_parser("finalize", help="Convert red Macabacus text to black/white")
-    p.add_argument("--file", required=True, help="Path to .pptx file")
-
     # copy-vf
     p = sub.add_parser("copy-vf", help="Copy master to vF delivery copy")
     p.add_argument("--src", required=True, help="Path to master .pptx")
@@ -413,7 +330,6 @@ def main():
         "find-placeholders": action_find_placeholders,
         "set-title": action_set_title,
         "set-pdf-title": action_set_pdf_title,
-        "finalize": action_finalize,
         "copy-vf": action_copy_vf,
     }
 

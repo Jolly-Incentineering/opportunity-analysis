@@ -294,8 +294,6 @@ mkdir -p "$WS/.claude/data"
 cp "$PLUGIN_DIR/scripts/"*.py "$WS/.claude/scripts/" 2>/dev/null
 cp "$PLUGIN_DIR/scripts/excel_editor.py" "$WS/.claude/agents/excel_editor.py" 2>/dev/null
 cp "$PLUGIN_DIR/scripts/template_scanner.py" "$WS/.claude/agents/template_scanner.py" 2>/dev/null
-cp "$PLUGIN_DIR/scripts/pptx_editor.py" "$WS/.claude/agents/pptx_editor.py" 2>/dev/null
-cp "$PLUGIN_DIR/scripts/assumption_guardrails.py" "$WS/.claude/agents/assumption_guardrails.py" 2>/dev/null
 cp "$PLUGIN_DIR/scripts/jolly_utils.py" "$WS/.claude/agents/jolly_utils.py" 2>/dev/null
 
 # Copy agent specs

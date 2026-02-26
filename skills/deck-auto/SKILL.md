@@ -259,7 +259,7 @@ Scan banner placeholders on master. Report slide numbers and current text. Do NO
 
 ### 4.3 Text Placeholders
 
-Scan for template tokens. Skip Macabacus-linked runs (red font). Present replacement plan. Wait for "approve text". Write.
+Scan for template tokens. Present replacement plan. Wait for "approve text". Write.
 
 ### 4.4 Campaign Slides (Post-Call Only)
 
@@ -279,7 +279,7 @@ Copy master to vF filename. Update title metadata.
 
 ### 4.8 Step 8c: Break Links (Manual)
 
-User opens vF, breaks Macabacus links, spot-checks Macabacus-linked values (not banners — those are still placeholders), saves, closes. Wait for "ready".
+User opens vF, breaks Macabacus links, spot-checks values match the master (not banners — those are still placeholders), saves, closes. Wait for "ready".
 
 ### 4.9 Step 8d: Run Deck Formatter (Automated)
 

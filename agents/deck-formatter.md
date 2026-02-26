@@ -1,6 +1,6 @@
 ---
 name: deck-formatter
-description: Format vF deck — banners, dollars, finalize, PDF. Uses deck_engine.py.
+description: Format vF deck — banners, dollars, PDF. Uses deck_engine.py.
 model: haiku
 ---
 
@@ -17,10 +17,7 @@ python3 "$WS/.claude/scripts/deck_engine.py" fill-banners --file "[vf_deck_path]
 # 2. Reformat raw dollars ($1M+ → $X.XMM, $1K-$999K → $XXXk)
 python3 "$WS/.claude/scripts/deck_engine.py" format-dollars --file "[vf_deck_path]"
 
-# 3. Red Macabacus text → black/white
-python3 "$WS/.claude/scripts/deck_engine.py" finalize --file "[vf_deck_path]"
-
-# 4. Verify clean
+# 3. Verify clean
 python3 "$WS/.claude/scripts/deck_engine.py" find-placeholders --file "[vf_deck_path]"
 ```
 
@@ -32,4 +29,4 @@ User exports PDF manually (File → Export → Create PDF/XPS), then:
 python3 "$WS/.claude/scripts/deck_engine.py" set-pdf-title --file "[pdf_output]" --from-pptx "[vf_deck_path]"
 ```
 
-Open both files. Report: banner values, dollar replacements, red text fixed, placeholders remaining, PDF status.
+Open both files. Report: banner values, dollar replacements, placeholders remaining, PDF status.

@@ -14,7 +14,6 @@ HARD RULES — NEVER VIOLATE:
 8. If a tool call fails, report the error. Do NOT retry more than once.
 9. Keep all client-specific data in the client folder under 4. Reports/. Never write client data to .claude/data/.
 10. Use HAIKU for research agents unless explicitly told otherwise.
-11. Do NOT edit Macabacus-linked text runs (red font color). Macabacus refresh populates those values from the model. Skip any run where the font color is red (R>200, G<100, B<100).
 
 ---
 
@@ -115,8 +114,6 @@ Scan the deck for slides containing banner placeholder shapes. A shape is a bann
 - `$[ ]`, `[ ]`, `$[EBITDA]`, `[ ] quantified`, `quantified Jolly`
 - Any other `[...]` token that hasn't been replaced with a real value
 
-**Skip Macabacus-linked shapes.** If a shape's text runs have red font color (R>200, G<100, B<100), that value is populated by Macabacus refresh -- note it but do not plan edits.
-
 For each banner shape found, report its slide number and current text.
 
 **Do NOT fill banners here.** Banner values will be written in Step 8d on the vF copy (after Macabacus refresh, vF copy, and link break). This step is scan-only so we know what the formatter will need to fix.
@@ -127,7 +124,6 @@ Tell the user:
 BANNER SCAN -- [COMPANY NAME]
 
 Slide [N] | "[current text]" (placeholder — will be filled on vF)
-Slide [N] | "[current text]" (Macabacus-linked — skip)
 ...
 
 Banners will be populated in the vF formatting step (Step 8d).
@@ -180,9 +176,7 @@ Continue to Step 4 normally (full flow including campaign slides).
 
 Scan all slides for text placeholders that contain template tokens (e.g., `[Company Name]`, `[Revenue]`, `[Unit Count]`, `[Year]`, `[Vertical]`).
 
-**Skip Macabacus-linked runs.** Any text run with red font color is a Macabacus link that pulls its value from the Excel model during refresh. Do not edit these -- they will be populated automatically in Step 8a.
-
-For each non-Macabacus placeholder found, map it to the correct value from `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research_output_[company_slug].json`. Apply dollar formatting where applicable.
+For each placeholder found, map it to the correct value from `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research_output_[company_slug].json`. Apply dollar formatting where applicable.
 
 Present the text replacement plan to the user:
 
@@ -288,19 +282,25 @@ The master deck retains all live Macabacus links — do not modify it.
 
 The delivery copy (vF) must have all Macabacus links converted to static values. Break links in the vF only — never in the master.
 
+Open the vF for the user:
+
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+CLIENT_ROOT=$(python3 -c "import json; d=open('$WS/.claude/data/workspace_config.json'); c=json.load(d); print(c['client_root'])" 2>/dev/null || echo "Clients")
+start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/[deck_folder]/[vf_deck_filename]"
+```
+
 Tell the user:
 
 ```
 Break Macabacus links in the vF — complete these steps, then type "ready":
 
-1. Open the vF file in PowerPoint:
-   [deck_folder]/[vf_deck_filename]
-2. Click the Macabacus tab in the PowerPoint ribbon
-3. Click Break Links → confirm the dialog
-4. Spot-check 2-3 slides with Macabacus-linked values — numbers should match the master
+1. Click the Macabacus tab in the PowerPoint ribbon
+2. Click Break Links → confirm the dialog
+3. Spot-check 2-3 slides with Macabacus-linked values — numbers should match the master
    (Banner placeholders like $[ ] are expected — they will be filled in the next step)
-5. Save the vF (Ctrl+S)
-6. Close the vF
+4. Save the vF (Ctrl+S)
+5. Close the vF
 
 Do NOT break links in the master deck. The master always retains live links.
 ```
@@ -311,7 +311,7 @@ Wait for "ready" before continuing.
 
 ## Step 8d: Format vF Deck -- Automated
 
-Fill banners, reformat dollars, and finalize the vF for delivery. This is the primary banner fill — banners were intentionally left as placeholders on the master so Macabacus refresh and link break happen first. The vF must be closed for this step.
+Fill banners and reformat dollars on the vF for delivery. This is the primary banner fill — banners were intentionally left as placeholders on the master so Macabacus refresh and link break happen first. The vF must be closed for this step.
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
@@ -325,10 +325,7 @@ python3 "$WS/.claude/scripts/deck_engine.py" fill-banners --file "$VF" --researc
 # 2. Reformat raw dollar amounts
 python3 "$WS/.claude/scripts/deck_engine.py" format-dollars --file "$VF"
 
-# 3. Convert red Macabacus text to black/white
-python3 "$WS/.claude/scripts/deck_engine.py" finalize --file "$VF"
-
-# 4. Verify no placeholders remain
+# 3. Verify no placeholders remain
 python3 "$WS/.claude/scripts/deck_engine.py" find-placeholders --file "$VF"
 ```
 
@@ -337,7 +334,7 @@ If find-placeholders returns any results, report them to the user before continu
 Tell the user:
 
 ```
-vF formatted — banners filled, dollars reformatted, Macabacus text finalized.
+vF formatted — banners filled, dollars reformatted.
 
 Master deck retains live Macabacus links for future refreshes.
 Do not edit the vF directly — make changes in the master, re-run Steps 8a–8d.

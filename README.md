@@ -441,7 +441,6 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 
 - **Dollar formatting standardized:** MM values use 1 decimal (`$2.0MM`, `$65.4MM`), k values are integer (`$516k`, `$2k`) across all skills, agents, and scripts
 - **Macabacus-linked text protected:** All programmatic text edits (banners, placeholders, company name) now skip Macabacus-linked runs (red font color), preventing overwrites of live model links and reducing unnecessary edits
-- **`pptx_editor.py` guardrails:** New `_is_macabacus_linked()` helper; `replace_text()`, `update_company_name()`, and `fill_ebitda_placeholder()` all skip red-text runs automatically
 
 ### v2.1.0 (Feb 25, 2026)
 

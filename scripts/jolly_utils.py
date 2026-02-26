@@ -112,23 +112,6 @@ def set_scenario_cells(ws, row, values, comment_text=None):
 
 
 # ---------------------------------------------------------------------------
-# Comment formatting
-# ---------------------------------------------------------------------------
-def format_comment(source, url, value, methodology, rationale, confidence,
-                   date="Feb 2026"):
-    """Generate a standardized Excel comment string."""
-    return (
-        f"SOURCE: {source}\n"
-        f"{url}\n\n"
-        f"VALUE: {value}\n\n"
-        f"METHODOLOGY: {methodology}\n\n"
-        f"RATIONALE: {rationale}\n\n"
-        f"CONFIDENCE: {confidence}\n\n"
-        f"DATE: {date}"
-    )
-
-
-# ---------------------------------------------------------------------------
 # Workbook helpers
 # ---------------------------------------------------------------------------
 def load_workbook_safe(path, data_only=False):
@@ -187,22 +170,6 @@ def verify_formula_counts(wb, template_type):
 
     msg = " | ".join(f"{k}: {v}" for k, v in results.items())
     return all_ok, msg
-
-
-# ---------------------------------------------------------------------------
-# Row-finding (dynamic label lookup)
-# ---------------------------------------------------------------------------
-def find_row_by_label(ws, label_text, col="B", start_row=1, end_row=100):
-    """Find the row number where *col* contains *label_text* (case-insensitive).
-
-    Returns row number or None.
-    """
-    needle = label_text.lower()
-    for row in range(start_row, end_row + 1):
-        cell_val = ws[f"{col}{row}"].value
-        if cell_val and needle in str(cell_val).lower():
-            return row
-    return None
 
 
 # ---------------------------------------------------------------------------
@@ -281,68 +248,6 @@ def calculate_orders_per_store_per_day(revenue, stores, aov):
     if stores == 0 or aov == 0:
         return 0
     return round(revenue / stores / 365 / aov)
-
-
-def calculate_accretion(campaigns_data, company_ebitda):
-    """Validate EBITDA accretion metrics against Jolly bounds.
-
-    *campaigns_data*: list of dicts with keys 'gross', 'incentive', 'net'.
-    Returns dict with metrics and list of issues.
-    """
-    total_gross = sum(c.get("gross", 0) for c in campaigns_data)
-    total_incentive = sum(c.get("incentive", 0) for c in campaigns_data)
-    total_net = sum(c.get("net", 0) for c in campaigns_data)
-    accretion_pct = total_net / company_ebitda if company_ebitda else 0
-
-    issues = []
-    lo, hi = ACCRETION_BOUNDS["total_pct"]
-    if not (lo <= accretion_pct <= hi):
-        issues.append(
-            f"Total accretion {accretion_pct:.1%} outside {lo:.0%}-{hi:.0%} bounds"
-        )
-
-    rops_lo, rops_hi = ACCRETION_BOUNDS["rops_per_campaign"]
-    for i, c in enumerate(campaigns_data):
-        inc = c.get("incentive", 0)
-        if inc > 0:
-            rops = c.get("net", 0) / inc
-            if not (rops_lo <= rops <= rops_hi):
-                issues.append(
-                    f"Campaign {i+1} ROPS {rops:.1f}x outside {rops_lo}x-{rops_hi}x"
-                )
-
-    return {
-        "total_gross": total_gross,
-        "total_incentive": total_incentive,
-        "total_net": total_net,
-        "accretion_pct": accretion_pct,
-        "issues": issues,
-        "in_bounds": len(issues) == 0,
-    }
-
-
-# ---------------------------------------------------------------------------
-# Company data I/O
-# ---------------------------------------------------------------------------
-def load_companies_json(path=None):
-    """Load company data from the canonical JSON file."""
-    if path is None:
-        path = CLAUDE_DIR / "data" / "companies.json"
-    path = Path(path)
-    if not path.exists():
-        return {}
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-
-def save_companies_json(data, path=None):
-    """Save company data to the canonical JSON file."""
-    if path is None:
-        path = CLAUDE_DIR / "data" / "companies.json"
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
 
 
 # ---------------------------------------------------------------------------

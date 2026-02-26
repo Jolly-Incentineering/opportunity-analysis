@@ -5,7 +5,7 @@ JSON configuration files that map Excel template structures to field labels.
 ## Purpose
 
 When `ExcelEditor` populates an Excel model, it uses a config file to find the correct cells for each field. This allows the same population code to work with:
-- Standard templates (QSR, Manufacturing, etc.)
+- Standard templates (QSR, Retail, etc.)
 - Custom templates (per-client variations)
 - Rearranged layouts (same fields, different rows)
 
@@ -13,7 +13,7 @@ When `ExcelEditor` populates an Excel model, it uses a config file to find the c
 
 ```json
 {
-  "template_type": "QSR|Manufacturing|Automotive|Retail|Custom",
+  "template_type": "QSR|Retail|Custom",
   "description": "Human-readable description",
   "labels": {
     "Field Name": row_number,
@@ -36,9 +36,7 @@ When `ExcelEditor` populates an Excel model, it uses a config file to find the c
 
 | File | Template Type | Use Case |
 |------|---------------|----------|
-| `qsr_standard.json` | QSR | Standard QSR Intro Model Template |
-| `manufacturing_standard.json` | Manufacturing | Standard Manufacturing Intro Template |
-| `automotive_standard.json` | Automotive | Automotive Services Intro Template |
+| `qsr_standard.json` | QSR | Standard QSR Intro Model Template (Sweetgreen standard) |
 | `retail_and_ecommerce_standard.json` | Retail | Standard Retail & E-Commerce Template (REI standard as of 2026-02-23) |
 | `[company]_custom.json` | Custom | Client-specific custom template |
 
@@ -78,7 +76,7 @@ editor.populate_qsr(
     company_name="US Merchants",
     workbook_path="path/to/model.xlsx",
     assumptions={...},
-    config_file=".claude/agents/templates/manufacturing_standard.json"
+    config_file=".claude/agents/templates/qsr_standard.json"
 )
 
 # Method 2: Auto-detect config (excel-editor agent does this)
@@ -143,7 +141,7 @@ The `excel-editor` agent will auto-detect and use the right one.
 ## Config Validation
 
 Configs are validated when loaded:
-- ✅ `template_type` is one of: QSR, Manufacturing, Automotive, Retail, Custom
+- ✅ `template_type` is one of: QSR, Retail, Custom
 - ✅ `labels` is a dict of `{field_name: row_number}`
 - ✅ `scenarios` is a list of column letters (e.g., ["C", "D", "E"])
 - ✅ All row numbers are positive integers
@@ -165,12 +163,4 @@ Configs are validated when loaded:
 
 ## Reusing Configs Across Companies
 
-If multiple companies use the same template structure, they can share the same config:
-
-```
-Companies: US Merchants, Comfort Research
-Template: Manufacturing Intro Template.xlsx (same structure)
-Config: manufacturing_standard.json (reused)
-```
-
-No duplication needed — the system automatically reuses matching configs.
+If multiple companies use the same template structure, they can share the same config. No duplication needed — the system automatically reuses matching configs.
