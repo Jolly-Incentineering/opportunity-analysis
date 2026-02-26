@@ -74,8 +74,20 @@ Tell the user:
 Resuming from [session date] -- company: [Company Name], vertical: [Vertical].
 Starting Phase 4: Deck formatting.
 
+Gates this phase:
+  □ Placeholder writes approved (C/D/E items)
+  □ Campaign slides checked
+  □ Logo placed
+  □ Macabacus refresh complete
+  □ vF links broken
+  □ Final visual review passed
+  □ PDF exported
+  □ PDF reviewed
+
 Deck file: [deck filename]
 ```
+
+After each gate is confirmed, echo "[Gate name] ✓" in your reply before proceeding.
 
 Phase 4 scope:
 ```

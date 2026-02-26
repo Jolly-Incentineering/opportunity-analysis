@@ -72,14 +72,19 @@ Context: [Pre-call / Post-call]
 
 ## Step 1.5: Display QA Scope
 
-Display the QA scope table to the user:
+Tell the user:
 
-**All contexts use the unified Intro Deck template — 11 focused checks run:**
 ```
-  Run:   M1 M2 M3 M4 M5 M6  D2 D3 D4 D5 D6
+Gates this phase:
+  □ Model checks confirmed (M1–M6)
+  □ Deck checks D1+D2 (tokens, formatting)
+  □ Deck checks D3+D4 (banners, campaigns)
+  □ Deck checks D5+D6 (logo, PDF)
+
+Checks: M1 M2 M3 M4 M5 M6  D1 D2 D2b D2c D3 D4 D5 D6
 ```
 
-All required checks to ensure the model and presentation are delivery-ready.
+After each gate is confirmed, echo "[Gate name] ✓" in your reply before proceeding.
 
 ---
 

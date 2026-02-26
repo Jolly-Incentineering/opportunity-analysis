@@ -63,6 +63,16 @@ Starting Phase 2: Research workstreams.
 
 Derive `company_slug` from company name: lowercase, spaces replaced with underscores, remove special characters.
 
+Tell the user:
+
+```
+Gates this phase:
+  □ Data conflicts / gaps resolved
+  □ Campaign selection confirmed
+```
+
+After each gate is confirmed, echo "[Gate name] ✓" in your reply before proceeding.
+
 ---
 
 ## Step 2: Check Research Path Based on Context

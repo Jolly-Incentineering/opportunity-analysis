@@ -74,9 +74,17 @@ Tell the user:
 Resuming from [session date] -- company: [Company Name], branch: [A or B], vertical: [Vertical].
 Starting Phase 3: Model population.
 
+Gates this phase:
+  □ Model file closed
+  □ Dry-run plan approved
+  □ Model review passed (inputs, campaigns, ROPS, summary)
+  □ Model saved
+
 Model file: [model filename]
 Campaigns approved: [N]
 ```
+
+After each gate is confirmed, echo "[Gate name] ✓" in your reply before proceeding.
 
 ---
 

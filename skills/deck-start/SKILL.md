@@ -63,6 +63,20 @@ Use `$WS/$CLIENT_ROOT` as the prefix for all client folder paths below.
 
 ---
 
+## Gate Checklist
+
+After the workspace check passes, tell the user:
+
+```
+Gates this run:
+  □ Context (pre-call / post-call)
+  □ Template selected
+```
+
+After each gate is confirmed, echo "[Gate name] ✓" in your reply before proceeding.
+
+---
+
 ## Step 1: Check for Existing Session State
 
 Run:

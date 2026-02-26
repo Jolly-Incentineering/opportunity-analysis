@@ -63,9 +63,23 @@ Use AskUserQuestion:
 - Question: "What context is this deck for?"
 - Options: ["Pre-call — no call yet", "Post-call — after a call or internal notes"]
 
-Store as `context`. Then show phase plan and use AskUserQuestion:
+Store as `context`. Then show phase plan and gate checklist, then use AskUserQuestion:
 - Question: "Ready to start?"
 - Options: ["Go", "Stop — I need to check something first"]
+
+Tell the user:
+
+```
+Gates this run:
+  Phase 0:  □ Context selected
+  Phase 1:  □ Template selected
+  Phase 2:  □ Conflicts/gaps resolved  □ Campaigns confirmed
+  Phase 3:  □ Model closed  □ Dry-run approved  □ Model review passed  □ Model saved
+  Phase 4:  □ Placeholders written  □ Campaign slides  □ Logo  □ Macabacus  □ Links broken  □ Visual review  □ PDF exported  □ PDF reviewed
+  Phase 5:  □ Model QA confirmed  □ Deck QA confirmed  □ Delivery ready
+```
+
+After each gate is confirmed, echo "[Gate name] ✓" in your reply before proceeding.
 
 ---
 
