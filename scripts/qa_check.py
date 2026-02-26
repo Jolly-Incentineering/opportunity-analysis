@@ -71,6 +71,11 @@ def find_vf_deck(company: str) -> str:
 
 
 def detect_industry(wb) -> str:
+    if "Inputs" in wb.sheetnames:
+        ws = wb["Inputs"]
+        b18 = ws.cell(row=18, column=2).value
+        if b18 and "Member" in str(b18):
+            return "retail"
     if "Campaigns" not in wb.sheetnames:
         return "qsr"
     return "manufacturing" if count_formulas(wb["Campaigns"]) > 200 else "qsr"

@@ -39,8 +39,8 @@ QSR_MODEL_TEMPLATE = TEMPLATES_DIR / "QSR" / "QSR Intro Model Template.xlsx"
 QSR_PPT_TEMPLATE = TEMPLATES_DIR / "QSR" / "QSR Intro Template.pptx"
 MFG_MODEL_TEMPLATE = TEMPLATES_DIR / "Manufacturing" / "Manufacturing Intro Template.xlsx"
 MFG_PPT_TEMPLATE = TEMPLATES_DIR / "Manufacturing" / "Manufacturing Intro Template.pptx"
-AUTO_MODEL_TEMPLATE = TEMPLATES_DIR / "Automotive Services"
-TAXI_TEMPLATE = TEMPLATES_DIR / "Taxis"
+RETAIL_MODEL_TEMPLATE = TEMPLATES_DIR / "Retail" / "Retail Intro Model Template.xlsx"
+RETAIL_PPT_TEMPLATE = TEMPLATES_DIR / "Retail" / "Retail Intro Template.pptx"
 
 # Comment defaults
 COMMENT_AUTHOR = "Jolly Research"
@@ -51,6 +51,7 @@ COMMENT_HEIGHT = 200
 FORMULA_COUNTS = {
     "qsr": {"Campaigns": 153, "Sensitivities": 86},
     "manufacturing": {"Campaigns": 366, "Sensitivities": 205},
+    "retail": {"Campaigns": 0, "Sensitivities": 0},  # TODO: count from actual Retail template
 }
 
 # Accretion bounds
@@ -258,6 +259,7 @@ def get_template_paths(template_type):
     templates = {
         "qsr": (QSR_MODEL_TEMPLATE, QSR_PPT_TEMPLATE),
         "manufacturing": (MFG_MODEL_TEMPLATE, MFG_PPT_TEMPLATE),
+        "retail": (RETAIL_MODEL_TEMPLATE, RETAIL_PPT_TEMPLATE),
     }
     result = templates.get(template_type.lower())
     if not result:
