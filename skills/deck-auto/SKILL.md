@@ -257,7 +257,7 @@ Scan banner placeholders on master. Report slide numbers and current text. Do NO
 
 ### 4.3 Text Placeholders
 
-Scan for template tokens. Present replacement plan. Wait for "approve text". Write.
+Scan for template tokens. **SKIP Macabacus-linked fields** — company name, revenue, store count, employee count, and any red-font text are filled automatically by the Macabacus refresh in Step 4.6. Only replace non-linked tokens (e.g., `[Year]`, `[Vertical]`). Present replacement plan showing skipped vs. replaced. Wait for "approve text". Write.
 
 ### 4.4 Campaign Slides (Post-Call Only)
 

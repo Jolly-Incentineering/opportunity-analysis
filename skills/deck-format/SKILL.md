@@ -172,7 +172,16 @@ Continue to Step 4 normally (full flow including campaign slides).
 
 ## Step 4: Populate Text Placeholders
 
-Scan all slides for text placeholders that contain template tokens (e.g., `[Company Name]`, `[Revenue]`, `[Unit Count]`, `[Year]`, `[Vertical]`).
+Scan all slides for text placeholders that contain template tokens (e.g., `[Revenue]`, `[Unit Count]`, `[Year]`, `[Vertical]`).
+
+**SKIP Macabacus-linked fields.** The following are populated automatically by the Macabacus refresh in Step 7a and must NOT be replaced programmatically:
+- Company name (any variation: `[Company Name]`, `[Company]`, or bare company name references)
+- Any value that appears in red font (indicates a live Macabacus link)
+- Revenue, store count, employee count, and other values that are linked from the Excel model
+
+If a text run has red font color (RGB `FF0000`), it is Macabacus-linked — skip it entirely. Do not propose replacing it.
+
+Only replace placeholders that are NOT Macabacus-linked — typically narrative-only tokens like `[Year]`, `[Vertical]`, or custom text that has no model link.
 
 For each placeholder found, map it to the correct value from `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research_output_[company_slug].json`. Apply dollar formatting where applicable.
 
@@ -181,10 +190,15 @@ Present the text replacement plan to the user:
 ```
 TEXT REPLACEMENT PLAN -- [COMPANY NAME]
 
-Slide [N] | "[Company Name]" -> "[COMPANY_NAME]"
-Slide [N] | "[Revenue]" -> "$X.XMM"
-Slide [N] | "[Unit Count]" -> "XXX locations"
-...
+SKIPPED (Macabacus-linked — filled automatically on refresh):
+  Slide [N] | "[Company Name]" -- Macabacus link, skipping
+  Slide [N] | "$[Revenue]" -- Macabacus link, skipping
+  ...
+
+WILL REPLACE (not linked):
+  Slide [N] | "[Year]" -> "2026"
+  Slide [N] | "[Vertical]" -> "Retail"
+  ...
 
 → "approve" to apply text replacements, or tell me what to change
 ```
