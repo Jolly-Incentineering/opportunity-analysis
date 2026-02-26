@@ -170,40 +170,87 @@ Continue to Step 4 normally (full flow including campaign slides).
 
 ---
 
-## Step 4: Populate Text Placeholders
+## Step 4: Full Placeholder Audit
 
-Scan all slides for text placeholders that contain template tokens (e.g., `[Revenue]`, `[Unit Count]`, `[Year]`, `[Vertical]`).
+Run a comprehensive scan of ALL slides for any text matching the bracket pattern `\[.*?\]` (including empty `[ ]`). Also flag raw dollar amounts (`$X,XXX` or larger without k/MM formatting) and narrative text that references a different vertical than this company's.
 
-**SKIP Macabacus-linked fields.** The following are populated automatically by the Macabacus refresh in Step 7a and must NOT be replaced programmatically:
-- Company name (any variation: `[Company Name]`, `[Company]`, or bare company name references)
-- Any value that appears in red font (indicates a live Macabacus link)
-- Revenue, store count, employee count, and other values that are linked from the Excel model
+Read campaign details and banner values from:
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+source "$WS/.claude/scripts/ws_env.sh"
+cat "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research_output_[company_slug].json"
+```
 
-If a text run has red font color (RGB `FF0000`), it is Macabacus-linked — skip it entirely. Do not propose replacing it.
+Categorize every finding into one of 5 buckets:
 
-Only replace placeholders that are NOT Macabacus-linked — typically narrative-only tokens like `[Year]`, `[Vertical]`, or custom text that has no model link.
+**A. MACABACUS-LINKED (skip — filled on refresh in Step 7a)**
+Any text run with red font color (RGB `FF0000`) is a live Macabacus link. Also skip company name, revenue, store count, employee count, and other values linked from the Excel model. Do NOT propose replacing these.
 
-For each placeholder found, map it to the correct value from `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research_output_[company_slug].json`. Apply dollar formatting where applicable.
+**B. BANNER PLACEHOLDERS (deferred — filled by deck_engine.py in Step 7d)**
+Banner shapes containing `$[ ]`, `[ ]`, or `$[...]MM` patterns. These are filled programmatically from `research_output` after Macabacus refresh + link break. Show the proposed fill values now so the user can verify, but do NOT write them here.
 
-Present the text replacement plan to the user:
+**C. CAMPAIGN DESCRIPTION PLACEHOLDERS (write in this step)**
+Slides with `Suggested Jolly Campaign: [ ]` or empty campaign description text boxes. Map each to the matching campaign from the approved list in `research_output`. For each:
+- Campaign name
+- 1-2 sentence description tailored to THIS company's vertical and context
+- Key metric (e.g., "$1.5MM EBITDA uplift, 18x ROPS")
+
+**D. NARRATIVE TEXT TO REWRITE (write in this step)**
+Any paragraph that references the wrong vertical (e.g., QSR language like "beverages and food offerings" for a distribution company). Propose a rewrite using the correct vertical language and the company's actual business context from research.
+
+**E. SIMPLE TOKEN REPLACEMENTS (write in this step)**
+Non-linked tokens like `[Year]`, `[Vertical]`, or other template fill-ins. Map to correct values.
+
+**F. RAW DOLLAR AMOUNTS (deferred — reformatted by deck_engine.py in Step 7d)**
+Dollar values like `$760,000` that need `$760k` or `$1.5MM` formatting. Show them so the user knows they will be fixed, but do NOT reformat here.
+
+Present the full audit to the user:
 
 ```
-TEXT REPLACEMENT PLAN -- [COMPANY NAME]
+PLACEHOLDER AUDIT -- [COMPANY NAME]
 
-SKIPPED (Macabacus-linked — filled automatically on refresh):
-  Slide [N] | "[Company Name]" -- Macabacus link, skipping
-  Slide [N] | "$[Revenue]" -- Macabacus link, skipping
+A. MACABACUS-LINKED (auto-filled on refresh, skipping):
+  Slide [N] | "[Company Name]" -- live link
+  Slide [N] | "$[Revenue]" -- live link
   ...
 
-WILL REPLACE (not linked):
+B. BANNERS (filled in Step 7d):
+  Slide [N] | "[ ]" -> "$5.3MM"         (Grand Total EBITDA)
+  Slide [N] | "[ ]" -> "6 quantified"   (campaign count)
+  Slide [N] | "$[ ]MM of EBITDA..." -> "$5.3MM of EBITDA...6 quantified"
+  ...
+
+C. CAMPAIGN DESCRIPTIONS (will write now):
+  Slide [N] | "Suggested Jolly Campaign: [ ]" -> "Visit Order Amounts — Increase average order
+              value through targeted visit incentives. $1,480K EBITDA uplift, 22x ROPS."
+  Slide [N] | "Suggested Jolly Campaign: [ ]" -> "On-Time Training — Drive completion rates
+              for mandatory training modules. $1,160K EBITDA uplift, 19x ROPS."
+  Slide [N] | "Suggested Jolly Campaign: [ ]" -> "Employee Referrals — Reduce hiring costs
+              through referral bonuses. $1,013K EBITDA uplift, 15x ROPS."
+  ...
+
+D. NARRATIVE REWRITES (will write now):
+  Slide [N] | Current: "visiting on slow days fills seats" (QSR language)
+             -> Proposed: "[company-specific distribution language]"
+  Slide [N] | Current: "beverages and food offerings" (QSR language)
+             -> Proposed: "[correct vertical language]"
+  ...
+
+E. TOKEN REPLACEMENTS (will write now):
   Slide [N] | "[Year]" -> "2026"
-  Slide [N] | "[Vertical]" -> "Retail"
   ...
 
-→ "approve" to apply text replacements, or tell me what to change
+F. RAW DOLLARS (reformatted in Step 7d):
+  Slide [N] | "$760,000" -> "$760k" (auto)
+  Slide [N] | "$1,500,000" -> "$1.5MM" (auto)
+  ...
+
+SUMMARY: [N] items to write now (C + D + E) | [N] deferred to Step 7d (B + F) | [N] skipped (A)
+
+→ "approve" to write C/D/E items now, or tell me what to change
 ```
 
-Wait for "approve" before writing.
+Wait for "approve" before writing. Only write items in categories C, D, and E. Categories A, B, and F are handled later in the workflow.
 
 ---
 

@@ -255,9 +255,17 @@ Open master deck. Read banner values from `campaign_details` in `research_output
 
 Scan banner placeholders on master. Report slide numbers and current text. Do NOT fill banners here — they will be filled on the vF in Step 4.9.
 
-### 4.3 Text Placeholders
+### 4.3 Full Placeholder Audit
 
-Scan for template tokens. **SKIP Macabacus-linked fields** — company name, revenue, store count, employee count, and any red-font text are filled automatically by the Macabacus refresh in Step 4.6. Only replace non-linked tokens (e.g., `[Year]`, `[Vertical]`). Present replacement plan showing skipped vs. replaced. Wait for "approve text". Write.
+Comprehensive scan of ALL `[...]` patterns, raw dollars, and wrong-vertical narrative. Categorize into 6 buckets per deck-format Step 4:
+- **A. Macabacus-linked** — skip (auto-filled on refresh in 4.6)
+- **B. Banners** — show proposed values, defer to Step 4.9
+- **C. Campaign descriptions** — write now (map `Suggested Jolly Campaign: [ ]` to approved campaigns with description + key metric)
+- **D. Narrative rewrites** — write now (fix wrong-vertical language)
+- **E. Token replacements** — write now (`[Year]`, `[Vertical]`, etc.)
+- **F. Raw dollars** — show, defer to Step 4.9
+
+Present the full audit. Wait for "approve". Write C/D/E only.
 
 ### 4.4 Campaign Slides (Post-Call Only)
 
