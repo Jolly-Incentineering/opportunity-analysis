@@ -139,13 +139,17 @@ def fmt_bench(path_val) -> str:
 
 
 def _deep_get(d: dict, path: str, default=None):
-    """Traverse nested dict via dot-separated path."""
+    """Traverse nested dict/list via dot-separated path (supports integer indices)."""
     parts = path.split(".")
     cur = d
     for p in parts:
-        if not isinstance(cur, dict):
+        if isinstance(cur, dict):
+            cur = cur.get(p)
+        elif isinstance(cur, list) and p.isdigit():
+            idx = int(p)
+            cur = cur[idx] if idx < len(cur) else None
+        else:
             return default
-        cur = cur.get(p)
         if cur is None:
             return default
     return cur
@@ -325,6 +329,10 @@ def _generate_config_fallback(research: dict, vertical: str) -> dict:
         unit_label = "Locations"
 
     # Build profile fields — always include the core set, then any populated extras
+    attio = research.get("attio_insights") or {}
+    slack_list = research.get("slack_insights") or []
+    slack = slack_list[0] if slack_list else {}
+
     profile_fields = [
         {"label": "Industry",        "path": "industry"},
         {"label": "Founded",         "path": "attio_insights.founded"},
@@ -332,6 +340,28 @@ def _generate_config_fallback(research: dict, vertical: str) -> dict:
         {"label": "Market Position", "path": "company_basics.geography.rank"},
         {"label": "States Operated", "path": "company_basics.geography.state_count"},
     ]
+
+    # Attio details
+    if attio.get("categories"):
+        profile_fields.append({"label": "Categories", "path": "attio_insights.categories"})
+    if attio.get("strongest_connection_strength"):
+        profile_fields.append({"label": "Connection", "path": "attio_insights.strongest_connection_strength"})
+    if attio.get("employee_range"):
+        profile_fields.append({"label": "Employee Range", "path": "attio_insights.employee_range"})
+    if attio.get("estimated_arr_usd"):
+        profile_fields.append({"label": "Est. ARR", "path": "attio_insights.estimated_arr_usd"})
+    if attio.get("last_interaction"):
+        profile_fields.append({"label": "Last Interaction", "path": "attio_insights.last_interaction"})
+
+    # Slack insights
+    if slack.get("deal_stage"):
+        profile_fields.append({"label": "Deal Stage", "path": "slack_insights.0.deal_stage"})
+    if slack.get("primary_contact"):
+        profile_fields.append({"label": "Primary Contact", "path": "slack_insights.0.primary_contact"})
+    if slack.get("secondary_contact"):
+        profile_fields.append({"label": "Secondary Contact", "path": "slack_insights.0.secondary_contact"})
+    if slack.get("next_steps"):
+        profile_fields.append({"label": "Next Steps", "path": "slack_insights.0.next_steps"})
     EXTRA_FIELD_MAP = {
         "annual_case_volume": ("Annual Case Volume", "count"),
         "customer_count":     ("Customer Count",     "count"),
@@ -598,35 +628,48 @@ def read_model_basics(model_path: str) -> dict:
                 break
 
         if scenario_start is not None:
-            groups = []
-            current = []
+            # Parse assumption groups keyed by their campaign header name.
+            # Each group starts with a "Campaign N: Name" header row (base=None)
+            # followed by assumption rows (base != None), ended by a blank row.
+            current_name = None
+            current_rows = []
             for row in all_rows[scenario_start:]:
                 label    = row[1] if len(row) > 1 else None
                 base_val = row[2] if len(row) > 2 else None   # col C = Base
                 up_val   = row[3] if len(row) > 3 else None   # col D = Upside
                 dn_val   = row[4] if len(row) > 4 else None   # col E = Downside
-                if label and str(label).strip():
-                    label_str = str(label).strip().lstrip()
-                    current.append((label_str, base_val, up_val, dn_val))
-                else:
-                    if current:
-                        groups.append(current)
-                        current = []
-            if current:
-                groups.append(current)
+                label_str = str(label).strip() if label else ""
 
-            slot_order = [v for _, v in sorted(campaign_slots.items())]
-            for i, group in enumerate(groups):
-                name = slot_order[i] if i < len(slot_order) else f"Campaign {i+1}"
-                key  = f"assumptions__{slugify(name)}"
-                values[key] = [
-                    (lbl,
-                     _fmt_assumption(b),
-                     _fmt_assumption(u),
-                     _fmt_assumption(d))
-                    for lbl, b, u, d in group
-                    if b is not None
-                ]
+                if not label_str:
+                    # Blank row — save current group if any
+                    if current_name and current_rows:
+                        key = f"assumptions__{slugify(current_name)}"
+                        values[key] = current_rows
+                        current_name = None
+                        current_rows = []
+                    continue
+
+                # Check if this is a campaign header (e.g. "Campaign 3: Employee Timeliness & Attendance")
+                if re.match(r"Campaign \d+:", label_str) and base_val is None:
+                    # Save previous group if any
+                    if current_name and current_rows:
+                        key = f"assumptions__{slugify(current_name)}"
+                        values[key] = current_rows
+                    # Extract campaign name after the colon
+                    current_name = label_str.split(":", 1)[1].strip()
+                    current_rows = []
+                elif base_val is not None:
+                    current_rows.append((
+                        label_str,
+                        _fmt_assumption(base_val),
+                        _fmt_assumption(up_val),
+                        _fmt_assumption(dn_val),
+                    ))
+
+            # Save last group
+            if current_name and current_rows:
+                key = f"assumptions__{slugify(current_name)}"
+                values[key] = current_rows
 
     if "Campaigns" in wb.sheetnames:
         ws_c = wb["Campaigns"]
@@ -1382,7 +1425,10 @@ def build_company_html(company: str, research: dict, model_values: dict,
         elif fmt_mode == "percent":
             display = fmt_plain(raw) if isinstance(raw, float) and raw < 1 else str(raw)
         else:
-            display = str(raw)
+            if isinstance(raw, list):
+                display = ", ".join(str(x) for x in raw)
+            else:
+                display = str(raw)
         profile_rows.append((label, display))
 
     # Geography: replace "States Operated" count with full states list if available
