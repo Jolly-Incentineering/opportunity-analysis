@@ -923,3 +923,141 @@ def build_campaign_html(company: str, research: dict, assumptions: dict) -> str:
         f'</div>'
         f'</div></body></html>'
     )
+
+
+# ---------------------------------------------------------------------------
+# PDF rendering
+# ---------------------------------------------------------------------------
+
+def render_with_weasyprint(html: str, pdf_path: str) -> bool:
+    try:
+        weasyprint.HTML(string=html).write_pdf(pdf_path)
+        return True
+    except Exception as e:
+        print(f"  WeasyPrint error: {e}")
+        return False
+
+
+def render_with_playwright(html: str, pdf_path: str) -> bool:
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch()
+            try:
+                page = browser.new_page(viewport={"width": 816, "height": 1056})
+                page.set_content(html, wait_until="networkidle")
+                page.pdf(
+                    path=pdf_path,
+                    format="Letter",
+                    print_background=True,
+                    margin={"top": "0", "bottom": "0", "left": "0", "right": "0"},
+                )
+            finally:
+                browser.close()
+        return True
+    except Exception as e:
+        print(f"  Playwright error: {e}")
+        return False
+
+
+def render_pdf(html: str, pdf_path: str) -> bool:
+    """Try WeasyPrint → Playwright → HTML fallback. Never hard-fails."""
+    if WEASYPRINT_AVAILABLE:
+        print("  Renderer: WeasyPrint")
+        if render_with_weasyprint(html, pdf_path):
+            return True
+    if PLAYWRIGHT_AVAILABLE:
+        print("  Renderer: Playwright (fallback)")
+        if render_with_playwright(html, pdf_path):
+            return True
+    html_path = str(pdf_path).replace(".pdf", ".html")
+    Path(html_path).write_text(html, encoding="utf-8")
+    print(f"  No PDF renderer available. Saved HTML: {html_path}")
+    print(f"  Open in browser and Ctrl+P → Save as PDF")
+    print(f"  To install: pip install weasyprint")
+    return False
+
+
+def _combine_pages(*page_htmls: str) -> str:
+    """Combine multiple page HTML docs into a single printable document."""
+    bodies = []
+    for html in page_htmls:
+        start = html.find("<body>")
+        end   = html.rfind("</body>")
+        if start != -1 and end != -1:
+            bodies.append(html[start + 6:end].strip())
+    css_start = page_htmls[0].find("<style>")
+    css_end   = page_htmls[0].find("</style>") + 8
+    css_block = page_htmls[0][css_start:css_end] if css_start != -1 else f"<style>{CSS}</style>"
+    combined_body = '\n<div class="page-break"></div>\n'.join(bodies)
+    return (
+        f'<!DOCTYPE html><html><head><meta charset="utf-8">{css_block}</head>'
+        f'<body>{combined_body}</body></html>'
+    )
+
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+
+def main():
+    parser = argparse.ArgumentParser(description="Generate cheat sheets for intro deck")
+    parser.add_argument("--company", required=True, help="Company name (must match client folder)")
+    parser.add_argument("--client-path", default=None, dest="client_path",
+                        help="Override client folder path")
+    args = parser.parse_args()
+    company = args.company
+
+    print(f"\n=== cheatsheet_gen.py | {company} ===\n")
+
+    if not OPENPYXL_AVAILABLE:
+        print("WARNING: openpyxl not installed — assumptions table will be empty.")
+        print("  Run: pip install openpyxl\n")
+
+    cfg = get_workspace_config()
+    client_root = cfg.get("client_root", "Clients")
+    client_base = Path(args.client_path) if args.client_path else Path(client_root) / company
+
+    # ── Load research JSON ──
+    try:
+        research = find_research_json(company, base_path=str(client_base))
+        print(f"  Research date: {research.get('research_date', 'unknown')}")
+    except FileNotFoundError as e:
+        print(f"  WARNING: {e}")
+        print("  Generating with empty data — run /deck-research first.")
+        research = {
+            "company_name": company, "company_basics": {}, "attio_insights": {},
+            "gong_insights": {}, "slack_insights": [], "campaigns_selected": [],
+            "campaign_details": {}, "comps_benchmarks": {}, "source_summary": {},
+        }
+
+    # ── Load assumptions from Excel (optional) ──
+    assumptions = {}
+    if OPENPYXL_AVAILABLE:
+        try:
+            model_path = find_model(company, base_path=str(client_base))
+            assumptions = read_model_assumptions(model_path)
+            print(f"  Model: {Path(model_path).name} ({len(assumptions)} assumption groups)")
+        except FileNotFoundError as e:
+            print(f"  WARNING: {e} — assumptions table will be empty.")
+
+    # ── Build HTML pages ──
+    out_dir = client_base / "4. Reports" / "Cheat Sheets"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    company_html  = build_company_html(company, research)
+    meeting_html  = build_meeting_prep_html(company, research)
+    campaign_html = build_campaign_html(company, research, assumptions)
+    combined_html = _combine_pages(company_html, meeting_html, campaign_html)
+
+    pdf_path = out_dir / f"{company} Cheat Sheet.pdf"
+    print("\nRendering Cheat Sheet...")
+    ok = render_pdf(combined_html, str(pdf_path))
+
+    if ok:
+        print(f"\n  Saved: {pdf_path}")
+        print(f'\n  Open: start "" "{pdf_path}"')
+    print("\nDone.")
+
+
+if __name__ == "__main__":
+    main()
