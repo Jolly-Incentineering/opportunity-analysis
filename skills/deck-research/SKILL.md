@@ -31,13 +31,6 @@ If `workspace_config.json` does not exist, tell the user: "Workspace is not conf
 
 ## Step 1: Load Session State
 
-Scan for the most recent session state file:
-
-```bash
-WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-ls "$WS/.claude/data/session_state_"*.json 2>/dev/null | sort | tail -1
-```
-
 Read and extract fields from the session state JSON:
 
 ```python
@@ -46,7 +39,7 @@ import json, glob, os
 ws = os.environ.get('JOLLY_WORKSPACE', '.')
 files = sorted(glob.glob(f'{ws}/.claude/data/session_state_*.json'))
 if not files: raise SystemExit('No session state found')
-data = json.load(open(files[-1]))
+data = json.load(open(files[-1], encoding='utf-8'))
 print('company_name:', data['company_name'])
 print('client_root:', data['client_root'])
 print('context:', data['context'])
@@ -55,6 +48,7 @@ print('vertical:', data['vertical'])
 print('phase_1_status:', data['phase_checklist']['phase_1_initialization'])
 print('template_paths:', json.dumps(data['template_paths']))
 print('campaigns_selected:', json.dumps(data['campaigns_selected']))
+print('session_date:', data['session_date'])
 "
 ```
 
@@ -729,14 +723,15 @@ import json, glob, os
 from datetime import date
 ws = os.environ.get('JOLLY_WORKSPACE', '.')
 files = sorted(glob.glob(f'{ws}/.claude/data/session_state_*.json'))
+if not files: raise SystemExit('No session state found — cannot update')
 path = files[-1]
-data = json.load(open(path))
+data = json.load(open(path, encoding='utf-8'))
 data['phase_checklist']['phase_2_research'] = 'complete'
 data['next_action'] = '/deck-model'
 data['campaigns_selected'] = [CAMPAIGN_LIST]
 data['last_updated'] = date.today().isoformat()
 data['metadata']['key_decisions'] = '[key decisions text]'
-with open(path, 'w') as f: json.dump(data, f, indent=2)
+with open(path, 'w', encoding='utf-8') as f: json.dump(data, f, indent=2)
 print('Updated:', path)
 "
 ```
