@@ -294,3 +294,214 @@ def read_model_assumptions(model_path: str) -> dict:
         result[f"assumptions__{slugify(current_name)}"] = current_rows
 
     return result
+
+
+# ---------------------------------------------------------------------------
+# CSS
+# ---------------------------------------------------------------------------
+
+CSS = f"""
+@page {{ size: Letter; margin: 0; }}
+html, body {{ width: 816px; overflow: hidden; box-sizing: border-box; }}
+* {{ box-sizing: border-box; margin: 0; padding: 0; }}
+
+body {{
+    font-family: -apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10px;
+    color: {TEXT};
+    background: {BG};
+    line-height: 1.5;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}}
+
+/* ── Banner ── */
+.banner {{
+    background: linear-gradient(135deg, {NAVY} 0%, {NAVY_LT} 100%);
+    border-bottom: 3px solid {GOLD};
+    padding: 10px 28px 9px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}}
+.banner-eyebrow {{
+    font-size: 6.5px; font-weight: 700; letter-spacing: 1.8px;
+    text-transform: uppercase; color: {GOLD}; margin-bottom: 2px;
+}}
+.banner-title {{
+    font-size: 14px; font-weight: 800; color: {WHITE};
+    letter-spacing: -0.3px; line-height: 1; margin-bottom: 2px;
+}}
+.banner-sub {{ font-size: 7.5px; color: rgba(255,255,255,0.5); }}
+
+/* ── Body ── */
+.body {{ padding: 8px 28px 20px; background: {BG}; }}
+
+/* ── Section ── */
+.section {{ margin: 10px 0 5px; break-inside: avoid; }}
+.section-label + * {{ break-before: avoid; }}
+.section-label {{
+    font-size: 7.5px; font-weight: 800; letter-spacing: 1.4px;
+    text-transform: uppercase; color: {NAVY};
+    padding-bottom: 4px; border-bottom: 2px solid {GOLD};
+    display: flex; align-items: center; gap: 5px;
+}}
+.s-icon {{
+    width: 14px; height: 14px; background: {GOLD}; border-radius: 3px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 8px; color: {NAVY}; font-weight: 900; flex-shrink: 0;
+}}
+
+/* ── KPI strip ── */
+.kpi-strip {{ display: flex; gap: 0; margin-top: 6px; }}
+.kpi-card {{
+    flex: 1; padding: 8px 10px; background: {WHITE};
+    border: 1px solid {GRAY_LT}; border-right: none; text-align: center;
+}}
+.kpi-card:last-child {{ border-right: 1px solid {GRAY_LT}; border-radius: 0 5px 5px 0; }}
+.kpi-card:first-child {{ border-radius: 5px 0 0 5px; }}
+.kpi-v {{ font-size: 18px; font-weight: 900; color: {NAVY}; letter-spacing: -0.5px; line-height: 1; }}
+.kpi-l {{ font-size: 7px; font-weight: 700; color: {MUTED}; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }}
+.kpi-src {{ font-size: 6.5px; color: {MUTED}; margin-top: 1px; font-style: italic; }}
+
+/* ── Breakdown grid ── */
+.breakdown-grid {{ display: flex; gap: 6px; flex-wrap: wrap; margin-top: 5px; }}
+.bk-cell {{
+    background: {WHITE}; border: 1px solid {GRAY_LT}; border-radius: 5px;
+    padding: 6px 10px; text-align: center; min-width: 80px;
+}}
+.bk-v {{ font-size: 14px; font-weight: 800; color: {NAVY}; line-height: 1; }}
+.bk-l {{ font-size: 7px; color: {MUTED}; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }}
+
+/* ── Tables (shared base) ── */
+.data-table, .bench-table, .tech-table, .assump-table, .objection-table {{
+    width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 9px;
+}}
+.data-table td, .bench-table td, .tech-table td, .assump-table td, .objection-table td {{
+    padding: 5px 9px; border-bottom: 1px solid {GRAY_LT}; vertical-align: top;
+}}
+.data-table tr:last-child td, .bench-table tr:last-child td,
+.tech-table tr:last-child td, .assump-table tr:last-child td,
+.objection-table tr:last-child td {{ border-bottom: none; }}
+.data-table tr:nth-child(even) td, .bench-table tr:nth-child(even) td,
+.tech-table tr:nth-child(even) td {{ background: {GRAY_LT}; }}
+.data-table td:first-child, .tech-table td:first-child {{ color: {MUTED}; width: 38%; font-weight: 600; }}
+
+/* Table header */
+.assump-hdr th, .objection-hdr td {{
+    background: {NAVY}; color: {WHITE}; font-size: 7.5px;
+    font-weight: 700; text-transform: uppercase; padding: 5px 9px;
+}}
+.bench-table td.mid {{ font-weight: 700; color: {NAVY}; }}
+.col-base {{ font-weight: 600; }}
+.col-up {{ color: {GREEN}; }}
+.col-dn {{ color: {RED}; }}
+
+/* ── Opportunity banner ── */
+.opp-banner {{
+    display: flex; gap: 0; margin: 6px 0 12px;
+    border: 1px solid {GOLD}; border-radius: 7px;
+    overflow: hidden; background: {GOLD_LT};
+}}
+.opp-item {{ flex: 1; padding: 10px 12px 9px; text-align: center; border-right: 1px solid rgba(232,168,56,0.35); }}
+.opp-item:last-child {{ border-right: none; }}
+.opp-v {{ font-size: 20px; font-weight: 900; color: {NAVY}; letter-spacing: -0.5px; line-height: 1; }}
+.opp-l {{ font-size: 7px; font-weight: 700; color: {MUTED}; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 3px; }}
+
+/* ── Bullets / lists ── */
+.bullets {{ padding-left: 14px; font-size: 9px; margin-top: 4px; }}
+.bullets li {{ margin-bottom: 3px; }}
+.numbered-list {{ padding-left: 16px; font-size: 9px; margin-top: 4px; }}
+.numbered-list li {{ margin-bottom: 3px; }}
+
+/* ── Quote ── */
+.quote {{
+    background: {GOLD_LT}; border-left: 3px solid {GOLD};
+    border-radius: 0 5px 5px 0; padding: 7px 11px;
+    font-size: 9px; font-style: italic; margin-bottom: 5px; color: {TEXT};
+}}
+.quote-src {{ font-size: 7.5px; color: {MUTED}; margin-top: 3px; font-style: normal; }}
+
+/* ── Pills ── */
+.pills {{ display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px; }}
+.pill {{
+    background: {NAVY}; color: {WHITE}; border-radius: 20px;
+    padding: 2px 8px; font-size: 7.5px; font-weight: 700;
+    display: inline-flex; align-items: center; gap: 4px;
+}}
+.pill-zero {{ background: {GRAY}; color: {MUTED}; }}
+.pill-val {{ font-weight: 400; opacity: 0.85; }}
+
+/* ── Contacts ── */
+.contacts-box {{
+    background: {WHITE}; border: 1px solid {GRAY_LT};
+    border-radius: 6px; padding: 4px 10px; margin-top: 6px;
+}}
+.champion-row {{ padding: 5px 0; border-bottom: 1px solid {GRAY_LT}; }}
+.champion-row:last-child {{ border-bottom: none; }}
+.champ-name {{ font-weight: 700; font-size: 9.5px; }}
+.champ-title {{ font-size: 8.5px; color: {MUTED}; }}
+.champ-note {{ font-size: 8px; color: {MUTED}; font-style: italic; }}
+
+/* ── Deal context ── */
+.deal-box {{
+    background: {WHITE}; border: 1px solid {GRAY_LT};
+    border-radius: 6px; padding: 7px 12px; margin-top: 5px; font-size: 9px;
+}}
+.deal-row {{ display: flex; gap: 8px; margin-bottom: 3px; }}
+.deal-row:last-child {{ margin-bottom: 0; }}
+.deal-label {{ color: {MUTED}; font-weight: 600; min-width: 90px; font-size: 8.5px; }}
+
+/* ── Campaign cards ── */
+.campaign {{
+    background: {WHITE}; border: 1px solid {GRAY_LT};
+    border-radius: 8px; margin-bottom: 10px;
+    overflow: hidden; break-inside: avoid;
+}}
+.c-head {{
+    background: {BG}; padding: 8px 12px 7px;
+    border-bottom: 1px solid {GRAY_LT};
+    display: flex; align-items: flex-start; justify-content: space-between;
+}}
+.c-head.high {{ background: linear-gradient(135deg, {NAVY} 0%, {NAVY_LT} 100%); }}
+.c-head.high .c-title {{ color: {WHITE}; }}
+.c-title {{ font-size: 11px; font-weight: 800; color: {NAVY}; letter-spacing: -0.2px; }}
+.c-badges {{ display: flex; gap: 4px; align-items: center; flex-shrink: 0; }}
+.badge {{
+    font-size: 7px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.5px; padding: 2px 7px; border-radius: 20px;
+}}
+.b-high {{ background: {GOLD}; color: {NAVY}; }}
+.b-std {{ background: {GRAY_LT}; color: {MUTED}; }}
+.b-interest {{ background: {GREEN_LT}; color: {GREEN}; border: 1px solid {GREEN}; }}
+.c-body {{ padding: 10px 12px; }}
+.c-stats {{ display: flex; gap: 0; margin-bottom: 8px; }}
+.c-stat-item {{
+    flex: 1; text-align: center; padding: 6px 8px;
+    border: 1px solid {GRAY_LT}; border-right: none; background: {BG};
+}}
+.c-stat-item:first-child {{ border-radius: 5px 0 0 5px; }}
+.c-stat-item:last-child {{ border-right: 1px solid {GRAY_LT}; border-radius: 0 5px 5px 0; }}
+.c-stat-v {{ font-size: 14px; font-weight: 900; color: {NAVY}; line-height: 1; }}
+.c-stat-l {{ font-size: 6.5px; color: {MUTED}; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }}
+.evidence {{
+    font-size: 8.5px; font-style: italic; color: {MUTED};
+    border-left: 2px solid {GOLD}; padding: 3px 8px;
+    margin-bottom: 7px; background: {GOLD_LT}; border-radius: 0 3px 3px 0;
+}}
+.assumptions {{ margin-top: 6px; }}
+.assumptions-label {{
+    font-size: 7px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: {MUTED}; margin-bottom: 3px;
+}}
+
+/* ── Page break ── */
+.page-break {{ break-after: page; }}
+
+/* ── Footer ── */
+.footer {{
+    margin-top: 16px; padding-top: 8px;
+    border-top: 1px solid {GRAY}; font-size: 7.5px; color: {MUTED};
+    display: flex; justify-content: space-between;
+}}
+"""
