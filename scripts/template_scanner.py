@@ -7,7 +7,7 @@ Finds matching configs for templates or creates new ones for custom templates.
 
 import json
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional
 from openpyxl import load_workbook
 from difflib import SequenceMatcher
 
@@ -125,6 +125,7 @@ class TemplateScanner:
         Returns:
             Path to created config file
         """
+        config_name = Path(config_name).name  # strip any directory traversal
         config = {
             "template_type": scanned_template["template_type"],
             "labels": scanned_template["labels"],
@@ -142,6 +143,7 @@ class TemplateScanner:
 
     def load_config(self, config_name: str) -> Dict:
         """Load a config file by name"""
+        config_name = Path(config_name).name  # strip any directory traversal
         config_path = self.templates_dir / config_name
 
         if not config_path.exists():
@@ -254,6 +256,9 @@ def main():
     parser.add_argument("--create", action="store_true", help="Create a new config from the template")
     parser.add_argument("--output", help="Output path for new config (used with --create)")
     args = parser.parse_args()
+
+    if not 0 <= args.threshold <= 1:
+        parser.error("--threshold must be between 0 and 1")
 
     configs_dir = Path(args.configs_dir) if args.configs_dir else None
     scanner = TemplateScanner(templates_dir=configs_dir)

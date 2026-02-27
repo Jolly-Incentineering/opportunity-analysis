@@ -153,6 +153,8 @@ def main():
     parser = argparse.ArgumentParser(description='Pull SEC financials via EdgarTools')
     parser.add_argument('--ticker', required=True, help='Stock ticker (e.g. WING)')
     parser.add_argument('--output', help='Write JSON output to this file path')
+    parser.add_argument('--include-text', action='store_true',
+                        help='Extract MD&A and business section text from most recent 10-K')
     args = parser.parse_args()
 
     try:
@@ -292,20 +294,33 @@ def main():
         'Add back D&A from cash flow statement for true EBITDA.',
         'Use 10-K revenue as the annual figure for the model. '
         '10-Q revenues are YTD (cumulative), not single-quarter — do not sum them.',
-        'Unit count (stores/restaurants/facilities) is not XBRL-tagged. '
-        'Check MD&A section of most recent 10-Q/10-K for system unit count.',
-        'Employee count is not reliably XBRL-tagged. '
-        'Check Item 1 (Human Capital) of most recent 10-K.',
     ])
+
+    # --- Optional: extract filing text (MD&A + business) for unit/employee count ---
+    if args.include_text and all_filings:
+        annual_filing = next((f for f, ft in all_filings if ft == '10-K'), None)
+        if annual_filing:
+            try:
+                report = annual_filing.obj()
+                # edgartools TenK exposes section text as attributes
+                mda      = str(getattr(report, 'mda',      None) or '')[:8000]
+                business = str(getattr(report, 'business', None) or '')[:8000]
+                output['filing_text'] = {'mda': mda, 'business': business}
+            except Exception as e:
+                output['filing_text'] = {'error': str(e)}
+        else:
+            output['filing_text'] = {'error': 'no 10-K in filing list'}
+
+    if args.output:
+        out_path = Path(args.output)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        output['saved_to'] = str(out_path)
 
     result_json = json.dumps(output, indent=2)
     print(result_json)
 
     if args.output:
-        out_path = Path(args.output)
-        out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(result_json, encoding='utf-8')
-        print(f'Saved to {args.output}', file=sys.stderr)
 
 
 if __name__ == '__main__':

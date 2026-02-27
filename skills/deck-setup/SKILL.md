@@ -298,12 +298,24 @@ cp "$PLUGIN_DIR/scripts/jolly_utils.py" "$WS/.claude/agents/jolly_utils.py" 2>/d
 # Copy agent specs
 cp "$PLUGIN_DIR/agents/"*.md "$WS/.claude/agents/" 2>/dev/null
 
-# Copy template configs
-cp "$PLUGIN_DIR/data/templates/"*.json "$WS/.claude/agents/templates/" 2>/dev/null
+# Copy template configs + vertical benchmarks — version-aware (protects user edits)
+PLUGIN_VERSION=$(python3 -c "import json; print(json.load(open('$PLUGIN_DIR/.claude-plugin/plugin.json'))['version'])" 2>/dev/null || echo "unknown")
+MANIFEST="$WS/.claude/data/template_manifest.json"
+
+for cfg in "$PLUGIN_DIR/data/templates/"*.json; do
+  python3 "$WS/.claude/scripts/config_install.py" \
+    --src "$cfg" \
+    --dest "$WS/.claude/agents/templates/$(basename "$cfg")" \
+    --manifest "$MANIFEST" \
+    --plugin-version "$PLUGIN_VERSION" 2>/dev/null
+done
 cp "$PLUGIN_DIR/data/templates/README.md" "$WS/.claude/agents/templates/" 2>/dev/null
 
-# Copy vertical benchmarks
-cp "$PLUGIN_DIR/data/vertical_benchmarks.json" "$WS/.claude/data/" 2>/dev/null
+python3 "$WS/.claude/scripts/config_install.py" \
+  --src "$PLUGIN_DIR/data/vertical_benchmarks.json" \
+  --dest "$WS/.claude/data/vertical_benchmarks.json" \
+  --manifest "$MANIFEST" \
+  --plugin-version "$PLUGIN_VERSION" 2>/dev/null
 
 # Copy tools
 mkdir -p "$WS/Tools/Goody Scraper"

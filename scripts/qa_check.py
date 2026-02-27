@@ -41,7 +41,7 @@ from jolly_utils import FORMULA_COUNTS, count_formulas
 
 PASS, FAIL, WARN = "[PASS]", "[FAIL]", "[WARN]"
 RED = RGBColor(0xFF, 0x00, 0x00)
-PLACEHOLDER_RE = re.compile(r"\[[ \w]*\]")
+PLACEHOLDER_RE = re.compile(r"\[.*?\]")
 RAW_DOLLAR_RE = re.compile(r"\$[\d,]{5,}")
 UPPERCASE_K_RE = re.compile(r"\$\d+K\b")
 

@@ -133,11 +133,11 @@ def action_fill_banners(args):
                 new_text = BRACKET_RE.sub(str(campaign_count), new_text)
 
                 if new_text != full_text:
-                    # Write back: put all text in first run, clear others
+                    # Write back: put all text in first run, remove the rest
                     if para.runs:
                         para.runs[0].text = new_text
                         for run in para.runs[1:]:
-                            run.text = ""
+                            run._r.getparent().remove(run._r)
                         replacements_made += 1
 
     prs.save(abs_path)
