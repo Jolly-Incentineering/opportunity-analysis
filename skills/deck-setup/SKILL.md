@@ -306,9 +306,8 @@ cp "$PLUGIN_DIR/data/templates/README.md" "$WS/.claude/agents/templates/" 2>/dev
 cp "$PLUGIN_DIR/data/vertical_benchmarks.json" "$WS/.claude/data/" 2>/dev/null
 
 # Copy tools
-mkdir -p "$WS/Tools/Brandfetch Logo Downloader"
 mkdir -p "$WS/Tools/Goody Scraper"
-cp "$PLUGIN_DIR/tools/brandfetch_downloader.py" "$WS/Tools/Brandfetch Logo Downloader/" 2>/dev/null
+cp "$PLUGIN_DIR/tools/brandfetch_downloader.py" "$WS/Tools/" 2>/dev/null
 cp "$PLUGIN_DIR/tools/goody_scraper.py" "$WS/Tools/Goody Scraper/" 2>/dev/null
 cp "$PLUGIN_DIR/tools/setup.bat" "$WS/Tools/" 2>/dev/null
 ```
