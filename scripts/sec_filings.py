@@ -155,6 +155,8 @@ def main():
     parser.add_argument('--output', help='Write JSON output to this file path')
     parser.add_argument('--include-text', action='store_true',
                         help='Extract MD&A and business section text from most recent 10-K')
+    parser.add_argument('--save-pdf', action='store_true',
+                        help='Save most recent 10-K as PDF (requires --output; falls back to HTML if WeasyPrint unavailable)')
     args = parser.parse_args()
 
     try:
@@ -310,6 +312,44 @@ def main():
                 output['filing_text'] = {'error': str(e)}
         else:
             output['filing_text'] = {'error': 'no 10-K in filing list'}
+
+    # --- Optional: save 10-K filing as PDF (or HTML fallback) ---
+    if args.save_pdf and all_filings:
+        if not args.output:
+            output['notes'].append('--save-pdf ignored: requires --output to determine save directory.')
+        else:
+            annual = next((f for f, ft in all_filings if ft == '10-K'), None)
+            if annual:
+                out_dir  = Path(args.output).parent
+                ticker   = args.ticker.upper()
+                period   = str(getattr(annual, 'period_of_report', 'unknown'))
+                stem     = f"10K_{ticker}_{period}"
+                saved    = {}
+                try:
+                    html = annual.html()
+                    if not html:
+                        raise ValueError('filing.html() returned empty content')
+                    html_path = out_dir / f"{stem}.html"
+                    html_path.write_text(html, encoding='utf-8')
+                    saved['html'] = str(html_path)
+                    # Attempt PDF conversion via WeasyPrint
+                    try:
+                        from weasyprint import HTML as WP_HTML
+                        pdf_path = out_dir / f"{stem}.pdf"
+                        WP_HTML(string=html, base_url=str(out_dir)).write_pdf(str(pdf_path))
+                        saved['pdf'] = str(pdf_path)
+                        html_path.unlink()          # PDF succeeded — no need to keep HTML
+                        del saved['html']
+                    except ImportError:
+                        saved['note'] = 'WeasyPrint not installed; saved as HTML. Run: pip install weasyprint'
+                    except Exception as e:
+                        saved['pdf_error'] = str(e)
+                        saved['note']      = 'PDF conversion failed; HTML retained.'
+                except Exception as e:
+                    saved['error'] = str(e)
+                output['filing_save'] = saved
+            else:
+                output['filing_save'] = {'error': 'no 10-K in filing list'}
 
     if args.output:
         out_path = Path(args.output)

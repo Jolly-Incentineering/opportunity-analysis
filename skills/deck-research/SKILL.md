@@ -444,7 +444,7 @@ Determine whether [COMPANY_NAME] is publicly traded (use your knowledge or do on
 
 If public:
   Step 1 -- Run the filings script:
-    python "[WS]/.claude/scripts/sec_filings.py" --ticker [TICKER] --include-text \
+    python "[WS]/.claude/scripts/sec_filings.py" --ticker [TICKER] --include-text --save-pdf \
       --output "[WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/2. Public Filings/sec_[TICKER].json"
   After the script completes, read the output JSON.
   For annual revenue, use only the 10-K value. Do not use 10-Q values for annual revenue.
