@@ -236,8 +236,7 @@ def read_model_assumptions(model_path: str) -> dict:
         with tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False) as tmp:
             tmp_path = tmp.name
         try:
-            import shutil as _shutil
-            _shutil.copy2(model_path, tmp_path)
+            shutil.copy2(model_path, tmp_path)
             wb = load_workbook(tmp_path, data_only=True)
         finally:
             try:
