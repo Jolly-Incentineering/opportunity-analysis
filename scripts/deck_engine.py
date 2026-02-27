@@ -246,9 +246,17 @@ def action_set_pdf_title(args):
     """Set PDF /Title metadata to match the source presentation's title."""
     pypdf = _require("pypdf")
     pptx_mod = _require("pptx", "python-pptx")
+    from io import BytesIO
 
     abs_pdf = os.path.abspath(args.file)
     abs_pptx = os.path.abspath(args.from_pptx)
+
+    if not os.path.exists(abs_pdf):
+        print(f"ERROR: PDF not found: {abs_pdf}", file=sys.stderr)
+        sys.exit(1)
+    if not os.path.exists(abs_pptx):
+        print(f"ERROR: PPTX not found: {abs_pptx}", file=sys.stderr)
+        sys.exit(1)
 
     # Read title from the presentation
     prs = pptx_mod.Presentation(abs_pptx)
@@ -256,9 +264,13 @@ def action_set_pdf_title(args):
     if not pdf_title:
         pdf_title = Path(abs_pptx).stem  # fallback to filename without extension
 
+    # Buffer through BytesIO so source file is fully read before writing back
     writer = pypdf.PdfWriter(clone_from=abs_pdf)
     writer.add_metadata({"/Title": pdf_title})
-    writer.write(abs_pdf)
+    buf = BytesIO()
+    writer.write(buf)
+    with open(abs_pdf, "wb") as f:
+        f.write(buf.getvalue())
 
     print(json.dumps({"pdf": abs_pdf, "title": pdf_title}))
 
