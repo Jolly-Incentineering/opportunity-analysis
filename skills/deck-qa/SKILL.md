@@ -30,27 +30,28 @@ If `workspace_config.json` does not exist, tell the user: "Workspace is not conf
 
 ## Step 1: Load Session State
 
-Scan for the most recent session state file:
+Read the most recent session state file:
 
-```bash
-WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-ls "$WS/.claude/data/session_state_"*.md 2>/dev/null | sort | tail -1
+```python
+python3 -c "
+import json, glob, os
+ws = os.environ.get('JOLLY_WORKSPACE', '.')
+files = sorted(glob.glob(f'{ws}/.claude/data/session_state_*.json'))
+if not files: raise SystemExit('No session state found')
+data = json.load(open(files[-1], encoding='utf-8'))
+print('company_name:', data['company_name'])
+print('client_root:', data['client_root'])
+print('vertical:', data['vertical'])
+print('branch:', data['branch'])
+print('context:', data['context'])
+print('session_date:', data['session_date'])
+print('phase_4_status:', data['phase_checklist']['phase_4_deck_formatting'])
+print('campaigns_selected:', json.dumps(data['campaigns_selected']))
+print('template_paths:', json.dumps(data['template_paths']))
+"
 ```
 
-Read the most recent file. Extract:
-- `company_name`
-- `client_root` (use this to override CLIENT_ROOT if present)
-- `vertical`
-- `branch`
-- `context` -- "pre_call" or "post_call"
-- `deck_folder` -- presentation subfolder path
-- `vf_deck_filename` -- the vF deck filename
-- `pdf_filename` -- the PDF filename
-- `phase_4_complete` -- whether Phase 4 (deck-format) has been marked complete
-- Model file path
-- Campaigns selected
-
-If Phase 4 is not marked complete, tell the user:
+If `phase_4_status != 'complete'`, tell the user:
 
 ```
 Phase 4 is not complete. Run /deck-format first, then return to /deck-qa.
@@ -63,7 +64,7 @@ Derive `company_slug` from company name: lowercase, spaces replaced with undersc
 Tell the user:
 
 ```
-Resuming from [session date] -- company: [Company Name], vertical: [Vertical].
+Resuming from [session_date] -- company: [Company Name], vertical: [Vertical].
 Starting Phase 5: QA and delivery.
 Context: [Pre-call / Post-call]
 ```
@@ -364,18 +365,27 @@ Report how many lock files were removed.
 
 ## Step 7: Update Session State
 
-Write a new session state file at `$WS/.claude/data/session_state_[company_slug]_[YYYY-MM-DD].md` (today's date). Include:
-- Company name
-- Client root
-- Current phase: Phase 5 complete
-- All phases marked complete
-- QA results summary (pass/fail for each check)
-- Delivery-ready files:
-  - Model: [model filename]
-  - vF deck (delivery): [vF deck filename]
-  - PDF: [PDF filename]
-  - Cheat sheet: 4. Reports/Cheat Sheets/[COMPANY_NAME] Cheat Sheet.pdf
-- Next action: "Deliver to client"
+Run:
+
+```python
+python3 -c "
+import json, glob, os
+from datetime import date
+ws = os.environ.get('JOLLY_WORKSPACE', '.')
+files = sorted(glob.glob(f'{ws}/.claude/data/session_state_*.json'))
+if not files: raise SystemExit('No session state found — cannot update')
+path = files[-1]
+data = json.load(open(path, encoding='utf-8'))
+data['phase_checklist']['phase_5_qa_delivery'] = 'complete'
+data['next_action'] = 'Deliver to client'
+data['last_updated'] = date.today().isoformat()
+data['metadata']['qa_results'] = '[QA results summary string]'
+with open(path, 'w', encoding='utf-8') as f: json.dump(data, f, indent=2)
+print('Updated:', path)
+"
+```
+
+Where `[QA results summary string]` is Claude's runtime substitution of the actual pass/fail results.
 
 ---
 
@@ -390,7 +400,6 @@ Delivery-ready files:
   Model:       [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/1. Model/[model filename]
   vF (deck):   [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/2. Presentations/[vF deck filename]
   PDF:         [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/[deck_folder]/[pdf_filename]
-  Cheat sheet: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/Cheat Sheets/[COMPANY_NAME] Cheat Sheet.pdf
 
 QA result: [PASS / PASS with notes / FAIL -- resolved]
 
