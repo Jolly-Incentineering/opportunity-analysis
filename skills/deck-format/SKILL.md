@@ -30,27 +30,27 @@ If `workspace_config.json` does not exist, tell the user: "Workspace is not conf
 
 ## Step 1: Load Session State and Research Output
 
-Scan for the most recent session state file:
+Load the most recent session state file:
 
-```bash
-WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-ls "$WS/.claude/data/session_state_"*.md 2>/dev/null | sort | tail -1
+```python
+python3 -c "
+import json, glob, os
+ws = os.environ.get('JOLLY_WORKSPACE', '.')
+files = sorted(glob.glob(f'{ws}/.claude/data/session_state_*.json'))
+if not files: raise SystemExit('No session state found')
+data = json.load(open(files[-1], encoding='utf-8'))
+print('company_name:', data['company_name'])
+print('client_root:', data['client_root'])
+print('vertical:', data['vertical'])
+print('branch:', data['branch'])
+print('context:', data['context'])
+print('session_date:', data['session_date'])
+print('phase_3_status:', data['phase_checklist']['phase_3_model_population'])
+print('template_paths:', json.dumps(data['template_paths']))
+"
 ```
 
-Read the most recent file. Extract:
-- `company_name`
-- `client_root` (use this to override CLIENT_ROOT if present)
-- `vertical`
-- `branch`
-- `context` -- "pre_call" or "post_call"
-- `deck_folder` -- path to the Presentations subfolder
-- `deck_filename` -- the working deck filename
-- `vf_deck_filename` -- the vF delivery copy filename
-- `pdf_filename` -- the PDF filename
-- `phase_3_complete` -- whether Phase 3 (deck-model) has been marked complete
-- Model file path (from template paths)
-
-If Phase 3 is not marked complete, tell the user:
+Extract all printed fields. If `phase_3_status != 'complete'`, tell the user:
 
 ```
 Phase 3 is not complete. Run /deck-model first, then return to /deck-format.
@@ -71,7 +71,7 @@ cat "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research_output_[company_slug].j
 Tell the user:
 
 ```
-Resuming from [session date] -- company: [Company Name], vertical: [Vertical].
+Resuming from [session_date] -- company: [Company Name], vertical: [Vertical].
 Starting Phase 4: Deck formatting.
 
 Gates this phase:
@@ -466,16 +466,24 @@ If issues found, help the user fix and re-export before continuing to Step 10.
 
 ## Step 10: Update Session State
 
-Write a new session state file at `$WS/.claude/data/session_state_[company_slug]_[YYYY-MM-DD].md` (today's date). Include:
-- Company name
-- Client root
-- Current phase: Phase 4 complete
-- Phase 1, 2, 3, 4 marked complete; Phase 5 pending
-- Master deck path: `[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx` (retains live Macabacus links)
-- vF deck path: `[COMPANY_NAME] Intro Deck (YYYY.MM.DD) - vF.pptx` (delivery copy, links broken)
-- PDF path: `[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf`
-- Cheat sheet path: `4. Reports/Cheat Sheets/[COMPANY_NAME] Cheat Sheet.pdf`
-- Next action: "Run /deck-qa"
+Run:
+
+```python
+python3 -c "
+import json, glob, os
+from datetime import date
+ws = os.environ.get('JOLLY_WORKSPACE', '.')
+files = sorted(glob.glob(f'{ws}/.claude/data/session_state_*.json'))
+if not files: raise SystemExit('No session state found — cannot update')
+path = files[-1]
+data = json.load(open(path, encoding='utf-8'))
+data['phase_checklist']['phase_4_deck_formatting'] = 'complete'
+data['next_action'] = '/deck-qa'
+data['last_updated'] = date.today().isoformat()
+with open(path, 'w', encoding='utf-8') as f: json.dump(data, f, indent=2)
+print('Updated:', path)
+"
+```
 
 ---
 
@@ -489,7 +497,6 @@ Deck formatting complete for [COMPANY NAME].
 Working deck:  [COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx  (master, retains live Macabacus links)
 vF (delivery): [COMPANY_NAME] Intro Deck (YYYY.MM.DD) - vF.pptx  (static delivery copy)
 PDF:           [COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf
-Cheat sheet:   4. Reports/Cheat Sheets/[COMPANY_NAME] Cheat Sheet.pdf
 
 Session state saved. Next: run /deck-qa for final quality check before delivery.
 ```
