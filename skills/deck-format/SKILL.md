@@ -480,7 +480,8 @@ If the script fails (missing packages or no research data), tell the user:
 
 ```
 Cheat sheet generation failed: [error].
-You can run it manually later: python3 .claude/scripts/cheatsheet_gen.py --company "[COMPANY_NAME]"
+Install renderer: pip install weasyprint
+Or run manually: python3 .claude/scripts/cheatsheet_gen.py --company "[COMPANY_NAME]"
 ```
 
 Do not stop the workflow if this step fails — continue to Step 11.
