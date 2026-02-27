@@ -57,7 +57,7 @@ import json, glob, os
 ws = os.environ.get('JOLLY_WORKSPACE', '.')
 files = sorted(glob.glob(f'{ws}/.claude/data/session_state_*.json'))
 if not files: raise SystemExit('No session state found')
-data = json.load(open(files[-1], encoding='utf-8'))
+with open(files[-1], encoding='utf-8') as f: data = json.load(f)
 print('company_name:', data['company_name'])
 print('client_root:', data['client_root'])
 print('next_action:', data['next_action'])
