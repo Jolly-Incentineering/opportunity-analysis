@@ -85,18 +85,22 @@ def fmt(v, prefix="$") -> str:
     try:
         v = float(v)
     except (TypeError, ValueError):
-        return str(v) or "N/A"
-    if 0 < abs(v) < 1:
+        return str(v)
+    sign = "-" if v < 0 else ""
+    av = abs(v)
+    if 0 < av < 1:
         return f"{v * 100:.1f}%"
-    if abs(v) >= 1_000_000_000:
-        return f"{prefix}{v / 1_000_000_000:.1f}B"
-    if abs(v) >= 1_000_000:
-        return f"{prefix}{v / 1_000_000:.1f}M"
-    if abs(v) >= 1_000:
-        return f"{prefix}{v / 1_000:.1f}K"
+    if av == 0:
+        return f"{prefix}0" if prefix else "0"
+    if av >= 1_000_000_000:
+        return f"{sign}{prefix}{av / 1_000_000_000:.1f}B"
+    if av >= 1_000_000:
+        return f"{sign}{prefix}{av / 1_000_000:.1f}M"
+    if av >= 1_000:
+        return f"{sign}{prefix}{av / 1_000:.1f}K"
     if v == int(v):
-        return f"{prefix}{int(v)}"
-    return f"{prefix}{v:.2f}" if prefix else str(round(v, 2))
+        return f"{sign}{prefix}{int(av)}"
+    return f"{sign}{prefix}{av:.2f}" if prefix else str(round(av, 2))
 
 
 def fmt_plain(v) -> str:
@@ -124,7 +128,7 @@ def _section(icon: str, title: str, content: str) -> str:
     """Wrap content in a standard labelled section block."""
     return (
         f'<div class="section">'
-        f'<div class="section-label"><span class="s-icon">{icon}</span>{esc(title)}</div>'
+        f'<div class="section-label"><span class="s-icon">{esc(icon)}</span>{esc(title)}</div>'
         f'{content}'
         f'</div>'
     )
