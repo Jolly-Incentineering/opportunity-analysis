@@ -127,15 +127,15 @@ Run:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-ls "$WS/.claude/data/"session_state_*.md 2>/dev/null
+ls "$WS/.claude/data/"session_state_*.json 2>/dev/null
 ```
 
-For each file found, read it and check whether the `company` field equals [COMPANY_NAME] (case-insensitive).
+For each file found, read it and check whether the `company_name` field equals [COMPANY_NAME] (case-insensitive).
 
 If a session state file for this company exists, tell the user:
 
 ```
-A session for [COMPANY_NAME] already exists (session_state_[company_slug]_[DATE].md).
+A session for [COMPANY_NAME] already exists (session_state_[company_slug]_[DATE].json).
 Last phase: [phase from file]. Next action: [next action from file].
 
 If you want to restart from scratch, delete that file first and re-run /deck-start.
@@ -429,49 +429,48 @@ Do not wait for the subagent to finish. Continue immediately to Step 9.
 
 ## Step 9: Write Session State
 
-```bash
-WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-source "$WS/.claude/scripts/ws_env.sh"
-```
+Write a session state file to `$WS/.claude/data/session_state_[company_slug]_YYYY-MM-DD.json` (use today's date). Substitute all bracketed placeholders with the actual values gathered in previous steps, then run:
 
-Write a session state file to `$WS/.claude/data/session_state_[company_slug]_YYYY-MM-DD.md` (use today's date). Contents:
-
-```markdown
-# Session State: [COMPANY_NAME]
-Date: YYYY-MM-DD
-
-## Company
-[COMPANY_NAME]
-
-## Client Root
-[CLIENT_ROOT]
-
-## Context
-[pre_call or post_call]
-
-## Branch
-[A or B] -- [reason: which checks had data, or "all checks empty"]
-
-## Vertical
-[vertical label from Step 4]
-
-## Template Paths
-- Model: [CLIENT_ROOT]/[COMPANY_NAME]/1. Model/[COMPANY_NAME] Intro Model (YYYY.MM.DD).xlsx
-- Deck Folder: [CLIENT_ROOT]/[COMPANY_NAME]/2. Presentations/1. [COMPANY_NAME] Intro Deck (YYYY.MM.DD)
-- Deck File: [COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx
-- vF File: [COMPANY_NAME] Intro Deck (YYYY.MM.DD) - vF.pptx
-- PDF File: [COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf
-- Template Config: [CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/template_config.json
-
-## Phase Checklist
-- Phase 1: Initialization -- complete
-- Phase 2: Research -- pending
-- Phase 3: Model Population -- pending
-- Phase 4: Deck Formatting -- pending
-- Phase 5: QA and Delivery -- pending
-
-## Next Action
-Run /deck-research
+```python
+python3 -c "
+import json, os
+from datetime import date
+ws = os.environ.get('JOLLY_WORKSPACE', '.')
+slug = '[company_slug]'
+data = {
+    'company_name': '[COMPANY_NAME]',
+    'company_slug': slug,
+    'client_root': '[CLIENT_ROOT]',
+    'context': '[pre_call or post_call]',
+    'branch': '[A or B]',
+    'branch_reason': '[reason]',
+    'vertical': '[vertical]',
+    'session_date': '[YYYY-MM-DD]',
+    'last_updated': '[YYYY-MM-DD]',
+    'template_paths': {
+        'model': '[model path]',
+        'deck_folder': '[deck folder path]',
+        'deck_filename': '[deck filename]',
+        'vf_filename': '[vF filename]',
+        'pdf_filename': '[pdf filename]',
+        'template_config': '[template config path]'
+    },
+    'phase_checklist': {
+        'phase_1_initialization': 'complete',
+        'phase_2_research': 'pending',
+        'phase_3_model_population': 'pending',
+        'phase_4_deck_formatting': 'pending',
+        'phase_5_qa_delivery': 'pending'
+    },
+    'next_action': '/deck-research',
+    'campaigns_selected': [],
+    'metadata': {}
+}
+out = f'{ws}/.claude/data/session_state_{slug}_[YYYY-MM-DD].json'
+os.makedirs(os.path.dirname(out), exist_ok=True)
+open(out, 'w').write(json.dumps(data, indent=2))
+print('Saved:', out)
+"
 ```
 
 ---
