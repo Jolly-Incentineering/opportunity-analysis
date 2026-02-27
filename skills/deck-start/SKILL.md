@@ -437,6 +437,7 @@ import json, os
 from datetime import date
 ws = os.environ.get('JOLLY_WORKSPACE', '.')
 slug = '[company_slug]'
+today = date.today().isoformat()
 data = {
     'company_name': '[COMPANY_NAME]',
     'company_slug': slug,
@@ -445,8 +446,8 @@ data = {
     'branch': '[A or B]',
     'branch_reason': '[reason]',
     'vertical': '[vertical]',
-    'session_date': '[YYYY-MM-DD]',
-    'last_updated': '[YYYY-MM-DD]',
+    'session_date': today,
+    'last_updated': today,
     'template_paths': {
         'model': '[model path]',
         'deck_folder': '[deck folder path]',
@@ -466,9 +467,9 @@ data = {
     'campaigns_selected': [],
     'metadata': {}
 }
-out = f'{ws}/.claude/data/session_state_{slug}_[YYYY-MM-DD].json'
+out = f'{ws}/.claude/data/session_state_{slug}_{today}.json'
 os.makedirs(os.path.dirname(out), exist_ok=True)
-open(out, 'w').write(json.dumps(data, indent=2))
+with open(out, 'w') as f: json.dump(data, f, indent=2)
 print('Saved:', out)
 "
 ```
