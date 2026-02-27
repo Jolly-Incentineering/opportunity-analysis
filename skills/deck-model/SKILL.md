@@ -32,23 +32,29 @@ If `workspace_config.json` does not exist, tell the user: "Workspace is not conf
 
 ## Step 1: Load Session State and Research Output
 
-Scan for the most recent session state file:
+Load the most recent session state file:
 
-```bash
-WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-ls "$WS/.claude/data/session_state_"*.md 2>/dev/null | sort | tail -1
+```python
+python3 -c "
+import json, glob, os
+ws = os.environ.get('JOLLY_WORKSPACE', '.')
+files = sorted(glob.glob(f'{ws}/.claude/data/session_state_*.json'))
+if not files: raise SystemExit('No session state found')
+data = json.load(open(files[-1], encoding='utf-8'))
+print('company_name:', data['company_name'])
+print('client_root:', data['client_root'])
+print('vertical:', data['vertical'])
+print('branch:', data['branch'])
+print('session_date:', data['session_date'])
+print('phase_2_status:', data['phase_checklist']['phase_2_research'])
+print('campaigns_selected:', json.dumps(data['campaigns_selected']))
+print('template_paths:', json.dumps(data['template_paths']))
+"
 ```
 
-Read the most recent file. Extract:
-- `company_name`
-- `client_root` (use this to override CLIENT_ROOT if present)
-- `vertical` -- "QSR" or "Manufacturing" (determines formula counts)
-- `branch`
-- `phase_2_complete` -- whether Phase 2 (deck-research) has been marked complete
-- `campaigns_selected` -- the confirmed campaign list from deck-research
-- Model file path (from template paths)
+Extract `company_name`, `client_root`, `vertical`, `branch`, `session_date`, `phase_2_status`, `campaigns_selected`, and model file path from `template_paths`.
 
-If Phase 2 is not marked complete, tell the user:
+If `phase_2_status` is not `complete`, tell the user:
 
 ```
 Phase 2 is not complete. Run /deck-research first, then return to /deck-model.
@@ -71,7 +77,7 @@ If the file does not exist, tell the user: "Research output not found. Run /deck
 Tell the user:
 
 ```
-Resuming from [session date] -- company: [Company Name], branch: [A or B], vertical: [Vertical].
+Resuming from [session_date] -- company: [Company Name], branch: [A or B], vertical: [Vertical].
 Starting Phase 3: Model population.
 
 Gates this phase:
@@ -379,14 +385,29 @@ Update `research_output_[company_slug].json` -- populate the `model_population` 
 
 For each campaign, populate `campaign_details` with the values from the model population. These values are needed by deck-format for banner values — deck-format reads them from this JSON instead of extracting from Excel at runtime (avoids file locking issues).
 
-Write a new session state file at `$WS/.claude/data/session_state_[company_slug]_[YYYY-MM-DD].md` (today's date). Include:
-- Company name
-- Client root
-- Current phase: Phase 3 complete
-- Phase 1, 2, 3 marked complete; Phase 4, 5 pending
-- Model filename and cell count
-- ROPS and accretion results summary
-- Next action: "Run /deck-format"
+Update the session state JSON:
+
+```python
+python3 -c "
+import json, glob, os
+from datetime import date
+ws = os.environ.get('JOLLY_WORKSPACE', '.')
+files = sorted(glob.glob(f'{ws}/.claude/data/session_state_*.json'))
+if not files: raise SystemExit('No session state found — cannot update')
+path = files[-1]
+data = json.load(open(path, encoding='utf-8'))
+data['phase_checklist']['phase_3_model_population'] = 'complete'
+data['next_action'] = '/deck-format'
+data['last_updated'] = date.today().isoformat()
+data['metadata']['cells_written'] = [N]
+data['metadata']['rops_results'] = '[summary]'
+data['metadata']['accretion_pct'] = [pct]
+with open(path, 'w', encoding='utf-8') as f: json.dump(data, f, indent=2)
+print('Updated:', path)
+"
+```
+
+Where `[N]`, `'[summary]'`, and `[pct]` are substituted at runtime with the actual cells written count, a ROPS results summary string, and the accretion percentage float.
 
 ---
 
