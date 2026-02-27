@@ -35,18 +35,41 @@ Scan for the most recent session state file:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-ls "$WS/.claude/data/session_state_"*.md 2>/dev/null | sort | tail -1
+ls "$WS/.claude/data/session_state_"*.json 2>/dev/null | sort | tail -1
 ```
 
-Read the most recent file. Extract:
+Read and extract fields from the session state JSON:
+
+```python
+python3 -c "
+import json, glob, os
+ws = os.environ.get('JOLLY_WORKSPACE', '.')
+files = sorted(glob.glob(f'{ws}/.claude/data/session_state_*.json'))
+if not files: raise SystemExit('No session state found')
+data = json.load(open(files[-1]))
+print('company_name:', data['company_name'])
+print('client_root:', data['client_root'])
+print('context:', data['context'])
+print('branch:', data['branch'])
+print('vertical:', data['vertical'])
+print('phase_1_status:', data['phase_checklist']['phase_1_initialization'])
+print('template_paths:', json.dumps(data['template_paths']))
+print('campaigns_selected:', json.dumps(data['campaigns_selected']))
+"
+```
+
+Extract from the output:
 - `company_name` -- the company being worked on
 - `client_root` -- from the session state (use this to override CLIENT_ROOT if present)
 - `context` -- "pre_call" or "post_call"
 - `branch` -- "A" (existing client with call data) or "B" (prospect, no call data)
 - `vertical` -- industry vertical (QSR, manufacturing, etc.)
-- `phase_1_complete` -- whether Phase 1 (deck-start) has been marked complete
+- `phase_1_status` -- whether Phase 1 (deck-start) has been marked complete
+- `template_paths` -- paths to master/vF templates
+- `campaigns_selected` -- any previously selected campaigns
+- `session_date` -- from `data['session_date']` in the JSON
 
-If Phase 1 is not marked complete, tell the user:
+If `phase_1_status != 'complete'`, tell the user:
 
 ```
 Phase 1 is not complete. Run /deck-start [Company] first, then return to /deck-research.
@@ -54,10 +77,10 @@ Phase 1 is not complete. Run /deck-start [Company] first, then return to /deck-r
 
 Then stop. Do not continue.
 
-If Phase 1 is complete, tell the user:
+If `phase_1_status` is `'complete'`, tell the user:
 
 ```
-Resuming from [session date] -- company: [Company Name], branch: [A or B], vertical: [Vertical].
+Resuming from [session_date] -- company: [Company Name], branch: [A or B], vertical: [Vertical].
 Starting Phase 2: Research workstreams.
 ```
 
@@ -698,14 +721,27 @@ The JSON must conform to this schema:
 
 Populate all fields from the merged data. Leave `model_population` as an empty object.
 
-Then update the session state file. Write a new file at `$WS/.claude/data/session_state_[company_slug]_[YYYY-MM-DD].md` (today's date). Include:
-- Company name
-- Client root
-- Current phase: Phase 2 complete
-- Task status table with Phase 1 and Phase 2 marked complete, Phase 3 pending
-- Approved campaign list (verbatim from user confirmation)
-- Next action: "Run /deck-model"
-- Key decisions made during this session (source conflicts resolved, gaps filled, campaigns excluded)
+Then update the session state JSON:
+
+```python
+python3 -c "
+import json, glob, os
+from datetime import date
+ws = os.environ.get('JOLLY_WORKSPACE', '.')
+files = sorted(glob.glob(f'{ws}/.claude/data/session_state_*.json'))
+path = files[-1]
+data = json.load(open(path))
+data['phase_checklist']['phase_2_research'] = 'complete'
+data['next_action'] = '/deck-model'
+data['campaigns_selected'] = [CAMPAIGN_LIST]
+data['last_updated'] = date.today().isoformat()
+data['metadata']['key_decisions'] = '[key decisions text]'
+with open(path, 'w') as f: json.dump(data, f, indent=2)
+print('Updated:', path)
+"
+```
+
+Replace `[CAMPAIGN_LIST]` with the actual Python list of confirmed campaign names (e.g., `['Campaign A', 'Campaign B']`). Replace `[key decisions text]` with a string summarizing source conflicts resolved, gaps filled, and campaigns excluded.
 
 ---
 
