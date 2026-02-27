@@ -796,9 +796,10 @@ def build_campaign_html(company: str, research: dict, assumptions: dict) -> str:
         rows = assumptions.get(f"assumptions__{slug}")
         if rows:
             return rows
-        for k, v in assumptions.items():
-            if k.startswith("assumptions__") and slug[:8] in k:
-                return v
+        if len(slug) >= 6:
+            for k, v in assumptions.items():
+                if k.startswith("assumptions__") and slug[:6] in k:
+                    return v
         return []
 
     normalised = []
@@ -986,7 +987,7 @@ def _combine_pages(*page_htmls: str) -> str:
         if start != -1 and end != -1:
             bodies.append(html[start + 6:end].strip())
     css_start = page_htmls[0].find("<style>")
-    css_end   = page_htmls[0].find("</style>") + 8
+    css_end   = page_htmls[0].rfind("</style>") + 8  # rfind: last occurrence avoids truncation if CSS contains "</style>"
     css_block = page_htmls[0][css_start:css_end] if css_start != -1 else f"<style>{CSS}</style>"
     combined_body = '\n<div class="page-break"></div>\n'.join(bodies)
     return (
