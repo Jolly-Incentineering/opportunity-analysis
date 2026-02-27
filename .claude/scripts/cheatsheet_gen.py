@@ -661,3 +661,108 @@ def build_company_html(company: str, research: dict) -> str:
         f'</div>'
         f'</div></body></html>'
     )
+
+
+# ---------------------------------------------------------------------------
+# Meeting Prep Page
+# ---------------------------------------------------------------------------
+
+def build_meeting_prep_html(company: str, research: dict) -> str:
+    """Page 2: Pain points, quotes, deal context, objections, contacts, tech stack.
+    All data from research JSON — no API calls.
+    """
+    today = date.today().strftime("%B %d, %Y")
+    gong  = research.get("gong_insights") or {}
+    slack_list = research.get("slack_insights") or []
+    slack = slack_list[0] if slack_list else {}
+
+    sections = []
+
+    # ── Pain Points ──
+    pain_points = gong.get("pain_points") or []
+    if pain_points:
+        items = "".join(f"<li>{esc(str(p))}</li>" for p in pain_points[:6])
+        sections.append(_section("!", "Key Pain Points", f'<ul class="bullets">{items}</ul>'))
+
+    # ── Verbatim Quotes ──
+    quotes = gong.get("verbatim_quotes") or []
+    call_date   = gong.get("call_date") or ""
+    interviewee = gong.get("interviewee") or gong.get("call_title") or ""
+    if quotes:
+        blocks = ""
+        for q in quotes[:3]:
+            text = q if isinstance(q, str) else (q.get("text") or q.get("quote") or "")
+            src  = q.get("source", "") if isinstance(q, dict) else f"{interviewee} — {call_date}".strip(" — ")
+            if text:
+                src_tag = f'<div class="quote-src">{esc(src)}</div>' if src else ""
+                blocks += f'<div class="quote">&#8220;{esc(text)}&#8221;{src_tag}</div>'
+        if blocks:
+            sections.append(_section("❝", "Lead With", blocks))
+
+    # ── Deal Context ──
+    deal_rows = []
+    for key, label in [
+        ("deal_stage",        "Deal Stage"),
+        ("primary_contact",   "Primary Contact"),
+        ("secondary_contact", "Secondary Contact"),
+        ("next_steps",        "Next Steps"),
+    ]:
+        if slack.get(key):
+            deal_rows.append((label, str(slack[key])))
+    if deal_rows:
+        rows_html = "".join(
+            f'<div class="deal-row"><span class="deal-label">{esc(k)}</span><span>{esc(v)}</span></div>'
+            for k, v in deal_rows
+        )
+        sections.append(_section("◑", "Deal Context", f'<div class="deal-box">{rows_html}</div>'))
+
+    # ── Known Objections ──
+    objections = gong.get("key_objections") or []
+    if objections:
+        items = "".join(f"<li>{esc(str(o))}</li>" for o in objections)
+        sections.append(_section("⚑", "Known Objections", f'<ul class="bullets">{items}</ul>'))
+
+    # ── Key Contacts ──
+    champions = gong.get("champions") or []
+    if champions:
+        rows_html = ""
+        for ch in champions:
+            if isinstance(ch, dict):
+                rows_html += (
+                    f'<div class="champion-row">'
+                    f'<div class="champ-name">{esc(ch.get("name",""))}</div>'
+                    f'<div class="champ-title">{esc(ch.get("title",""))}</div>'
+                    f'<div class="champ-note">{esc(ch.get("note",""))}</div>'
+                    f'</div>'
+                )
+        if rows_html:
+            sections.append(_section("✦", "Key Contacts", f'<div class="contacts-box">{rows_html}</div>'))
+
+    # ── Tech Stack ──
+    tech_stack = gong.get("tech_stack") or {}
+    if tech_stack and isinstance(tech_stack, dict):
+        rows_html = "".join(
+            f"<tr><td>{esc(k)}</td><td>{esc(v)}</td></tr>"
+            for k, v in tech_stack.items()
+        )
+        sections.append(_section("⚙", "Tech Stack", f'<table class="tech-table">{rows_html}</table>'))
+
+    if not sections:
+        sections.append('<p style="color:#666;padding:16px 0;font-size:11px;">No meeting prep data — run /deck-research first.</p>')
+
+    body = "\n".join(sections)
+
+    return (
+        f'<!DOCTYPE html><html><head><meta charset="utf-8"><style>{CSS}</style></head>'
+        f'<body>'
+        f'<div class="banner"><div>'
+        f'<div class="banner-eyebrow">JOLLY.COM &middot; CONFIDENTIAL</div>'
+        f'<div class="banner-title">{esc(company)}</div>'
+        f'<div class="banner-sub">Meeting Prep &middot; {today}</div>'
+        f'</div></div>'
+        f'<div class="body">{body}'
+        f'<div class="footer">'
+        f'<span>Jolly.com</span><span>Confidential — Internal Use Only</span><span>{today}</span>'
+        f'</div>'
+        f'</div></body></html>'
+    )
