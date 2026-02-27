@@ -132,3 +132,166 @@ def _section(icon: str, title: str, content: str) -> str:
         f'{content}'
         f'</div>'
     )
+
+
+# ---------------------------------------------------------------------------
+# Data loaders
+# ---------------------------------------------------------------------------
+
+def get_workspace_config() -> dict:
+    candidates = [".claude/data/workspace_config.json"]
+    jolly_ws = os.environ.get("JOLLY_WORKSPACE", "").strip().strip("\r")
+    if jolly_ws:
+        candidates.append(os.path.join(jolly_ws, ".claude/data/workspace_config.json"))
+    for p in candidates:
+        if os.path.exists(p):
+            try:
+                with open(p, encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception:
+                pass
+    return {}
+
+
+def find_research_json(company: str, base_path: str = None) -> dict:
+    slug = slugify(company)
+    if base_path:
+        client_glob = f"{base_path}/**/research_output_*.json"
+    else:
+        cfg = get_workspace_config()
+        client_root = cfg.get("client_root", "Clients")
+        client_glob = f"{client_root}/{company}/**/research_output_*.json"
+
+    candidates = []
+    for m in glob.glob(client_glob, recursive=True):
+        try:
+            candidates.append((os.path.getmtime(m), m))
+        except OSError:
+            pass
+    for _, path in sorted(candidates, reverse=True):
+        try:
+            with open(path, encoding="utf-8") as f:
+                data = json.load(f)
+            print(f"  Research JSON: {path}")
+            return data
+        except (json.JSONDecodeError, OSError):
+            continue
+    for p in [
+        f".claude/data/research_output_{slug}.json",
+        f".claude/data/research_output_{company.lower().replace(' ', '-')}.json",
+    ]:
+        if os.path.exists(p):
+            print(f"  Research JSON (legacy): {p}")
+            with open(p, encoding="utf-8") as f:
+                return json.load(f)
+    raise FileNotFoundError(f"No research JSON found for '{company}'")
+
+
+def find_model(company: str, base_path: str = None) -> str:
+    if base_path:
+        model_glob = f"{base_path}/1. Model/*.xlsx"
+        search_path = f"{base_path}/1. Model/"
+    else:
+        cfg = get_workspace_config()
+        client_root = cfg.get("client_root", "Clients")
+        model_glob = f"{client_root}/{company}/1. Model/*.xlsx"
+        search_path = f"{client_root}/{company}/1. Model/"
+    matches = glob.glob(model_glob)
+    if not matches:
+        raise FileNotFoundError(f"No Excel model in {search_path}")
+    return sorted(matches)[-1]
+
+
+def _fmt_assumption(val) -> str:
+    """Format a scenario assumption value for display."""
+    if val is None:
+        return ""
+    if isinstance(val, float):
+        if 0 < val < 1:
+            return f"{val:.0%}"
+        if val >= 1000:
+            return f"${val:,.0f}"
+        if val >= 100:
+            return f"{val:,.0f}"
+        if val == int(val):
+            return f"{int(val):,}"
+        return f"{val:.2f}"
+    if isinstance(val, int):
+        return f"${val:,}" if val >= 1000 else f"{val:,}"
+    return str(val)
+
+
+def read_model_assumptions(model_path: str) -> dict:
+    """Read only the scenario assumptions section from the Excel Inputs sheet.
+
+    Returns dict: { "assumptions__{campaign_slug}": [(label, base, upside, downside), ...] }
+    Does NOT read ROPS or EBITDA — those come from research JSON campaign_details.
+    """
+    if not OPENPYXL_AVAILABLE:
+        return {}
+    try:
+        wb = load_workbook(model_path, data_only=True)
+    except PermissionError:
+        import shutil, tempfile
+        with tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False) as tmp:
+            tmp_path = tmp.name
+        try:
+            import shutil as _shutil
+            _shutil.copy2(model_path, tmp_path)
+            wb = load_workbook(tmp_path, data_only=True)
+        finally:
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
+
+    if "Inputs" not in wb.sheetnames:
+        return {}
+
+    ws = wb["Inputs"]
+    all_rows = list(ws.iter_rows(min_row=1, max_row=ws.max_row, values_only=True))
+
+    # Find "SCENARIO ASSUMPTIONS" header row
+    scenario_start = None
+    for i, row in enumerate(all_rows):
+        if row[1] and "SCENARIO ASSUMPTIONS" in str(row[1]):
+            scenario_start = i + 1
+            break
+    if scenario_start is None:
+        return {}
+
+    result = {}
+    current_name = None
+    current_rows = []
+
+    for row in all_rows[scenario_start:]:
+        label    = row[1] if len(row) > 1 else None
+        base_val = row[2] if len(row) > 2 else None
+        up_val   = row[3] if len(row) > 3 else None
+        dn_val   = row[4] if len(row) > 4 else None
+        label_str = str(label).strip() if label else ""
+
+        if not label_str:
+            if current_name and current_rows:
+                result[f"assumptions__{slugify(current_name)}"] = current_rows
+                current_name = None
+                current_rows = []
+            continue
+
+        if re.match(r"Campaign \d+:", label_str) and base_val is None:
+            if current_name and current_rows:
+                result[f"assumptions__{slugify(current_name)}"] = current_rows
+            current_name = label_str.split(":", 1)[1].strip()
+            current_rows = []
+        elif base_val is not None:
+            current_rows.append((
+                label_str,
+                _fmt_assumption(base_val),
+                _fmt_assumption(up_val),
+                _fmt_assumption(dn_val),
+            ))
+
+    if current_name and current_rows:
+        result[f"assumptions__{slugify(current_name)}"] = current_rows
+
+    return result
