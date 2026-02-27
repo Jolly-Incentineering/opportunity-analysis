@@ -107,7 +107,7 @@ WORKSPACE STRUCTURE
             │     ├── 2. Public Filings/
             │     └── 3. Slack/
             └── 5. Call Transcripts/
-    Tools/                 ← scripts (setup.bat, cheatsheet_gen.py)
+    Tools/                 ← scripts (setup.bat)
     .claude/data/          ← workspace config and session state files
 
 TROUBLESHOOTING

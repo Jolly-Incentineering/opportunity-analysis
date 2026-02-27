@@ -44,6 +44,50 @@ Here's what to do:
 
 Then stop. Do not proceed with the rest of this skill.
 
+## Library Check
+
+Run:
+
+```bash
+python3 -c "
+import importlib, sys
+required = ['openpyxl', 'pptx', 'requests']
+optional = ['edgar', 'pypdf']
+missing_req, missing_opt = [], []
+for pkg, label in [(r, r) for r in required] + [(o, o) for o in optional]:
+    found = importlib.util.find_spec(pkg) is not None
+    if not found:
+        (missing_opt if pkg in optional else missing_req).append(pkg)
+if missing_req:
+    print('MISSING_REQUIRED:' + ','.join(missing_req))
+if missing_opt:
+    print('MISSING_OPTIONAL:' + ','.join(missing_opt))
+if not missing_req and not missing_opt:
+    print('OK')
+"
+```
+
+- If **MISSING_REQUIRED** packages are listed, tell the user:
+
+```
+Missing required packages: [list].
+Run Tools/setup.bat (Windows) or: pip install openpyxl python-pptx requests
+Then re-run /deck-start [COMPANY_NAME].
+```
+
+Then stop.
+
+- If **MISSING_OPTIONAL** packages are listed, tell the user (one line, then continue):
+
+```
+Note: optional packages not installed: [list]. SEC filing lookups and PDF metadata editing will be skipped.
+To enable: pip install [list]
+```
+
+- If **OK**, continue silently.
+
+---
+
 Set the workspace root and read the client root from workspace config:
 
 ```bash

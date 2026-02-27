@@ -35,7 +35,7 @@ python -m pip install --upgrade pip --quiet
 REM Install required packages
 echo  Installing required packages (this may take 1-3 minutes)...
 echo.
-python -m pip install openpyxl python-pptx playwright requests edgartools pypdf
+python -m pip install openpyxl python-pptx requests edgartools pypdf
 
 if errorlevel 1 (
     echo.
@@ -45,11 +45,6 @@ if errorlevel 1 (
     pause
     exit /b 1
 )
-
-REM Install Playwright browser
-echo.
-echo  Installing Playwright browser (used for PDF generation)...
-playwright install chromium
 
 echo.
 echo  ==================

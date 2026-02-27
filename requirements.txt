@@ -6,4 +6,3 @@ requests
 # Optional — gracefully skipped if not installed
 # edgartools     # SEC filing lookups
 # pypdf          # PDF metadata editing
-# playwright     # Cheat sheet PDF generation (requires browser install)

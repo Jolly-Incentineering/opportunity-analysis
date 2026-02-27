@@ -350,9 +350,9 @@ Set PDF title metadata with pypdf after export. Then open PDF for review and use
 - Question: "PDF review — pages correct, no blank slides, banner values readable?"
 - Options: ["Looks good — proceed", "Found issues — need to re-export"]
 
-### 4.12 Cheat Sheets and Save State
+### 4.12 Save State
 
-Run `cheatsheet_gen.py`. If it fails, tell user: "Install renderer: pip install weasyprint — or run manually: python3 .claude/scripts/cheatsheet_gen.py --company [COMPANY_NAME]". Continue regardless. Session state: Phase 4 complete.
+Session state: Phase 4 complete.
 
 Tell user: "Phase 4 complete. Moving to Phase 5: QA..."
 

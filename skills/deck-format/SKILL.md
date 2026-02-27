@@ -464,31 +464,7 @@ If issues found, help the user fix and re-export before continuing to Step 10.
 
 ---
 
-## Step 10: Generate Cheat Sheets
-
-Run the cheat sheet generator for this company:
-
-```bash
-WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-cd "$WS" && python3 ".claude/scripts/cheatsheet_gen.py" --company "[COMPANY_NAME]"
-```
-
-This produces a single combined PDF in `$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/Cheat Sheets/`:
-- `[COMPANY_NAME] Cheat Sheet.pdf` — company profile, meeting intelligence, and campaign breakdowns
-
-If the script fails (missing packages or no research data), tell the user:
-
-```
-Cheat sheet generation failed: [error].
-Install renderer: pip install weasyprint
-Or run manually: python3 .claude/scripts/cheatsheet_gen.py --company "[COMPANY_NAME]"
-```
-
-Do not stop the workflow if this step fails — continue to Step 11.
-
----
-
-## Step 11: Update Session State
+## Step 10: Update Session State
 
 Write a new session state file at `$WS/.claude/data/session_state_[company_slug]_[YYYY-MM-DD].md` (today's date). Include:
 - Company name

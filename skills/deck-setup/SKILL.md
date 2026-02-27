@@ -372,7 +372,7 @@ Expected workspace structure:
   │           │     ├── 2. Public Filings/
   │           │     └── 3. Slack/
   │           └── 5. Call Transcripts/
-  ├── [tools_root]/               ← Optional: scripts, cheatsheet_gen.py, etc.
+  ├── [tools_root]/               ← Optional: scripts, tools, etc.
   └── .claude/
         ├── agents/
         │     └── templates/      ← Template configs (auto-matched during deck-start)
