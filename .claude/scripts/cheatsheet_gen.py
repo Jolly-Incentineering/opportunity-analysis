@@ -505,3 +505,159 @@ body {{
     display: flex; justify-content: space-between;
 }}
 """
+
+
+# ---------------------------------------------------------------------------
+# Company Cheat Sheet
+# ---------------------------------------------------------------------------
+
+def build_company_html(company: str, research: dict) -> str:
+    today  = date.today().strftime("%B %d, %Y")
+    basics = research.get("company_basics") or {}
+    attio  = research.get("attio_insights") or {}
+    comps  = research.get("comps_benchmarks") or {}
+    sources= research.get("source_summary") or {}
+
+    # ── KPI strip ──
+    revenue    = basics.get("annual_revenue")
+    units      = basics.get("unit_count")
+    employees  = basics.get("employee_count")
+    unit_label = basics.get("unit_count_label") or "Locations"
+
+    def _src_tag(field):
+        s = basics.get(f"{field}_source") or ""
+        return f'<div class="kpi-src">{esc(s)}</div>' if s else ""
+
+    kpi_content = (
+        f'<div class="kpi-strip">'
+        f'<div class="kpi-card"><div class="kpi-v">{fmt(revenue)}</div>'
+        f'<div class="kpi-l">Annual Revenue</div>{_src_tag("annual_revenue")}</div>'
+        f'<div class="kpi-card"><div class="kpi-v">{fmt_plain(units)}</div>'
+        f'<div class="kpi-l">{esc(unit_label)}</div>{_src_tag("unit_count")}</div>'
+        f'<div class="kpi-card"><div class="kpi-v">{fmt_plain(employees)}</div>'
+        f'<div class="kpi-l">Employees</div>{_src_tag("employee_count")}</div>'
+        f'</div>'
+    )
+    kpi_html = _section("▲", "Key Metrics", kpi_content)
+
+    # ── Company Profile ──
+    geo = basics.get("geography") or {}
+    profile_rows = []
+    if research.get("industry"):
+        profile_rows.append(("Industry", str(research["industry"])))
+    if attio.get("founded"):
+        profile_rows.append(("Founded", str(attio["founded"])))
+    if geo.get("hq"):
+        profile_rows.append(("HQ", geo["hq"]))
+    if geo.get("rank"):
+        profile_rows.append(("Market Position", geo["rank"]))
+    if geo.get("states"):
+        profile_rows.append(("States", ", ".join(geo["states"])))
+    elif geo.get("state_count"):
+        profile_rows.append(("States Operated", str(geo["state_count"])))
+    for key, label in [
+        ("categories",   "Categories"),
+        ("employee_range", "Employee Range"),
+        ("estimated_arr_usd", "Est. ARR"),
+        ("last_interaction", "Last Interaction"),
+        ("strongest_connection_strength", "Connection"),
+    ]:
+        v = attio.get(key)
+        if v:
+            if key == "estimated_arr_usd":
+                display = fmt(v)
+            elif isinstance(v, list):
+                display = ", ".join(str(x) for x in v)
+            else:
+                display = str(v)
+            profile_rows.append((label, display))
+    slack_list = research.get("slack_insights") or []
+    slack = slack_list[0] if slack_list else {}
+    for key, label in [("deal_stage", "Deal Stage"), ("primary_contact", "Primary Contact")]:
+        if slack.get(key):
+            profile_rows.append((label, str(slack[key])))
+
+    profile_html = ""
+    if profile_rows:
+        rows_html = "".join(f"<tr><td>{esc(k)}</td><td>{esc(v)}</td></tr>" for k, v in profile_rows)
+        profile_html = _section("◈", "Company Profile", f'<table class="data-table">{rows_html}</table>')
+
+    # ── Employee Breakdown ──
+    breakdown_html = ""
+    bd = basics.get("employee_breakdown") or {}
+    if bd:
+        cells = "".join(
+            f'<div class="bk-cell"><div class="bk-v">{fmt_plain(v)}</div>'
+            f'<div class="bk-l">{esc(k.replace("_", " ").title())}</div></div>'
+            for k, v in bd.items() if v is not None
+        )
+        if cells:
+            breakdown_html = _section("⊞", "Employee Breakdown", f'<div class="breakdown-grid">{cells}</div>')
+
+    # ── Industry Benchmarks ──
+    bench_html = ""
+    bench_rows = []
+    for key, label in [
+        ("ebitda_margin_pct", "EBITDA Margin"),
+        ("gross_margin_pct",  "Gross Margin"),
+        ("turnover_rate",     "Turnover Rate"),
+        ("net_margin_pct",    "Net Margin"),
+        ("labor_cost_pct",    "Labor Cost %"),
+    ]:
+        raw = comps.get(key)
+        if raw is None:
+            continue
+        if isinstance(raw, dict):
+            bench_rows.append((label, raw.get("low"), raw.get("mid"), raw.get("high")))
+        else:
+            bench_rows.append((label, None, raw, None))
+
+    if bench_rows:
+        has_range = any(lo is not None or hi is not None for _, lo, _, hi in bench_rows)
+        if has_range:
+            hdr = '<tr class="assump-hdr"><th>Benchmark</th><th>Low</th><th>Mid</th><th>High</th></tr>'
+            rows_html = hdr + "".join(
+                f'<tr><td>{esc(lbl)}</td>'
+                f'<td>{fmt_plain(lo) if lo is not None else "—"}</td>'
+                f'<td class="mid">{fmt_plain(mid) if mid is not None else "—"}</td>'
+                f'<td>{fmt_plain(hi) if hi is not None else "—"}</td></tr>'
+                for lbl, lo, mid, hi in bench_rows
+            )
+            bench_html = _section("≈", "Industry Benchmarks", f'<table class="bench-table">{rows_html}</table>')
+        else:
+            rows_html = "".join(
+                f'<tr><td>{esc(lbl)}</td><td>{fmt_plain(mid) if mid is not None else "—"}</td></tr>'
+                for lbl, _, mid, _ in bench_rows
+            )
+            bench_html = _section("≈", "Industry Benchmarks", f'<table class="data-table">{rows_html}</table>')
+
+    # ── Research Sources ──
+    pill_data = [
+        ("Gong",  sources.get("gong_calls_found") or 0),
+        ("Attio", sources.get("attio_records") or 0),
+        ("Slack", sources.get("slack_messages") or 0),
+        ("SEC",   1 if sources.get("sec_filings") else 0),
+        ("Web",   sources.get("web_operations_used") or 0),
+    ]
+    pills = "".join(
+        f'<span class="pill {"pill-zero" if not n else ""}">{esc(label)}'
+        f' <span class="pill-val">{n}</span></span>'
+        for label, n in pill_data
+    )
+    source_html = _section("◎", "Research Sources", f'<div class="pills">{pills}</div>')
+
+    return (
+        f'<!DOCTYPE html><html><head><meta charset="utf-8"><style>{CSS}</style></head>'
+        f'<body>'
+        f'<div class="banner"><div>'
+        f'<div class="banner-eyebrow">JOLLY.COM &middot; CONFIDENTIAL</div>'
+        f'<div class="banner-title">{esc(company)}</div>'
+        f'<div class="banner-sub">Company Cheat Sheet &middot; {today}</div>'
+        f'</div></div>'
+        f'<div class="body">'
+        f'{kpi_html}{profile_html}{breakdown_html}{bench_html}{source_html}'
+        f'<div class="footer">'
+        f'<span>Jolly.com</span><span>Confidential — Internal Use Only</span><span>{today}</span>'
+        f'</div>'
+        f'</div></body></html>'
+    )
