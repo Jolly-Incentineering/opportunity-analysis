@@ -47,6 +47,7 @@ print('context:', data['context'])
 print('session_date:', data['session_date'])
 print('phase_3_status:', data['phase_checklist']['phase_3_model_population'])
 print('template_paths:', json.dumps(data['template_paths']))
+print('campaigns_selected:', json.dumps(data['campaigns_selected']))
 "
 ```
 
