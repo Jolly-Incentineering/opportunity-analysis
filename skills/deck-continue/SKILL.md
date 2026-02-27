@@ -21,7 +21,7 @@ You are the `deck-continue` command — a resume dispatcher. Read session state,
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-ls "$WS/.claude/data/session_state_"*.md 2>/dev/null | sort | tail -1
+ls "$WS/.claude/data/session_state_"*.json 2>/dev/null | sort
 ```
 
 If no session state files exist:
@@ -34,7 +34,7 @@ No active session found. Start a new one with:
 
 Then stop.
 
-If multiple session files exist for different companies, read each one and present a numbered list:
+If multiple session files exist for different companies, read each `.json` file and extract `company_name`, `phase_checklist` (to determine the highest complete phase), and `next_action` from the JSON structure. Present a numbered list:
 
 ```
 Active sessions:
@@ -49,11 +49,28 @@ Wait for selection.
 
 ## Step 2: Read Session State
 
-Read the selected session state file. Extract:
-- `company_name` (from `## Company`)
-- `client_root` (from `## Client Root`)
-- Phase checklist (from `## Phase Checklist` — which phases are `complete` vs `pending`)
-- Next action (from `## Next Action`)
+Run:
+
+```python
+python3 -c "
+import json, glob, os
+ws = os.environ.get('JOLLY_WORKSPACE', '.')
+files = sorted(glob.glob(f'{ws}/.claude/data/session_state_*.json'))
+if not files: raise SystemExit('No session state found')
+data = json.load(open(files[-1], encoding='utf-8'))
+print('company_name:', data['company_name'])
+print('client_root:', data['client_root'])
+print('next_action:', data['next_action'])
+pc = data['phase_checklist']
+print('phase_1:', pc['phase_1_initialization'])
+print('phase_2:', pc['phase_2_research'])
+print('phase_3:', pc['phase_3_model_population'])
+print('phase_4:', pc['phase_4_deck_formatting'])
+print('phase_5:', pc['phase_5_qa_delivery'])
+"
+```
+
+Use the printed values to populate the display below. Use `phase_1` through `phase_5` for ✓ (complete) vs ○ (pending) markers, and `next_action` for the continue prompt.
 
 Show the user:
 
