@@ -766,3 +766,160 @@ def build_meeting_prep_html(company: str, research: dict) -> str:
         f'</div>'
         f'</div></body></html>'
     )
+
+
+# ---------------------------------------------------------------------------
+# Campaign Cheat Sheet
+# ---------------------------------------------------------------------------
+
+def build_campaign_html(company: str, research: dict, assumptions: dict) -> str:
+    """Campaign cards sourced from research JSON campaign_details + campaigns_selected.
+
+    assumptions: dict from read_model_assumptions() — keyed by "assumptions__{slug}".
+    Pass {} if Excel model not available.
+    """
+    today    = date.today().strftime("%B %d, %Y")
+    campaigns = research.get("campaigns_selected") or []
+    details   = research.get("campaign_details") or {}
+
+    def _get_detail(name: str) -> dict:
+        if name in details:
+            return details[name]
+        name_lo = name.lower()
+        for k, v in details.items():
+            if k.lower() == name_lo:
+                return v
+        return {}
+
+    def _get_assumptions(name: str) -> list:
+        slug = slugify(name)
+        rows = assumptions.get(f"assumptions__{slug}")
+        if rows:
+            return rows
+        for k, v in assumptions.items():
+            if k.startswith("assumptions__") and slug[:8] in k:
+                return v
+        return []
+
+    normalised = []
+    for c in campaigns:
+        if isinstance(c, str):
+            name = c
+            d = _get_detail(name)
+            normalised.append({
+                "name": name, "priority": "standard",
+                "evidence": d.get("description") or "",
+                "client_interest": "",
+                "rops": d.get("rops_base"),
+                "ebitda": d.get("ebitda_uplift_base"),
+            })
+        elif isinstance(c, dict):
+            name = c.get("campaign_type") or c.get("name") or ""
+            d = _get_detail(name)
+            normalised.append({
+                "name": name,
+                "priority": c.get("priority") or "standard",
+                "evidence": c.get("evidence") or c.get("evidence_source") or d.get("description") or "",
+                "client_interest": c.get("client_interest") or c.get("interest") or "",
+                "rops": d.get("rops_base") or c.get("rops"),
+                "ebitda": d.get("ebitda_uplift_base") or c.get("ebitda_impact"),
+            })
+
+    # ── Opportunity banner ──
+    total_ebitda = sum(
+        c["ebitda"] for c in normalised
+        if isinstance(c.get("ebitda"), (int, float)) and c["ebitda"] > 0
+    )
+    rops_vals = [c["rops"] for c in normalised if isinstance(c.get("rops"), (int, float)) and c["rops"] > 0]
+    avg_rops  = sum(rops_vals) / len(rops_vals) if rops_vals else None
+    high_count = sum(1 for c in normalised if c["priority"].lower() == "high")
+
+    opp_items = ""
+    if total_ebitda:
+        opp_items += f'<div class="opp-item"><div class="opp-v">{fmt(total_ebitda)}</div><div class="opp-l">Total EBITDA</div></div>'
+    if avg_rops:
+        opp_items += f'<div class="opp-item"><div class="opp-v">{avg_rops:.0f}x</div><div class="opp-l">Avg ROPS</div></div>'
+    opp_items += f'<div class="opp-item"><div class="opp-v">{high_count}</div><div class="opp-l">High Priority</div></div>'
+    opp_items += f'<div class="opp-item"><div class="opp-v">{len(normalised)}</div><div class="opp-l">Campaigns</div></div>'
+    opp_banner = f'<div class="opp-banner">{opp_items}</div>' if normalised else ""
+
+    # ── Campaign cards ──
+    if not normalised:
+        cards_html = '<p style="color:#666;padding:16px 0;font-size:11px;">No campaign data. Run /deck-research first.</p>'
+    else:
+        cards = []
+        for c in normalised:
+            name     = c["name"]
+            priority = c["priority"].lower()
+            is_high  = priority == "high"
+            rops     = c["rops"]
+            ebitda   = c["ebitda"]
+            evidence = c["evidence"]
+            interest = c["client_interest"]
+
+            head_cls = "c-head high" if is_high else "c-head"
+            interest_badge = f'<span class="badge b-interest">{esc(str(interest).capitalize())}</span>' if interest else ""
+            priority_badge = f'<span class="badge {"b-high" if is_high else "b-std"}">{"High Priority" if is_high else priority.capitalize()}</span>'
+
+            rops_fmt  = f"{rops:.0f}x" if isinstance(rops, (int, float)) else (str(rops) if rops else "—")
+            ebitda_fmt = fmt(ebitda) if ebitda else "—"
+
+            stats_html = (
+                f'<div class="c-stats">'
+                f'<div class="c-stat-item"><div class="c-stat-v">{esc(rops_fmt)}</div><div class="c-stat-l">ROPS</div></div>'
+                f'<div class="c-stat-item"><div class="c-stat-v">{esc(ebitda_fmt)}</div><div class="c-stat-l">Est. EBITDA</div></div>'
+                f'</div>'
+            )
+            ev_block = f'<div class="evidence">&#8220;{esc(str(evidence))}&#8221;</div>' if evidence else ""
+
+            # Assumptions
+            assump_rows = _get_assumptions(name)
+            assump_block = ""
+            if assump_rows:
+                has_scenarios = len(assump_rows[0]) == 4 and any(r[2] or r[3] for r in assump_rows)
+                if has_scenarios:
+                    hdr = '<tr class="assump-hdr"><th>Assumption</th><th>Base</th><th>Upside</th><th>Downside</th></tr>'
+                    row_cells = "".join(
+                        f'<tr><td>{esc(lbl)}</td>'
+                        f'<td class="col-base">{esc(b)}</td>'
+                        f'<td class="col-up">{esc(u) if u else "—"}</td>'
+                        f'<td class="col-dn">{esc(d) if d else "—"}</td></tr>'
+                        for lbl, b, u, d in assump_rows
+                    )
+                    label_txt = "Model Assumptions — Base / Upside / Downside"
+                else:
+                    hdr = ""
+                    row_cells = "".join(
+                        f'<tr><td>{esc(lbl)}</td><td class="col-base">{esc(b)}</td></tr>'
+                        for lbl, b, *_ in assump_rows
+                    )
+                    label_txt = "Model Assumptions (Base)"
+                tbl = f'<table class="assump-table">{hdr}{row_cells}</table>'
+                assump_block = f'<div class="assumptions"><div class="assumptions-label">{label_txt}</div>{tbl}</div>'
+
+            cards.append(
+                f'<div class="campaign">'
+                f'<div class="{head_cls}">'
+                f'<div class="c-title">{esc(name)}</div>'
+                f'<div class="c-badges">{interest_badge}{priority_badge}</div>'
+                f'</div>'
+                f'<div class="c-body">{stats_html}{ev_block}{assump_block}</div>'
+                f'</div>'
+            )
+        cards_html = "\n".join(cards)
+
+    return (
+        f'<!DOCTYPE html><html><head><meta charset="utf-8"><style>{CSS}</style></head>'
+        f'<body>'
+        f'<div class="banner"><div>'
+        f'<div class="banner-eyebrow">JOLLY.COM &middot; CONFIDENTIAL</div>'
+        f'<div class="banner-title">{esc(company)}</div>'
+        f'<div class="banner-sub">Campaign Overview &middot; {today}</div>'
+        f'</div></div>'
+        f'<div class="body">'
+        f'{opp_banner}{cards_html}'
+        f'<div class="footer">'
+        f'<span>Jolly.com</span><span>Confidential — Internal Use Only</span><span>{today}</span>'
+        f'</div>'
+        f'</div></body></html>'
+    )
