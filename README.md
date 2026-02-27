@@ -6,15 +6,15 @@ The Jolly Opportunity Analysis plugin for Claude. Give it a company name and it 
 
 **Intro Deck workflow** — a streamlined template that works for both pre-call and post-call contexts. Claude captures whether it's pre-call or post-call to inform the research phase, but uses the same workflow and template throughout (~10–15 min). **Two ways to run it:** automatically with `/deck-auto [Company]`, or step-by-step yourself. Both are covered below.
 
-**Latest features (v3.1.0):**
-- **Token optimization:** New `ws_env.sh` replaces 39 inline preamble blocks with a single `source` one-liner. Hard rules trimmed from 11 to 8 per skill.
-- **Critical bug fixes:** Missing `--action` flag in deck-model, broken heredoc invocations in deck-qa checks, Cyrillic character in benchmark data.
-- **Dead code removed:** 540+ lines of unused GUI code from brandfetch_downloader, dead template refs from jolly_utils.
-- **Retail vertical support:** `jolly_utils.py`, `qa_check.py`, and plugin keywords now recognize Retail templates.
-- **Hardened imports:** `goody_scraper.py` no longer crashes on import if selenium/Pillow are missing.
-- **Read-only MCP guardrail:** All Attio, Slack, and other MCP tools are explicitly read-only in every skill.
+**Latest features (v3.3.0):**
+- **Simplified build:** Playwright and WeasyPrint removed entirely — no browser install, no system dependencies. Setup installs 5 packages: `openpyxl python-pptx requests edgartools pypdf`.
+- **Library check on startup:** `/deck-start` now checks for required packages before doing anything. Missing required packages stop with a clear install message; missing optional packages warn and continue.
+- **Cheatsheet removed:** The auto-generated PDF leave-behind has been removed. Research data is still fully available in session state and deck notes.
+- **SEC filing text extraction:** `sec_filings.py --include-text` extracts MD&A and business sections directly via edgartools (no more 403 errors). `--save-pdf` saves the 10-K as HTML for human reference.
+- **Template config protection:** New `config_install.py` uses stamp-and-skip logic — plugin updates never overwrite user-customized template configs. Conflicts are saved as `.plugin_update.json` for manual review.
+- **Script cleanup:** `excel_editor.py` stripped of ~270 lines of dead class code (CLI-only now). `qa_check.py` PLACEHOLDER_RE broadened. `template_scanner.py` path traversal guard added.
 
-**[→ See full v3.1.0 release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v3.1.0)**
+**[→ See full v3.3.0 release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v3.3.0)**
 
 ---
 
@@ -346,9 +346,9 @@ If any of these are not connected, Claude will not be able to pull data from tha
 pip install openpyxl python-pptx requests
 ```
 
-Optional (for SEC filings and cheat sheets):
+Optional (for SEC filings and PDF metadata editing):
 ```bash
-pip install edgartools pypdf playwright
+pip install edgartools pypdf
 ```
 
 Set `JOLLY_WORKSPACE` as a system environment variable (not just in `.env`) so it is available when Claude Code launches. On Windows, set it via System Properties > Environment Variables.
@@ -409,6 +409,50 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 ---
 
 ## Changelog
+
+### v3.3.0 (Feb 27, 2026)
+
+- **Playwright and WeasyPrint removed:** No longer dependencies. Setup installs 5 packages only — `openpyxl python-pptx requests edgartools pypdf`. No browser install step.
+- **Cheatsheet removed:** `cheatsheet_gen.py` deleted entirely. Removed from deck-auto, deck-format, setup.bat, and requirements.
+- **Library check in `/deck-start`:** Checks required (`openpyxl`, `python-pptx`, `requests`) and optional (`edgartools`, `pypdf`) packages on every run. Stops cleanly on missing required packages with install instructions; warns on missing optional.
+- **`sec_filings.py --save-pdf`:** Saves the most recent 10-K as `.html` for human reference — open in browser and print to PDF manually.
+
+**[→ Release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v3.3.0)**
+
+### v3.2.2 (Feb 27, 2026)
+
+- **`sec_filings.py --save-pdf`:** Added flag to download and save the most recent 10-K as HTML for human reference alongside the JSON output.
+
+### v3.2.1 (Feb 27, 2026)
+
+- **cheatsheet source fix:** The new cheatsheet rewrite from v3.2.0 was placed in the wrong directory — fresh installs were getting the old broken version. Fixed.
+- **`config_install.py` (new):** Version-aware stamp-and-skip helper for template configs. Tracks `plugin_version` + `installed_hash` per file; saves `.plugin_update.json` on conflict so user edits are never overwritten.
+- **`sec_filings.py --include-text`:** Extracts MD&A and business sections via edgartools `filing.obj()`, fixing 403 errors that occurred when trying to download raw files from `sec.gov/Archives/`.
+- **`excel_editor.py` class stripped:** Removed ~270 lines of dead `ExcelEditor` class code — CLI-only now. Added `sheet` key support to `write-cells` action.
+- **`deck_engine.py`:** Fixed `fill-banners` leaving empty XML run nodes; added existence checks for `set-pdf-title`.
+- **`qa_check.py`:** PLACEHOLDER_RE broadened from `[  \w]*` to `.*?` to catch numbers and special characters in placeholder names.
+- **`template_scanner.py`:** Removed unused import; added path traversal guard; added `--threshold` bounds check.
+- **`deck-setup`:** Template configs now installed via `config_install.py`; brandfetch installs flat at `Tools/brandfetch_downloader.py`.
+
+**[→ Release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v3.2.1)**
+
+### v3.2.0 (Feb 26, 2026)
+
+- **`cheatsheet_gen.py` rewrite:** 2,171 → 1,063 lines. Removed vertical config system, runtime Claude API calls, and Playwright-only header injection. WeasyPrint primary renderer with Playwright fallback and HTML fallback (never hard-fails).
+- **3-page leave-behind:** Company Snapshot, Meeting Prep, Campaign Overview.
+- **Meeting Prep page:** Uses Gong/Slack research data (no API call at generation time); sections: pain points, quotes, deal context, objections, contacts, tech stack.
+
+**[→ Release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v3.2.0)**
+
+### v3.1.2 (Feb 26, 2026)
+
+- **Gate checklists:** All 6 skills print a `Gates this phase:` checklist on start. Claude marks each gate ✓ in text as it is confirmed — zero extra tool calls.
+
+### v3.1.1 (Feb 26, 2026)
+
+- **`AskUserQuestion` at all gate points:** Consistent interactive prompts across 6 skills.
+- **Full placeholder audit:** Replaced the single-text placeholder step in deck-format with a comprehensive scan-and-replace pass.
+- **Macabacus skip:** Placeholder replacement skips Macabacus-linked text runs (red font) to protect live model links.
 
 ### v3.1.0 (Feb 26, 2026)
 
