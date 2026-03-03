@@ -19,7 +19,7 @@ WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
    - Flag any missing or renamed scripts
 
 2. **Tool/MCP references**: Do agent prompts reference correct tool names?
-   - Check Slack, Attio, Gong tool names match actual MCP tool IDs
+   - Check Slack, Attio tool names match actual MCP tool IDs
    - Verify API endpoints are correct (Attio REST API URLs, SEC EDGAR URLs)
 
 3. **Data flow**: Does output from one phase correctly feed into the next?

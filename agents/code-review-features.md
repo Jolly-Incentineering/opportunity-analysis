@@ -31,7 +31,7 @@ WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 4. **Edge cases**:
    - Private company (no SEC data)
    - No Slack history for this company
-   - No Gong integration configured
+   - No Attio call recordings available
    - Company name with special characters
    - Template config missing or stale
 
