@@ -33,12 +33,11 @@ Try `.net` if `.com` fails. Don't edit logos.
 ## 3. Swag (Goody)
 
 ```bash
-python "$WS/Tools/Goody Scraper/goody_scraper.py" \
-  --domain "[domain.com]" -n "[COMPANY_NAME]" \
-  --logo-path "$RES/1. Logos/icon_1024.png" --output "$RES/2. Swag" --fallback
+python "$WS/Tools/Goody Scraper/goody_auto.py" \
+  --domain "[domain.com]" --output "$RES/2. Swag"
 ```
 
-If Brandfetch failed (no icon_1024.png), omit `--logo-path`. If Goody fails, note it and move on.
+If the auto scraper fails (Goody has no images for this domain), tell the user to run `goody_manual.py` to upload a logo manually. If Goody fails entirely, note it and move on.
 
 ## 4. Report
 

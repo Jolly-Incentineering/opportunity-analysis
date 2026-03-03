@@ -483,7 +483,7 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 - **Critical bug fixes:** Missing `--action write-cells` flag in deck-model Step 5 (would fail at runtime). Broken heredoc invocations in deck-qa D2b/D2c checks (path argument on wrong line). Cyrillic `у` in `vertical_benchmarks.json` keys replaced with ASCII `u`.
 - **Dead code removed:** Brandfetch GUI class (540 lines), dead template refs in jolly_utils (Automotive Services, Taxis), `__pycache__` removed from tracking.
 - **Retail vertical support:** Added to `jolly_utils.py` (template paths, formula counts placeholder), `qa_check.py` (detect_industry), and plugin.json keywords.
-- **Optional imports in goody_scraper:** selenium/Pillow wrapped in try/except — no crash on import if not installed.
+- **Optional imports in goody scraper:** selenium/Pillow wrapped in try/except — no crash on import if not installed.
 - **Portable SEC identity:** `sec_filings.py` reads from env/config instead of hardcoded email.
 - **deck-format steps renumbered:** Sequential order (3b, 7a–7d, 8) replacing old non-sequential (3.5, 8a–8d, 7).
 - **deck-continue fixed:** "14 quality checks" → "11 quality checks".

@@ -248,7 +248,8 @@ python3 "$WS/.claude/scripts/config_install.py" \
 # Copy tools
 mkdir -p "$WS/Tools/Goody Scraper"
 cp "$PLUGIN_DIR/tools/brandfetch_downloader.py" "$WS/Tools/" 2>/dev/null
-cp "$PLUGIN_DIR/tools/goody_scraper.py" "$WS/Tools/Goody Scraper/" 2>/dev/null
+cp "$PLUGIN_DIR/tools/goody_auto.py" "$WS/Tools/Goody Scraper/" 2>/dev/null
+cp "$PLUGIN_DIR/tools/goody_manual.py" "$WS/Tools/Goody Scraper/" 2>/dev/null
 cp "$PLUGIN_DIR/tools/setup.bat" "$WS/Tools/" 2>/dev/null
 ```
 
