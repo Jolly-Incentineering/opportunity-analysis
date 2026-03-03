@@ -7,7 +7,7 @@ HARD RULES — NEVER VIOLATE:
 1. Do NOT generate or invent campaign names. Read them from the template config JSON.
 2. Do NOT make tool calls or add steps not listed in these instructions.
 3. Do NOT write to formula cells under any circumstances.
-4. Do NOT skip gates — wait for user confirmation at every gate.
+4. Do NOT skip gates marked with AskUserQuestion — but do NOT add extra gates. Only stop for physical actions and key decisions.
 5. Do NOT open files you are about to write to programmatically. Keep them closed during writes.
 6. Do NOT proceed past a failed step — stop and report. Do NOT retry more than once.
 7. Keep all client-specific data in the client folder under 4. Reports/. Never write client data to .claude/data/.
@@ -15,7 +15,7 @@ HARD RULES — NEVER VIOLATE:
 
 ---
 
-You are executing the `deck-format` phase of the Jolly intro deck workflow. Follow every step exactly as written. Do not skip steps. Do not modify the deck without explicit user approval at each gate.
+You are executing the `deck-format` phase of the Jolly intro deck workflow. Follow every step exactly as written. Do not skip steps. Only stop at gates marked with AskUserQuestion - do not add extra confirmation prompts.
 
 Set workspace root and client root:
 
@@ -76,14 +76,10 @@ Resuming from [session_date] -- company: [Company Name], vertical: [Vertical].
 Starting Phase 4: Deck formatting.
 
 Gates this phase:
-  □ Placeholder writes approved (C/D/E items)
-  □ Campaign slides checked
-  □ Logo placed
+  □ Placeholder writes approved (C/D/E/G items)
   □ Macabacus refresh complete
   □ vF links broken
-  □ Final visual review passed
-  □ PDF exported
-  □ PDF reviewed
+  □ vF saved + PDF exported
 
 Deck file: [deck filename]
 ```
@@ -92,30 +88,23 @@ After each gate is confirmed, echo "[Gate name] ✓" in your reply before procee
 
 Phase 4 scope:
 ```
-  WILL DO: Banner fill, text replacement, brand assets, Macabacus refresh, vF copy, link break, PDF export
+  WILL DO: Banner fill, text replacement, systems of record, Macabacus refresh, vF copy, link break, PDF export
   WILL NOT: Custom UI design, app mockups, visual redesign
-  MANUAL: Macabacus refresh (~1 min), brand frames (optional), link break (~30 sec)
-  PDF: Manual export via PowerPoint UI (~15 sec)
+  MANUAL (3 stops): Macabacus refresh (~1 min), link break (~30 sec), PDF export (~15 sec)
 ```
 
 ---
 
 ## Step 2: Ensure Files Are Closed
 
+Tell the user:
+
 ```
-PHASE 4 FILE MANAGEMENT:
-1. Close ALL Excel and PowerPoint files now — I need them closed for automated steps.
-2. I'll tell you when to open each file and when to close it.
-3. Each file opens exactly once.
+Close all Excel and PowerPoint files — I need them closed for automated steps.
+I'll tell you when to open each file.
 ```
 
-Sequence: Automated banner scan + write (files closed) → open master + model → brand + refresh → close master → vF copy (auto) → open vF → break links → close vF → open PDF
-
-Use AskUserQuestion:
-- Question: "Are all Excel and PowerPoint files closed?"
-- Options: ["Yes, all closed", "Not yet — give me a moment"]
-
-If "Not yet", wait for the user and re-ask. Proceed only after confirmation.
+Pause 3 seconds, then proceed. Do not ask for confirmation.
 
 ---
 
@@ -203,10 +192,9 @@ Any text run with red font color (RGB `FF0000`) is a live Macabacus link. Also s
 Banner shapes containing `$[ ]`, `[ ]`, or `$[...]MM` patterns. These are filled programmatically from `research_output` after Macabacus refresh + link break. Show the proposed fill values now so the user can verify, but do NOT write them here.
 
 **C. CAMPAIGN DESCRIPTION PLACEHOLDERS (write in this step)**
-Slides with `Suggested Jolly Campaign: [ ]` or empty campaign description text boxes. Map each to the matching campaign from the approved list in `research_output`. For each:
-- Campaign name
-- 1-2 sentence description tailored to THIS company's vertical and context
-- Key metric (e.g., "$1.5MM EBITDA uplift, 18x ROPS")
+Slides with `Suggested Jolly Campaign: [ ]` or empty campaign description text boxes. Map each to the matching campaign from the approved list in `research_output`. For each, write two bullets:
+- **Bullet 1 - Campaign mechanism:** Campaign name + 1 sentence selling the value to a CEO/CFO (what it rewards, how it drives EBITDA). Write as a pitch, not a label.
+- **Bullet 2 - Company-specific impact:** 1 sentence with hard numbers from research_output showing why this matters at THIS company's scale (e.g., turnover rate, dollar figures, utilization %). End with the key metric (EBITDA uplift + ROPS).
 
 **D. NARRATIVE TEXT TO REWRITE (write in this step)**
 Any paragraph that references the wrong vertical (e.g., QSR language like "beverages and food offerings" for a distribution company). Propose a rewrite using the correct vertical language and the company's actual business context from research.
@@ -216,6 +204,12 @@ Non-linked tokens like `[Year]`, `[Vertical]`, or other template fill-ins. Map t
 
 **F. RAW DOLLAR AMOUNTS (deferred — reformatted by deck_engine.py in Step 7d)**
 Dollar values like `$760,000` that need `$760k` or `$1.5MM` formatting. Show them so the user knows they will be fixed, but do NOT reformat here.
+
+**G. "YOU CAN REWARD ANY TRACKABLE DATA" SLIDE (write in this step)**
+Find the slide titled "You Can Reward Any Trackable Data" (or similar). Check `research_output.systems_of_record` for named systems with logos.
+- If systems have `logo_found: true`: replace the generic text labels with the company's actual system logos from `3. Company Resources/3. Systems of Record/`. Insert each logo as a picture shape, sized to fit the existing layout.
+- If systems were found but logos failed (`logo_found: false`): update the text labels to show the actual system names (e.g., replace "HRIS" with "Workday", "POS" with "Toast").
+- If `systems_of_record` is empty: leave the slide as-is with generic text labels. No changes needed.
 
 Present the full audit to the user:
 
@@ -233,13 +227,13 @@ B. BANNERS (filled in Step 7d):
   Slide [N] | "$[ ]MM of EBITDA..." -> "$5.3MM of EBITDA...6 quantified"
   ...
 
-C. CAMPAIGN DESCRIPTIONS (will write now):
-  Slide [N] | "Suggested Jolly Campaign: [ ]" -> "Visit Order Amounts — Increase average order
-              value through targeted visit incentives. $1,480K EBITDA uplift, 22x ROPS."
-  Slide [N] | "Suggested Jolly Campaign: [ ]" -> "On-Time Training — Drive completion rates
-              for mandatory training modules. $1,160K EBITDA uplift, 19x ROPS."
-  Slide [N] | "Suggested Jolly Campaign: [ ]" -> "Employee Referrals — Reduce hiring costs
-              through referral bonuses. $1,013K EBITDA uplift, 15x ROPS."
+C. CAMPAIGN DESCRIPTIONS (will write now — two bullets each):
+  Slide [N] | "Suggested Jolly Campaign: [ ]" ->
+    - "Visit Order Amounts — Reward crew for upselling higher-value orders, driving incremental revenue per visit."
+    - "With 880 stores averaging $12.50 tickets, a 3% uplift recovers $1,480k EBITDA. 22x ROPS."
+  Slide [N] | "Suggested Jolly Campaign: [ ]" ->
+    - "On-Time Training — Incentivize completion of mandatory training modules, reducing compliance gaps."
+    - "At 22% annual turnover and 14,000 employees, faster onboarding saves $1,160k EBITDA. 19x ROPS."
   ...
 
 D. NARRATIVE REWRITES (will write now):
@@ -258,44 +252,36 @@ F. RAW DOLLARS (reformatted in Step 7d):
   Slide [N] | "$1,500,000" -> "$1.5MM" (auto)
   ...
 
-SUMMARY: [N] items to write now (C + D + E) | [N] deferred to Step 7d (B + F) | [N] skipped (A)
+G. SYSTEMS OF RECORD (will write now):
+  Slide [N] | "You Can Reward Any Trackable Data"
+    Systems found: Salesforce (logo), Workday (logo), ADP (text only)
+    Action: Replace generic labels with logos/names
+  [OR]
+    No systems identified — keeping generic labels.
 
-SUMMARY: [N] items to write now (C + D + E) | [N] deferred to Step 7d (B + F) | [N] skipped (A)
+SUMMARY: [N] items to write now (C + D + E + G) | [N] deferred to Step 7d (B + F) | [N] skipped (A)
 ```
 
 Use AskUserQuestion:
-- Question: "Approve writing C/D/E placeholder items to the deck?"
+- Question: "Approve writing C/D/E/G placeholder items to the deck?"
 - Options: ["Approve — write all", "I need to make changes first"]
 
-If changes requested, update the plan and re-present. Only write items in categories C, D, and E after approval. Categories A, B, and F are handled later in the workflow.
+If changes requested, update the plan and re-present. Only write items in categories C, D, E, and G after approval. Categories A, B, and F are handled later in the workflow.
 
 ---
 
-## Step 5: Campaign Slides -- Manual Step Checklist
+## Step 5: Brand Assets
 
-Campaign slide population requires the user to do manual formatting steps in the open deck.
+Tell the user to handle campaign slides and logo while the deck is open:
 
-Present the instructions, then use AskUserQuestion with 3 questions:
-1. "Campaign Summary slide — approved campaigns ([list]) shown in correct order?" — Options: ["Done", "Needs adjustment"]
-2. "Evidence callouts added to speaker notes for RECOMMENDED campaigns?" — Options: ["Done", "Not applicable"]
-3. "EXCLUDED campaign slides hidden or removed?" — Options: ["Done", "Not applicable"]
+```
+While the deck is open, check:
+  - Campaign Summary slide: approved campaigns in correct order
+  - Excluded campaigns: hidden or removed
+  - Title slide: company logo placed (logos at [CLIENT_ROOT]/[COMPANY_NAME]/3. Company Resources/1. Logos/)
+```
 
-If any answer is "Needs adjustment", help the user resolve before continuing.
-
----
-
-## Step 6: Brand Assets and Inbox Feed
-
-### Step 6a: Logo Check
-
-Tell the user to check the title slide for the company logo. If missing, it should be at:
-`[WS]/[CLIENT_ROOT]/[COMPANY_NAME]/3. Company Resources/1. Logos/`
-
-Use AskUserQuestion:
-- Question: "Company logo placed correctly on the title slide?"
-- Options: ["Done — logo looks good", "No logo found — need help"]
-
-If "No logo found", help the user locate or download the logo before continuing.
+Do not gate on this - QA (D4/D5) will catch any misses. Proceed immediately.
 
 ---
 
@@ -396,17 +382,11 @@ source "$WS/.claude/scripts/ws_env.sh"
 VF="$WS/$CLIENT_ROOT/[COMPANY_NAME]/[deck_folder]/[vf_deck_filename]"
 RESEARCH="$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/research_output_[company_slug].json"
 
-# 1. Fill banners from research data
-python3 "$WS/.claude/scripts/deck_engine.py" fill-banners --file "$VF" --research "$RESEARCH"
-
-# 2. Reformat raw dollar amounts
-python3 "$WS/.claude/scripts/deck_engine.py" format-dollars --file "$VF"
-
-# 3. Verify no placeholders remain
-python3 "$WS/.claude/scripts/deck_engine.py" find-placeholders --file "$VF"
+# Single pass: fill banners + reformat dollars + verify placeholders
+python3 "$WS/.claude/scripts/deck_engine.py" format-all --file "$VF" --research "$RESEARCH"
 ```
 
-If find-placeholders returns any results, report them to the user before continuing.
+The output JSON includes `remaining_placeholders`. If any are listed, report them to the user before continuing.
 
 Tell the user:
 
@@ -419,34 +399,22 @@ Do not edit the vF directly — make changes in the master, re-run Steps 7a–7d
 
 ---
 
-## Step 8: Final Visual Review -- Manual Step Checklist
-
-Tell the user to review the open vF deck, then use AskUserQuestion with 3 questions:
-1. "Slide show check (F5) — any template tokens [...] remaining?" — Options: ["All clear", "Found tokens — need fix"]
-2. "Dollar formatting correct? ($X.XMM for $1M+, $XXXk for $1K–$999K)" — Options: ["Looks good", "Found formatting issues"]
-3. "vF deck saved (Ctrl+S)?" — Options: ["Saved", "Not yet"]
-
-If any issues found, help the user resolve before continuing.
-
----
-
-## Step 9: Export PDF -- Manual Step
+## Step 8: Save vF and Export PDF
 
 Tell the user:
 
 ```
-Export PDF manually:
-1. Open the vF in PowerPoint: [deck_folder]/[vf_deck_filename]
-2. File → Export → Create PDF/XPS
-3. Save to: [deck_folder]/[pdf_filename]
-Takes ~15 seconds.
+Save the vF (Ctrl+S), then export PDF:
+  File → Export → Create PDF/XPS → save to [deck_folder]/[pdf_filename]
+
+QA will catch any remaining tokens, formatting issues, or mismatches.
 ```
 
 Use AskUserQuestion:
-- Question: "PDF exported to the correct location?"
-- Options: ["Done — PDF exported", "Need help exporting"]
+- Question: "vF saved and PDF exported?"
+- Options: ["Done", "Need help"]
 
-If "Need help", troubleshoot before continuing. Then set the PDF title and open it:
+If "Need help", troubleshoot before continuing. Then set the PDF title and open both files:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
@@ -456,12 +424,6 @@ python3 "$WS/.claude/scripts/deck_engine.py" set-pdf-title \
   --from-pptx "$WS/$CLIENT_ROOT/[COMPANY_NAME]/[deck_folder]/[vf_deck_filename]"
 start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/[deck_folder]/[pdf_filename]"
 ```
-
-Tell the user to review the PDF, then use AskUserQuestion:
-- Question: "PDF review — pages correct, no blank slides, banner values readable?"
-- Options: ["Looks good — proceed", "Found issues — need to re-export"]
-
-If issues found, help the user fix and re-export before continuing to Step 10.
 
 ---
 

@@ -88,7 +88,34 @@
     "Incentive costs drive ROPS; target 10x-30x per campaign",
     "Total EBITDA accretion ceiling: 15% of annual EBITDA"
   ],
-  "last_updated": "2026-02-23",
+  "campaign_mechanic_map": {
+    "Campaign 1 - Member Sign-Ups": {
+      "mechanic": "acquisition_value",
+      "formula": "new_members x signup_lift_pct x member_lifetime_value x enrollment_rate",
+      "notes": "Retail-specific acquisition campaign."
+    },
+    "Campaign 2 - Employee Referrals": {
+      "mechanic": "hiring_cost_avoidance",
+      "formula": "turnover_rate x referral_success_rate x (hiring_cost - incentive_cost)",
+      "notes": "Universal mechanic. Incentive cost formula-driven: hiring_cost / 10."
+    },
+    "Campaign 3 - Timeliness & Attendance": {
+      "mechanic": "hours_recovery",
+      "formula": "hours_lost_pct x campaign_reduction_pct x revenue_per_hour x total_hours",
+      "notes": "Relabeled from QSR 'tardiness'. Same formula structure."
+    },
+    "Campaign 4 - Inventory Accuracy": {
+      "mechanic": "shrink_reduction",
+      "formula": "inventory_value x shrink_rate_pct x shrink_reduction_pct",
+      "notes": "Retail-specific shrink campaign."
+    },
+    "Campaign 5 - Employee Retention": {
+      "mechanic": "turnover_cost_avoidance",
+      "formula": "quit_reduction_pct x turnover_volume x replacement_cost",
+      "notes": "Reduces voluntary quits directly. Different from referrals (C2) which avoids hiring cost."
+    }
+  },
+  "last_updated": "2026-03-03",
   "vertical_standards": {
     "hours_per_year": 1820,
     "hiring_cost_cap": null,

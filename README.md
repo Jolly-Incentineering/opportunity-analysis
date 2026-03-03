@@ -6,16 +6,16 @@ The Jolly Opportunity Analysis plugin for Claude. Give it a company name and it 
 
 **Intro Deck workflow** — a streamlined template that works for both pre-call and post-call contexts. Claude captures whether it's pre-call or post-call to inform the research phase, but uses the same workflow and template throughout (~10–15 min). **Two ways to run it:** automatically with `/deck-auto [Company]`, or step-by-step yourself. Both are covered below.
 
-**Latest features (v3.5.0):**
-- **Gong removed:** All call transcript data now sourced from Attio call recordings via MCP tools. No more Rube recipes, Zapier webhooks, or Gong setup.
-- **Branch detection simplified:** Attio-only check replaces the 3-source detection system.
-- **Attio call recording search:** Research agent pulls up to 6 recent call transcripts directly from Attio.
-- **60s Attio timeout:** Slow MCP calls abandoned after 60s to prevent blocking.
-- **XML-safe writes + .bak backups:** `excel_editor.py` sanitizes control chars and creates backups before every write.
-- **Zero-value detection:** `qa_check.py` flags stray `$0` on campaign slides (excluding valid `$0.25`, `$0.50`).
-- **Workspace CLAUDE.md cleanup:** Removed stale Figma, cheatsheet, and dead code references.
+**Latest features (v3.6.0):**
+- **48% fewer user stops:** Gates reduced from ~23 to ~12 per build. Removed redundant confirmations, collapsed checklists, auto-proceed Branch B campaigns. Only stops for physical actions and real decisions.
+- **Systems of record detection:** Research agent extracts named software systems (POS, HRIS, CRM, etc.) from Attio call transcripts/notes, then pulls logos via Brandfetch. Deck-format updates the "You Can Reward Any Trackable Data" slide with actual system logos or names.
+- **`format-all` consolidated action:** `deck_engine.py format-all` runs fill-banners + format-dollars + find-placeholders in a single file open/save cycle. Saves ~700 tokens and 2 tool calls per build.
+- **Two-bullet Campaign Insights:** Campaign descriptions now require two bullets - (1) CEO/CFO-selling pitch, (2) company-specific hard numbers with EBITDA/ROPS metric.
+- **Campaign mechanic maps:** Vertical template configs now document the formula mechanic each campaign uses, enabling faster cross-vertical template adaptation.
+- **Fill-banners bug fix:** Bracket token replacement now preserves per-run formatting (bold, italic, color) instead of collapsing paragraphs. Unknown `[...]` tokens are reported instead of silently replaced.
+- **De-personalized:** Removed hardcoded personal emails and names. Plugin is now team-generic.
 
-**[-> See full v3.5.0 release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v3.5.0)**
+**[-> See full v3.6.0 release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v3.6.0)**
 
 ---
 
@@ -409,6 +409,18 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 ---
 
 ## Changelog
+
+### v3.6.0 (Mar 3, 2026)
+
+- **48% fewer user stops:** Gates reduced from ~23 to ~12 per build. Removed redundant confirmations (file-closed checks, visual review checklists, PDF review gate), collapsed deck-model manual review to single save checkpoint, auto-proceed Branch B campaign selection. Only stops for physical actions (Macabacus, link break, PDF export) and real decisions (campaign selection, dry-run approval, placeholder writes).
+- **Systems of record detection:** ws-attio agent now extracts named software systems (POS, HRIS, CRM, etc.) from call transcripts, notes, and emails. New Step 5a runs Brandfetch to pull logos, stored in `3. Company Resources/3. Systems of Record/`. Deck-format Category G updates the "You Can Reward Any Trackable Data" slide with actual logos or system names. Falls back to generic labels if no systems found.
+- **`format-all` consolidated action:** New `deck_engine.py format-all` runs fill-banners + format-dollars + find-placeholders in a single open/save cycle. Replaces 3 separate CLI calls. Saves ~700 tokens and 2 tool round-trips per build.
+- **Two-bullet Campaign Insights:** Category C in deck-format now requires two bullets per campaign: (1) CEO/CFO-selling pitch sentence, (2) company-specific hard numbers from research with EBITDA/ROPS metric.
+- **Campaign mechanic maps:** `campaign_mechanic_map` added to QSR and Retail vertical configs. Documents formula mechanic, formula string, and cross-vertical notes per campaign. Enables faster template adaptation for new verticals.
+- **Fill-banners bug fix:** `_replace_in_runs()` helper replaces tokens within run boundaries, preserving bold/italic/color formatting. Unknown `[...]` tokens reported in `skipped_tokens` instead of silently replaced with campaign count.
+- **De-personalized:** Replaced hardcoded personal email with team@jolly.com, removed personal name from help text, added notes_backup.json to .gitignore.
+
+**[-> Release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v3.6.0)**
 
 ### v3.5.1 (Mar 3, 2026)
 

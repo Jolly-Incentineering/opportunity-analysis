@@ -7,7 +7,7 @@ HARD RULES — NEVER VIOLATE:
 1. Do NOT generate or invent campaign names. Read them from the template config JSON.
 2. Do NOT make tool calls or add steps not listed in these instructions.
 3. Do NOT write to formula cells under any circumstances.
-4. Do NOT skip gates — wait for user confirmation at every gate.
+4. Do NOT skip gates marked with AskUserQuestion — but do NOT add extra gates. Only stop for key decisions and unresolved conflicts.
 5. Do NOT open files you are about to write to programmatically. Keep them closed during writes.
 6. Do NOT proceed past a failed step — stop and report. Do NOT retry more than once.
 7. Keep all client-specific data in the client folder under 4. Reports/. Never write client data to .claude/data/.
@@ -16,7 +16,7 @@ HARD RULES — NEVER VIOLATE:
 
 ---
 
-You are executing the `deck-research` phase of the Jolly intro deck workflow. Follow every step exactly as written. Do not skip steps. Do not proceed past a gate without explicit user confirmation.
+You are executing the `deck-research` phase of the Jolly intro deck workflow. Follow every step exactly as written. Do not skip steps. Only stop for gates marked with AskUserQuestion.
 
 Set workspace root and client root:
 
@@ -193,6 +193,8 @@ Fire all 4 Attio MCP calls in parallel:
 
 Extract from results: revenue mentions, headcount mentions, location counts, pain points, pricing signals, any campaigns mentioned. Record the company record ID for the call recording step below.
 
+Also extract **systems of record** - any named software platforms, tools, or data systems the company uses (e.g., Salesforce, Workday, ADP, Toast, UKG, Oracle). Look for mentions in call transcripts, notes, and emails of HR systems, POS systems, payroll providers, CRM platforms, scheduling tools, etc. Record the system name and its domain (e.g., "salesforce.com") when identifiable.
+
 --- ATTIO CALL RECORDINGS (Branch A only -- if Branch B, skip) ---
 
 After CRM data is collected, search for call recordings associated with the company.
@@ -261,6 +263,7 @@ Schema:
     "pain_points": [],
     "campaigns_mentioned": [],
     "verbatim_quotes": [],
+    "systems_of_record": [],
     "other_data_points": {}
   },
   "source_summary": {
@@ -270,6 +273,8 @@ Schema:
     "call_insights_file_written": ""
   }
 }
+
+Each entry in systems_of_record should be: {"name": "Salesforce", "domain": "salesforce.com", "source": "Attio call 2025-11-14"}. Only include systems explicitly named - do not guess. If no systems are found, leave the array empty.
 
 Populate all fields from your research. If branch is B, set attio_used and calls_used to false and leave findings empty. Write the file. Do not output a long summary -- just confirm the file path written.
 ```
@@ -514,6 +519,38 @@ If "I need to provide values", wait for the user's input then re-merge. If no co
 
 ---
 
+## Step 5a: Systems of Record Logo Fetch
+
+Check the ws-attio output for `systems_of_record`. If the array is non-empty and contains named systems with domains, download logos for each using the Brandfetch downloader. If the array is empty, skip this step entirely.
+
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+source "$WS/.claude/scripts/ws_env.sh"
+BRANDFETCH_API_KEY=$(grep BRANDFETCH_API_KEY "$WS/.claude/.env" 2>/dev/null | cut -d '=' -f2)
+SOR_LOGOS="$WS/$CLIENT_ROOT/[COMPANY_NAME]/3. Company Resources/3. Systems of Record"
+mkdir -p "$SOR_LOGOS"
+```
+
+For each system with a known domain, run:
+```bash
+python "$WS/Tools/brandfetch_downloader.py" \
+  --api-key "$BRANDFETCH_API_KEY" --brand "[domain]" --output "$SOR_LOGOS"
+```
+
+Cap at 6 systems max. If Brandfetch fails for a system, skip it - the deck-format step will fall back to text labels.
+
+Record the results in a list for the research output:
+```json
+"systems_of_record": [
+  {"name": "Salesforce", "domain": "salesforce.com", "logo_path": "3. Systems of Record/Salesforce/logo_png.png", "logo_found": true},
+  {"name": "Workday", "domain": "workday.com", "logo_path": null, "logo_found": false}
+]
+```
+
+If no BRANDFETCH_API_KEY is set, skip logo download and keep `logo_found: false` for all systems. The deck-format step will use text labels instead.
+
+---
+
 ## Step 6: Campaign Selection Gate
 
 Read campaign names from the template config saved by deck-start:
@@ -556,7 +593,9 @@ Use AskUserQuestion:
 - Question: "Confirm campaign selection?"
 - Options: ["Confirm — proceed with these campaigns", "I need to make changes"]
 
-**Branch B format:**
+**Branch B (auto-proceed):**
+
+Branch B is always a prospect deck with all campaigns included. No confirmation needed. Display the list and proceed immediately:
 
 ```
 Campaign Selection — [COMPANY NAME]
@@ -567,15 +606,8 @@ Campaign Selection — [COMPANY NAME]
   [2] [Campaign Name from config]
   ...
 
-  All [N] campaigns included (prospect deck — illustrative).
-
+  All [N] campaigns included (prospect deck — illustrative). Proceeding to save.
 ```
-
-Use AskUserQuestion:
-- Question: "Confirm campaign selection?"
-- Options: ["Confirm — proceed with all campaigns", "I need to remove some campaigns"]
-
-**Revision loop:** If the user requests changes, apply them and re-present the full campaign list. Repeat until confirmed.
 
 ---
 
@@ -625,6 +657,7 @@ The JSON must conform to this schema:
   "campaign_inputs": {},
   "campaigns_selected": [],
   "comps_benchmarks": {},
+  "systems_of_record": [],
   "model_population": {}
 }
 ```

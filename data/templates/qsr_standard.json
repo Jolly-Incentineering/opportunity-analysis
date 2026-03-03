@@ -88,7 +88,29 @@
     "2 unit cost types: Beverage, Single Food",
     "4 campaigns: Beverage Upsell, Single Food Upsell, Employee Referrals, Employee Timeliness"
   ],
-  "last_updated": "2026-02-24",
+  "campaign_mechanic_map": {
+    "Campaign 1 - Beverage Upsell": {
+      "mechanic": "revenue_uplift",
+      "formula": "sales_uplift_pct x contribution_margin_pct x revenue",
+      "notes": "Canonical revenue uplift campaign. Use as base for any vertical with % uplift on a product line."
+    },
+    "Campaign 2 - Single Food Upsell": {
+      "mechanic": "revenue_uplift",
+      "formula": "sales_uplift_pct x contribution_margin_pct x revenue",
+      "notes": "Same mechanic as C1, different product line. Clone for any second revenue stream."
+    },
+    "Campaign 3 - Employee Referrals": {
+      "mechanic": "hiring_cost_avoidance",
+      "formula": "turnover_rate x referral_success_rate x (hiring_cost - incentive_cost)",
+      "notes": "Universal across verticals. Incentive cost is formula-driven: hiring_cost / 10."
+    },
+    "Campaign 4 - Employee Timeliness": {
+      "mechanic": "hours_recovery",
+      "formula": "hours_lost_pct x campaign_reduction_pct x ebitda_per_hour x total_hours",
+      "notes": "Operations campaign. Relabel 'tardiness' to match vertical (e.g., 'underutilization' for healthcare, 'shrink' for retail)."
+    }
+  },
+  "last_updated": "2026-03-03",
   "vertical_standards": {
     "hours_per_year": 1820,
     "hiring_cost_cap": 3500,

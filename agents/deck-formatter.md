@@ -11,17 +11,11 @@ Inputs from caller: `vf_deck_path`, `research_json`, `pdf_output`.
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 
-# 1. Fill bracket placeholders from research JSON
-python3 "$WS/.claude/scripts/deck_engine.py" fill-banners --file "[vf_deck_path]" --research "[research_json]"
-
-# 2. Reformat raw dollars ($1M+ → $X.XMM, $1K-$999K → $XXXk)
-python3 "$WS/.claude/scripts/deck_engine.py" format-dollars --file "[vf_deck_path]"
-
-# 3. Verify clean
-python3 "$WS/.claude/scripts/deck_engine.py" find-placeholders --file "[vf_deck_path]"
+# Single pass: fill banners + reformat dollars + verify clean
+python3 "$WS/.claude/scripts/deck_engine.py" format-all --file "[vf_deck_path]" --research "[research_json]"
 ```
 
-If placeholders remain, report and stop.
+Output JSON includes `remaining_placeholders`. If any listed, report and stop.
 
 User exports PDF manually (File → Export → Create PDF/XPS), then:
 

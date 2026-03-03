@@ -7,7 +7,7 @@ HARD RULES — NEVER VIOLATE:
 1. Do NOT generate or invent campaign names. Read them from the template config JSON.
 2. Do NOT make tool calls or add steps not listed in these instructions.
 3. Do NOT write to formula cells under any circumstances.
-4. Do NOT skip gates — wait for user confirmation at every gate.
+4. Do NOT skip gates marked with AskUserQuestion — but do NOT add extra gates. Only stop for key decisions.
 5. Do NOT open files you are about to write to programmatically. Keep them closed during writes.
 6. Do NOT proceed past a failed step — stop and report. Do NOT retry more than once.
 7. Keep all client-specific data in the client folder under 4. Reports/. Never write client data to .claude/data/.
@@ -99,15 +99,11 @@ After each gate is confirmed, echo "[Gate name] ✓" in your reply before procee
 Tell the user:
 
 ```
-Close the model file if it's open. I need it closed to write values programmatically.
-All writes will happen in a single batch in Step 5. You can open and review the model after writes complete in Step 7.
+Close the model file if it's open — I need it closed to write values programmatically.
+All writes happen in a single batch in Step 5. You'll open it for review in Step 7.
 ```
 
-Use AskUserQuestion:
-- Question: "Is the model file closed?"
-- Options: ["Yes, model is closed", "Not yet — give me a moment"]
-
-If "Not yet", wait for the user and re-ask. Proceed only after confirmation.
+Pause 3 seconds, then proceed. Do not ask for confirmation.
 
 ---
 
@@ -339,17 +335,22 @@ source "$WS/.claude/scripts/ws_env.sh"
 start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/1. Model/[model filename]"
 ```
 
-Present the checklist, then use AskUserQuestion with 4 questions:
-1. "Inputs sheet — all column E cells have values (no placeholders)?" — Options: ["All filled", "Found empty cells"]
-2. "Campaigns sheet — all selected campaigns ([list]) have non-zero assumption values?" — Options: ["All non-zero", "Found zero values"]
-3. "ROPS column — all active campaigns between 10x and 30x?" — Options: ["All in range", "Found out-of-range"]
-4. "Summary inputs — company name, revenue, and unit count correct?" — Options: ["All correct", "Found errors"]
+Tell the user to do a quick spot-check while saving:
 
-If any issues found, help the user resolve before continuing.
+```
+Model opened. Quick spot-check while you save:
+  - Inputs sheet col E: all cells filled?
+  - ROPS column: all active campaigns 10x-30x?
+  - Company name, revenue, unit count correct?
 
-After all checks pass, tell the user: "Save the model (Ctrl+S)." Use AskUserQuestion:
+Save the model (Ctrl+S) when you're satisfied.
+```
+
+Use AskUserQuestion:
 - Question: "Model saved?"
-- Options: ["Saved", "Not yet"]
+- Options: ["Saved — looks good", "Found issues"]
+
+If issues found, help the user resolve before continuing.
 
 ---
 

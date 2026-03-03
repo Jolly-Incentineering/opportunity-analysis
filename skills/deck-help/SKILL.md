@@ -130,7 +130,7 @@ TROUBLESHOOTING
 
   Research taking too long
     → Normal: research runs 3 agents simultaneously and takes 3-5 minutes.
-      If nothing happens after 10 minutes, something went wrong — ask Nishant.
+      If nothing happens after 10 minutes, something went wrong — check #jolly-engineering in Slack or run /deck-help for troubleshooting.
 
   Updating the plugin
     → /plugin update opportunity-analysis
