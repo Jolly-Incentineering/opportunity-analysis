@@ -410,6 +410,12 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 
 ## Changelog
 
+### v3.5.1 (Mar 3, 2026)
+
+- **Goody scraper split:** Replaced 470-line `goody_scraper.py` monolith with two focused scripts — `goody_auto.py` (fully automated domain→download) and `goody_manual.py` (opens browser for user interaction, then auto-downloads mockups). Removed logo_compositor fallback, capture_templates, and force_local complexity.
+
+**[-> Release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v3.5.1)**
+
 ### v3.5.0 (Mar 2, 2026)
 
 - **Gong removed entirely:** All call transcript data now sourced from Attio call recordings. Removed Gong integration setup, Rube/Zapier webhook logic, `gong_insights_*.json` files, and Salesforce account name mappings.
