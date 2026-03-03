@@ -39,7 +39,7 @@ Read `$WS/.claude/data/workspace_config.json`. If missing or invalid, tell the u
 
 ## Phase 0B: Session State Check
 
-Scan `$WS/.claude/data/session_state_*.md` for a file matching [COMPANY_NAME].
+Scan `$WS/.claude/data/session_state_*.json` for a file matching [COMPANY_NAME].
 
 **If found:** Show phase status. Ask "go" to continue or "stop [N]" to jump. Wait.
 
@@ -54,7 +54,7 @@ Context
       Slack + Public data only (~8-12 min)
 
   [2] Post-call — after a call or internal notes
-      Full Attio + Gong + Slack + Public (~14-20 min)
+      Full Attio + Slack + Public (~14-20 min)
 
 → 1 or 2
 ```
@@ -133,14 +133,11 @@ If no match: create new config with `--create`, save to both templates dir and c
 
 Extract campaign names, formula counts, cell addresses from config.
 
-### 1.5 Detect Branch (3 Parallel Checks)
+### 1.5 Detect Branch (Attio Check)
 
-Run simultaneously:
-- **Check A:** `gong_insights_*.json` in `5. Call Transcripts/` (≤30 days old)
-- **Check B:** Attio CRM — prefer REST API (`POST https://api.attio.com/v2/objects/companies/records/query` with `Authorization: Bearer $ATTIO_API_KEY`) if ATTIO_API_KEY is available in env or .env file. Fallback: `mcp__claude_ai_Attio__search-records` query [COMPANY_NAME]
-- **Check C:** `mcp__claude_ai_Slack__slack_search_channels` with slug
+Check Attio for existing company records or notes. Prefer REST API (`POST https://api.attio.com/v2/objects/companies/records/query` with `Authorization: Bearer $ATTIO_API_KEY`) if ATTIO_API_KEY is available in env or .env file. Fallback: `mcp__claude_ai_Attio__search-records` query [COMPANY_NAME].
 
-Branch A (existing) if ANY has data. Branch B (prospect) if ALL empty.
+Branch A (existing) if Attio has records or notes. Branch B (prospect) if no records.
 
 ### 1.6 Launch Asset Gatherer
 
@@ -148,7 +145,7 @@ Background Task tool subagent for logos/swag. Do not wait.
 
 ### 1.7 Save State
 
-Write `session_state_[company_slug]_YYYY-MM-DD.md`: Phase 1 complete, context, branch, vertical, template paths, template config path.
+Write `session_state_[company_slug]_YYYY-MM-DD.json`: Phase 1 complete, context, branch, vertical, template paths, template config path.
 
 Tell user: "Phase 1 complete. Moving to Phase 2: Research..."
 
@@ -158,34 +155,30 @@ Tell user: "Phase 1 complete. Moving to Phase 2: Research..."
 
 Tell the user: "Phase 2: Research — running."
 
-### 2.1 Gong Recipe (Branch A + Post-Call Only)
-
-If Branch A and post-call and gong_integration = "rube": ensure recipe exists via Rube.
-
-### 2.2 Dispatch Research Agents
+### 2.1 Dispatch Research Agents
 
 Dispatch **3 agents** simultaneously using `model: "haiku"`:
 
 **Pre-call path:** Slack + Public only (2 agents).
-**Post-call path:** Attio/Gong + Slack + Public (3 agents).
+**Post-call path:** Attio + Slack + Public (3 agents).
 
 Output paths:
-- Agent 1 (attio-gong): `4. Reports/1. Call Summaries/ws_attio_gong_[slug].json`
+- Agent 1 (attio): `4. Reports/1. Call Summaries/ws_attio_[slug].json`
 - Agent 2 (slack): `4. Reports/3. Slack/ws_slack_[slug].json`
 - Agent 3 (public): `4. Reports/2. Public Filings/ws_public_[slug].json`
 
 Use same agent prompts as in deck-research skill.
 
-### 2.3 Wait and Read Results
+### 2.2 Wait and Read Results
 
 Wait for all agents. Read output files. Note failed workstreams.
 
-### 2.4 WS-Merge
+### 2.3 WS-Merge
 
-Source priority: Gong > Attio > Slack > SEC > Benchmark > Web estimate.
+Source priority: Attio call recording > Attio note > Slack > SEC > Benchmark > Web estimate.
 Flag conflicts (>15% delta). Flag gaps. Present merged field map. Wait for resolution.
 
-### 2.5 GATE: Campaign Selection
+### 2.4 GATE: Campaign Selection
 
 Read campaign names from `template_config.json`. Do NOT generate names.
 
@@ -198,7 +191,7 @@ Use AskUserQuestion:
 
 If changes requested, update and re-present.
 
-### 2.6 Save Research Output
+### 2.5 Save Research Output
 
 Write `research_output_[slug].json` to `$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/` (directly, not subfolder).
 Update session state: Phase 2 complete, approved campaigns.
@@ -409,8 +402,7 @@ Campaigns: [list each with ROPS]
 Accretion: [X]% of EBITDA
 
 Sources:
-  Gong:             [N] calls ([N] transcribed)
-  Attio:            [N] records, [N] notes
+  Attio:            [N] records, [N] notes, [N] call recordings transcribed
   Slack:            [N] messages
   SEC filings:      [used / not applicable]
   Comp benchmarks:  [used / stale]

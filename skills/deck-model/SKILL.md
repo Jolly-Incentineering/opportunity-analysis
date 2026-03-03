@@ -222,7 +222,7 @@ For every row where a value is written to columns C/D/E, also write a condensed 
 Format: `[Source tier]: [source name] ([date or "est."])`
 
 Examples:
-- `1st party: Gong call (Jan 2026)`
+- `1st party: Attio call (Jan 2026)`
 - `2nd party: SEC 10-K FY2024`
 - `3rd party: industry benchmark (est.)`
 - `Calculated: $12M rev / 450 stores / 365 / $8.50 AOV`
@@ -257,7 +257,7 @@ DRY-RUN PLAN -- [COMPANY NAME]
 [N] cells to write across [N] sheets
 
 Sheet: Assumptions
-  Cell E6  | Annual Revenue         | $X.XMM     | H: "1st party: Gong call (Jan 2026)"  | Comment: included
+  Cell E6  | Annual Revenue         | $X.XMM     | H: "1st party: Attio call (Jan 2026)"  | Comment: included
   Cell E7  | Unit Count             | XXX        | H: "2nd party: SEC 10-K FY2024"       | Comment: included
   ...
 
@@ -301,6 +301,8 @@ python3 "$WS/.claude/agents/excel_editor.py" \
 For each cell written, add the comment using the comment format defined in Step 3. Comment dimensions: width=420, height=220, font size 8.
 
 After writing, tell the user: "Wrote [N] cells to [model filename]. Verifying..."
+
+If the company name contains an apostrophe (e.g., "Scooter's"), read back cell E5 and verify the apostrophe was preserved correctly. Openpyxl may interpret a leading `'` as a text prefix. If the value is wrong, re-write E5 with the correct name.
 
 ---
 

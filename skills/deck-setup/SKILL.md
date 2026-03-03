@@ -41,7 +41,6 @@ Workspace already configured.
   clients:   [client_root]/
   templates: [templates_root or "Templates (default)"]/
   tools:     [tools_root or "Tools (default)"]/
-  gong:      [gong_integration or "none"]
   setup_date: [setup_date from file]
 
 To change any setting, edit .claude/data/workspace_config.json directly.
@@ -173,76 +172,7 @@ Apply silently:
 - If `$WS/Tools/` exists → `tools_root = "Tools"`
 - Else → `tools_root = "Tools"` (no folder creation needed — tools are optional)
 
-Do not tell the user. Continue to Step 5.5.
-
----
-
-## Step 5.5: Configure Gong Integration
-
-Ask the user:
-
-```
-Gong Integration
-
-  [1] Rube — call data via rube.app (recommended)
-  [2] Manual — transcripts already in 5. Call Transcripts/
-  [3] Skip — not set up yet
-
-→ 1, 2, or 3
-```
-
-Wait for the user's reply.
-
-- If **1 (Rube)**: Tell the user:
-
-  ```
-  To connect Gong, you'll create a recipe on Rube that pulls call data for any
-  company you research.
-
-  Here's how:
-
-    1. Go to rube.app and sign in.
-    2. Click "New Recipe".
-    3. Name it: gong_company_search
-    4. In the description box, paste this:
-
-       "Retrieves Gong calls for a specific Salesforce account and extracts
-       comprehensive structured insights using multi-pass AI analysis. Returns
-       maximum detail (metrics, pain points, tech stack, campaign signals,
-       champions) with validation and retry logic to ensure nothing is missed."
-
-    5. Add the Gong app as the integration.
-    6. Set up these inputs:
-         client_name     — Text (the company name to search for)
-         days_back       — Number (default: 180)
-         max_calls       — Number (default: 10)
-         strict_salesforce_match  — "true" or "false" (default: "true")
-         include_full_transcript  — "true" or "false" (default: "false")
-
-    7. The recipe should run 6 extraction passes on each call:
-         Pass 1 (HIGH reasoning): Revenue, employees, turnover, costs, growth rates
-         Pass 2 (MEDIUM): Pain points and operational challenges
-         Pass 3 (LOW): Tech stack — HRIS, ERP, POS, scheduling systems
-         Pass 4 (MEDIUM): Campaign signals — behaviors to incentivize
-         Pass 5 (LOW): 10 key quotes with speaker context
-         Pass 6 (MEDIUM): Champions — decision-makers and internal advocates
-
-    8. Save the recipe. Make sure it is named exactly: gong_company_search
-
-    Once created, Claude will call this recipe automatically every time you run
-    research on an existing client.
-
-  Type "done" when your recipe is ready, or "skip" to set this up later.
-  ```
-
-  Wait for "done" or "skip".
-  - If "done": set `gong_integration = "rube"`, `gong_webhook_url = null`
-  - If "skip": set `gong_integration = "none"`, `gong_webhook_url = null`
-
-- If **2 (Manual)**: set `gong_integration = "manual"`, `gong_webhook_url = null`
-- If **3 (Skip)**: set `gong_integration = "none"`, `gong_webhook_url = null`
-
-Continue to Step 6.
+Do not tell the user. Continue to Step 6.
 
 ---
 
@@ -262,8 +192,6 @@ Write to `$WS/.claude/data/workspace_config.json` with the following content (su
   "client_root": "[relative path decided in Step 3]",
   "templates_root": "[templates_root from Step 4]",
   "tools_root": "[tools_root from Step 5]",
-  "gong_integration": "[rube | zapier | manual | none]",
-  "gong_webhook_url": "[URL or null]",
   "setup_date": "[today YYYY-MM-DD]",
   "structure_choice": "[existing | new_folder]",
   "plugin_dir": "[path to plugin install directory]",
@@ -346,7 +274,6 @@ Workspace layout detected:
   clients:   [client_root]/
   templates: [templates_root]/
   tools:     [tools_root]/
-  gong:      [gong_integration]
 
 These paths are saved to .claude/data/workspace_config.json. If your folders
 are named differently, edit that file to match.

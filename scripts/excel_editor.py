@@ -13,7 +13,16 @@ Usage:
     python excel_editor.py --file model.xlsx --action write-cells --cells '[{"sheet":"Inputs","cell":"E6","value":12000000,"comment":"..."}]'
     python excel_editor.py --file model.xlsx --action read-summary
 """
+import re as _re
 from jolly_utils import load_workbook_safe, save_workbook_safe, add_comment
+
+_CTRL_CHAR_RE = _re.compile(r'[\x00-\x08\x0b\x0c\x0e-\x1f]')
+
+def _sanitize(text):
+    """Strip XML-illegal control characters before openpyxl write."""
+    if isinstance(text, str):
+        return _CTRL_CHAR_RE.sub('', text)
+    return text
 
 
 def main():
@@ -43,6 +52,11 @@ def main():
             print("ERROR: --cells required for write-cells action", file=sys.stderr)
             sys.exit(1)
         writes = json.loads(args.cells)
+        # Create .bak backup before any writes
+        import shutil, os
+        bak = args.file + '.bak'
+        if os.path.exists(args.file):
+            shutil.copy2(args.file, bak)
         wb = load_workbook_safe(args.file)
         written = 0
         for w in writes:
@@ -53,9 +67,9 @@ def main():
             if isinstance(current, str) and current.startswith("="):
                 print(f"SKIPPED {ref}: contains formula", file=sys.stderr)
                 continue
-            ws[ref] = w["value"]
+            ws[ref] = _sanitize(w["value"])
             if w.get("comment"):
-                add_comment(ws, ref, w["comment"])
+                add_comment(ws, ref, _sanitize(w["comment"]))
             written += 1
         save_workbook_safe(wb, args.file)
         wb.close()

@@ -191,7 +191,7 @@ Ask the user:
 
 Use AskUserQuestion:
 - Question: "What context is this deck for?"
-- Options: ["Pre-call — no call yet (Slack + Public, ~8-12 min)", "Post-call — after a call or internal notes (Full Attio + Gong + Slack + Public, ~14-20 min)"]
+- Options: ["Pre-call — no call yet (Slack + Public, ~8-12 min)", "Post-call — after a call or internal notes (Full Attio + Slack + Public, ~14-20 min)"]
 
 Store `context = "pre_call"` or `"post_call"` based on their choice. This will inform the research phase but will not change the template or workflow.
 
@@ -359,21 +359,9 @@ Tell the user: "Template scanned. Config: [template type]. Campaigns: [list name
 
 ---
 
-## Step 7: Detect Branch (Run All 3 Checks Simultaneously)
+## Step 7: Detect Branch (Attio Check)
 
-Run all three checks at the same time (do not wait for one before starting the others):
-
-**Check A -- Gong insights file:**
-
-```bash
-WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-source "$WS/.claude/scripts/ws_env.sh"
-find "$WS/$CLIENT_ROOT/[COMPANY_NAME]/5. Call Transcripts" -name "gong_insights_*.json" 2>/dev/null
-```
-
-For any file found, check if its date (extracted from the filename `gong_insights_YYYY-MM-DD.json`) is within the last 30 days. A file counts as "has data" only if it is 30 days old or newer.
-
-**Check B -- Attio CRM:**
+Check Attio for existing company records or notes.
 
 Preferred: use the Attio REST API if ATTIO_API_KEY is available (check environment and .env file). If the key exists, run:
 
@@ -400,16 +388,11 @@ curl -s -X POST "https://api.attio.com/v2/objects/companies/records/query" \
 
 Fallback: if no API key, call `mcp__claude_ai_Attio__search-records` with query [COMPANY_NAME].
 
-Result counts as "has data" if any records are returned.
-
-**Check C -- Slack channel:**
-Derive a slug from [COMPANY_NAME]: lowercase, spaces replaced with hyphens, remove special characters. Call `mcp__claude_ai_Slack__slack_search_channels` with that slug. Result counts as "has data" if any channels are returned.
-
 Branch decision:
-- If ANY of the three checks has data: **Branch A (existing relationship)**
-- If ALL three checks are empty: **Branch B (cold prospect)**
+- If Attio has records OR notes for the company: **Branch A (existing relationship)**
+- If Attio returns no records: **Branch B (cold prospect)**
 
-Record which checks had data -- this becomes the branch reason.
+Record `branch_reason` as "Attio records found" or "no Attio records".
 
 ---
 
@@ -485,7 +468,7 @@ Tell the user:
 
 Context: [pre-call / post-call]
 Branch: [A - Existing Relationship / B - Cold Prospect]
-Reason: [which of Gong / Attio / Slack had data, or "no prior data found"]
+Reason: [branch_reason]
 
 Assets: gathering in background (logos, swag).
 

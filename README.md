@@ -6,15 +6,16 @@ The Jolly Opportunity Analysis plugin for Claude. Give it a company name and it 
 
 **Intro Deck workflow** — a streamlined template that works for both pre-call and post-call contexts. Claude captures whether it's pre-call or post-call to inform the research phase, but uses the same workflow and template throughout (~10–15 min). **Two ways to run it:** automatically with `/deck-auto [Company]`, or step-by-step yourself. Both are covered below.
 
-**Latest features (v3.3.0):**
-- **Simplified build:** Playwright and WeasyPrint removed entirely — no browser install, no system dependencies. Setup installs 5 packages: `openpyxl python-pptx requests edgartools pypdf`.
-- **Library check on startup:** `/deck-start` now checks for required packages before doing anything. Missing required packages stop with a clear install message; missing optional packages warn and continue.
-- **Cheatsheet removed:** The auto-generated PDF leave-behind has been removed. Research data is still fully available in session state and deck notes.
-- **SEC filing text extraction:** `sec_filings.py --include-text` extracts MD&A and business sections directly via edgartools (no more 403 errors). `--save-pdf` saves the 10-K as HTML for human reference.
-- **Template config protection:** New `config_install.py` uses stamp-and-skip logic — plugin updates never overwrite user-customized template configs. Conflicts are saved as `.plugin_update.json` for manual review.
-- **Script cleanup:** `excel_editor.py` stripped of ~270 lines of dead class code (CLI-only now). `qa_check.py` PLACEHOLDER_RE broadened. `template_scanner.py` path traversal guard added.
+**Latest features (v3.5.0):**
+- **Gong removed:** All call transcript data now sourced from Attio call recordings via MCP tools. No more Rube recipes, Zapier webhooks, or Gong setup.
+- **Branch detection simplified:** Attio-only check replaces the 3-source detection system.
+- **Attio call recording search:** Research agent pulls up to 6 recent call transcripts directly from Attio.
+- **60s Attio timeout:** Slow MCP calls abandoned after 60s to prevent blocking.
+- **XML-safe writes + .bak backups:** `excel_editor.py` sanitizes control chars and creates backups before every write.
+- **Zero-value detection:** `qa_check.py` flags stray `$0` on campaign slides (excluding valid `$0.25`, `$0.50`).
+- **Workspace CLAUDE.md cleanup:** Removed stale Figma, cheatsheet, and dead code references.
 
-**[→ See full v3.3.0 release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v3.3.0)**
+**[-> See full v3.5.0 release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v3.5.0)**
 
 ---
 
@@ -62,7 +63,7 @@ The Jolly Opportunity Analysis plugin for Claude. Give it a company name and it 
 │                │  Flags anything that needs fixing.        │                        │
 └────────────────┴───────────────────────────────────────────┴────────────────────────┘
 
-**Total time:** Pre-call (Slack + Public only): ~8–12 min. Post-call (with Attio/Gong transcripts): ~14–20 min.
+**Total time:** Pre-call (Slack + Public only): ~8–12 min. Post-call (with Attio call recordings): ~14–20 min.
 ```
 
 ---
@@ -96,7 +97,7 @@ flowchart LR
     DETECT1 -->|Yes| RA["/deck-research<br/>Slack + Public only<br/>no transcripts"]
     DETECT1 -->|No| RB["/deck-research<br/>Public only"]
 
-    DETECT2 -->|Yes| RC["/deck-research<br/>Attio + Gong + Slack + Public<br/>with transcripts"]
+    DETECT2 -->|Yes| RC["/deck-research<br/>Attio + Slack + Public<br/>with call recordings"]
     DETECT2 -->|No| RD["/deck-research<br/>Public only"]
 
     RA --> MODEL["/deck-model"]
@@ -114,13 +115,13 @@ flowchart LR
     style DONE fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
 ```
 
-The diagram shows how an Opportunity Analysis moves from setup through research, modeling, formatting, and QA. While all decks use the same "Intro Deck" template, **research adapts based on context**: Pre-call uses Slack + Public data (no transcripts), while post-call includes full Attio/Gong research with call transcripts. Branch detection (existing client vs. new prospect) further refines the research scope. The orange diamond is a gate where the workflow pauses and waits for your input. QA uses 11 streamlined checks. `/deck-auto` is a wrapper that drives through the entire flow for you, so you only have to respond at the gate points rather than kick off each step manually.
+The diagram shows how an Opportunity Analysis moves from setup through research, modeling, formatting, and QA. While all decks use the same "Intro Deck" template, **research adapts based on context**: Pre-call uses Slack + Public data (no call recordings), while post-call includes full Attio research with call recordings. Branch detection (existing client vs. new prospect) further refines the research scope. The orange diamond is a gate where the workflow pauses and waits for your input. QA uses 11 streamlined checks. `/deck-auto` is a wrapper that drives through the entire flow for you, so you only have to respond at the gate points rather than kick off each step manually.
 
 ---
 
 ## Model selection strategy
 
-- **Research agents (Haiku):** All research workstreams (Attio/Gong, Slack, public data) run via Haiku agents for speed. If an agent detects a complex scenario it cannot handle reliably, it will tell you and recommend a manual Sonnet review.
+- **Research agents (Haiku):** All research workstreams (Attio, Slack, public data) run via Haiku agents for speed. If an agent detects a complex scenario it cannot handle reliably, it will tell you and recommend a manual Sonnet review.
 
 - **Excel population (Haiku by default, Sonnet for complex):** Model population uses Haiku for standard tasks (straightforward cell mapping, campaign entry). For unusually complex models, intricate row/column logic, or ambiguous campaign validation, the workflow will pause and handle it with Sonnet to ensure accuracy.
 
@@ -178,7 +179,7 @@ Once the folder path is configured, type this in Claude:
 /deck-setup
 ```
 
-Claude will find your client folder, confirm the location, save configuration for Gong (if you use it), and save it so all future commands know where to look. This takes a few seconds and you only do it once. If you run it again later, it will just confirm everything is already set up and stop.
+Claude will find your client folder, confirm the location, and save it so all future commands know where to look. This takes a few seconds and you only do it once. If you run it again later, it will just confirm everything is already set up and stop.
 
 ---
 
@@ -234,10 +235,10 @@ Claude will find your client folder, confirm the location, save configuration fo
 **Pre-call path (faster):**
 - **Slack research** — searches Slack for messages about the company (existing clients only)
 - **Public research** — looks up SEC filings, industry benchmarks, LinkedIn headcount, etc.
-- No Attio/Gong lookup (no call transcripts needed)
+- No Attio lookup (no call recordings needed)
 
 **Post-call path (comprehensive):**
-- **CRM and call research** — checks Attio for records, notes, emails; pulls transcripts from past calls if existing client (Gong data if connected)
+- **CRM and call research** — checks Attio for records, notes, emails; pulls call recording transcripts if existing client
 - **Slack research** — searches Slack for messages about the company (existing clients only)
 - **Public research** — looks up SEC filings, industry benchmarks, LinkedIn headcount, etc.
 
@@ -317,7 +318,7 @@ After all checks pass, Claude cleans up any temporary lock files and gives you t
 
 ## How it works
 
-When you run `/deck-research`, Claude sends out three parallel research agents — one for CRM and calls (Attio/Gong), one for Slack, and one for public data. Each task runs on its own and reports back with its findings. Claude then combines everything into one summary, flags any conflicts between sources, and asks you to confirm the campaign list before moving on.
+When you run `/deck-research`, Claude sends out three parallel research agents — one for CRM and call recordings (Attio), one for Slack, and one for public data. Each task runs on its own and reports back with its findings. Claude then combines everything into one summary, flags any conflicts between sources, and asks you to confirm the campaign list before moving on.
 
 Progress is saved after every phase. That saved progress file (think of it as a bookmark) lives in the `.claude/data/` folder in your workspace. If a session gets interrupted — you close Claude, your laptop dies, anything — just run the same command again and Claude reads the bookmark and picks up where it left off. Nothing is lost.
 
@@ -332,8 +333,7 @@ Go to Claude.ai Settings > Integrations and make sure these are all connected be
 | Tool | What it is used for |
 |------|---------------------|
 | Slack | Searching messages and channels for company research |
-| Attio | CRM records and contact notes |
-| Gong | Call transcripts (optional; must be configured via Rube recipe) |
+| Attio | CRM records, contact notes, and call recordings |
 
 If any of these are not connected, Claude will not be able to pull data from that source and will tell you what is missing.
 
@@ -385,10 +385,10 @@ The asset download runs in the background during `/deck-start`. It sometimes fin
 Each manual step comes with detailed instructions in the chat. Read them carefully, complete the step in PowerPoint, then come back to Claude and type "done" to continue.
 
 **"A command is taking a long time"**
-The research step pulls from multiple sources and can take 2–6 minutes depending on context. Pre-call (Slack + Public) is faster. Post-call (Attio/Gong + Slack + Public) is slower due to call transcript and CRM lookups. The model step can also take a minute or two if there are many campaigns. If it has been more than 15 minutes with no response, something may have gone wrong — ask Incentineering.
+The research step pulls from multiple sources and can take 2–6 minutes depending on context. Pre-call (Slack + Public) is faster. Post-call (Attio + Slack + Public) is slower due to call recording and CRM lookups. The model step can also take a minute or two if there are many campaigns. If it has been more than 15 minutes with no response, something may have gone wrong — ask Incentineering.
 
 **"Should I choose pre-call or post-call?"**
-Choose **pre-call** if you have not spoken to the company yet (cold outreach). It skips Attio/Gong lookups and uses Slack + Public data only (~8–12 minutes total). Choose **post-call** if you have had a call with the company or have internal notes. It includes full Attio research and call transcripts via Gong (if configured) and completes in ~14–20 minutes total. Both use the same Intro Deck template.
+Choose **pre-call** if you have not spoken to the company yet (cold outreach). It skips Attio lookups and uses Slack + Public data only (~8–12 minutes total). Choose **post-call** if you have had a call with the company or have internal notes. It includes full Attio research with call recordings and completes in ~14–20 minutes total. Both use the same Intro Deck template.
 
 ---
 
@@ -399,16 +399,38 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 **New computer or new team member?** Ask Incentineering to configure your workspace path when you first install. Do not skip this — nothing else will work without it.
 
 **Context and branch both matter.** You choose context (pre-call vs post-call) at the start. Claude detects branch automatically during `/deck-start` by checking for prior calls, emails, or CRM records. The research path is determined by **both**:
-- **Pre-call context** → Slack + Public (no Attio/Gong lookups, faster)
-- **Post-call context + Branch A** → Attio + Gong + Slack + Public (full internal data with transcripts)
+- **Pre-call context** → Slack + Public (no Attio lookups, faster)
+- **Post-call context + Branch A** → Attio (CRM + call recordings) + Slack + Public (full internal data)
 - **Post-call context + Branch B** → Public only (new prospect, no internal data)
-- **Pre-call context + Branch A** → Slack + Public (even with internal data available, skips transcripts for pre-call speed)
+- **Pre-call context + Branch A** → Slack + Public (even with internal data available, skips call recordings for pre-call speed)
 
 **If something seems wrong mid-workflow,** the session state file (your progress bookmark) in `.claude/data/` shows exactly what phase last completed and what Claude was about to do next. This is the first place to check. Ask Incentineering if you need help reading it.
 
 ---
 
 ## Changelog
+
+### v3.5.0 (Mar 2, 2026)
+
+- **Gong removed entirely:** All call transcript data now sourced from Attio call recordings. Removed Gong integration setup, Rube/Zapier webhook logic, `gong_insights_*.json` files, and Salesforce account name mappings.
+- **Branch detection simplified:** Attio-only check (records or notes) replaces the 3-check system (Gong file + Attio + Slack channel).
+- **Attio call recording search:** Research agent uses `search-call-recordings-by-metadata` and `get-call-recording` MCP tools to pull up to 6 recent call transcripts. Transcripts saved to `5. Call Transcripts/` as before.
+- **Agent renamed:** `ws-attio-gong` -> `ws-attio`. Output file: `ws_attio_[slug].json`.
+- **Source priority updated:** Attio call recording (1st) > Attio note (1st) > Slack > SEC > Benchmark > Web.
+- **60s Attio timeout:** Research agent abandons slow MCP calls after 60 seconds instead of blocking.
+- **Workspace CLAUDE.md cleanup:** Removed stale Figma, cheatsheet, Gong, and dead code references. Updated session state format to JSON. Fixed marketplace URL namespace.
+- **XML-safe comment sanitization:** `excel_editor.py` strips control characters before openpyxl writes (prevents XML parse errors).
+- **Backup before writes:** `excel_editor.py` creates `.bak` copy before every `write-cells` operation.
+- **Zero-value detection:** `qa_check.py` flags stray `$0` on campaign slides (excluding valid `$0.25`, `$0.50`, etc.).
+- **Apostrophe verification:** `deck-model` verifies company name cell E5 after write if name contains an apostrophe.
+
+**[-> Release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v3.5.0)**
+
+### v3.4.0 (Mar 1, 2026)
+
+- **Session state migrated to JSON:** All 6 skills now use structured `.json` files instead of flat `.md`. Schema: company_name, company_slug, client_root, context, branch, vertical, session_date, last_updated, template_paths, phase_checklist, next_action, campaigns_selected, metadata. All blocks use `encoding='utf-8'` and empty-file guards.
+- **Session state filename:** Now `session_state_[slug]_YYYY-MM-DD.json`.
+- **Stale cheatsheet refs removed:** deck-format and deck-qa hand-off messages cleaned of cheat sheet lines (removed in v3.3.0).
 
 ### v3.3.0 (Feb 27, 2026)
 
@@ -565,7 +587,7 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 - Single "Intro Deck" template for all contexts (template selection by vertical unchanged)
 - Pre-call/post-call context selection now determines research scope only:
   - Pre-call: Slack + Public data (~8–12 min)
-  - Post-call: Attio + Gong + Slack + Public (~14–20 min)
+  - Post-call: Attio + Slack + Public (~14–20 min)
 - Research agents use Haiku by default; Sonnet available for complex scenarios
 - Updated all skill workflows to match new logic
 - Simplified README with clearer explanations and timing

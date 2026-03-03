@@ -94,82 +94,9 @@ After each gate is confirmed, echo "[Gate name] ✓" in your reply before procee
 
 ## Step 2: Check Research Path Based on Context
 
-**Pre-call context:** Skip to Step 3b (Public + Slack only). Do not run the Attio/Gong research agent at all.
+**Pre-call context:** Skip to Step 3a (Public + Slack only). Do not dispatch the Attio agent.
 
-**Post-call context:** Continue to Step 2a (below) to prepare Gong integration for Branch A.
-
----
-
-## Step 2a: Prepare Gong Integration (Branch A + Post-Call Only)
-
-Skip this step entirely if branch is B OR context is pre_call.
-
-Read `gong_integration` from workspace config:
-
-```bash
-WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-python3 -c "import json; c=json.load(open('$WS/.claude/data/workspace_config.json')); print(c.get('gong_integration','none'))"
-```
-
-**If `gong_integration = "rube"`:**
-
-Call `RUBE_FIND_RECIPE` with `name: "gong_company_search"`.
-
-If the recipe is NOT found, create it using `RUBE_CREATE_UPDATE_RECIPE`:
-
-- Recipe name: `gong_company_search`
-- Description: "Search Gong calls by date range and retrieve transcripts for matched calls."
-- Steps:
-  - Pass 1: Call `GONG_RETRIEVE_FILTERED_CALL_DETAILS` with parameters:
-    - `filter__fromDateTime`: `"{{from_date}}T00:00:00Z"`
-    - `filter__toDateTime`: `"{{to_date}}T23:59:59Z"`
-    - `contentSelector__exposedFields__content__brief`: `true`
-    - `contentSelector__exposedFields__parties`: `true`
-    - `contentSelector__context`: `"Extended"`
-    - `contentSelector__contextTiming`: `["Now", "TimeOfCall"]`
-  - Pass 2: Call `GONG_GET_CALL_TRANSCRIPT` with parameters:
-    - `filter.callIds`: `["{{matched_call_ids}}"]`
-
-Confirm the recipe exists before proceeding to Step 3.
-
-**If `gong_integration = "zapier"`:**
-
-Read `gong_webhook_url` from workspace config. Tell the user:
-
-```
-Gong: triggering Zapier webhook for [COMPANY_NAME]...
-```
-
-Trigger the webhook:
-
-```bash
-WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-WEBHOOK_URL=$(python3 -c "import json; c=json.load(open('$WS/.claude/data/workspace_config.json')); print(c.get('gong_webhook_url',''))")
-curl -s -X POST "$WEBHOOK_URL" \
-  -H "Content-Type: application/json" \
-  -d "{\"company\": \"[COMPANY_NAME]\", \"from_date\": \"[180 days ago YYYY-MM-DD]\", \"to_date\": \"[today YYYY-MM-DD]\"}"
-```
-
-Then tell the user:
-
-```
-Gong webhook triggered. Waiting up to 3 minutes for transcript file to appear...
-```
-
-Poll every 15 seconds (up to 12 attempts) for a new `gong_insights_*.json` file in `$WS/$CLIENT_ROOT/[COMPANY_NAME]/5. Call Transcripts/`. If found, continue. If not found after 3 minutes, note "Gong: no transcript file received — continuing without call data" and proceed to Step 3.
-
-**If `gong_integration = "manual"` or `"none"`:**
-
-Check whether a recent `gong_insights_*.json` file already exists:
-
-```bash
-WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-source "$WS/.claude/scripts/ws_env.sh"
-find "$WS/$CLIENT_ROOT/[COMPANY_NAME]/5. Call Transcripts" -name "gong_insights_*.json" 2>/dev/null
-```
-
-If a file exists and is ≤30 days old, note "Gong: using existing transcript file." Proceed to Step 3.
-If no file exists, note "Gong: no transcript file found — continuing without call data." Proceed to Step 3.
+**Post-call context:** Continue to Step 3b (all 3 agents including Attio with call recordings).
 
 ---
 
@@ -177,7 +104,7 @@ If no file exists, note "Gong: no transcript file found — continuing without c
 
 ### Step 3a: Pre-Call Path (2 Agents)
 
-Dispatch only the **Slack** and **Public** agents simultaneously using the Task tool with `model: "haiku"`. Do not dispatch the Attio/Gong agent.
+Dispatch only the **Slack** and **Public** agents simultaneously using the Task tool with `model: "haiku"`. Do not dispatch the Attio agent.
 
 Each agent is fully self-contained. Each reads what it needs, does its work, and writes a JSON output file.
 
@@ -197,21 +124,21 @@ Each agent is fully self-contained. Each reads what it needs, does its work, and
 **Model selection:** All research agents use **Haiku** by default for speed. If an agent encounters a complex ask (e.g., intricate data structure, ambiguous campaign logic), it should explicitly tell you it needs more processing power and recommend a manual Sonnet review instead of attempting the task with Haiku.
 
 Each agent writes to its own named subfolder under `4. Reports/`:
-- Agent 1 (attio-gong) → `4. Reports/1. Call Summaries/`
-- Agent 2 (slack)      → `4. Reports/3. Slack/`
-- Agent 3 (public)     → `4. Reports/2. Public Filings/`
-- Merged output        → `4. Reports/` (directly in Reports, not in a subfolder)
+- Agent 1 (attio) → `4. Reports/1. Call Summaries/`
+- Agent 2 (slack) → `4. Reports/3. Slack/`
+- Agent 3 (public) → `4. Reports/2. Public Filings/`
+- Merged output   → `4. Reports/` (directly in Reports, not in a subfolder)
 
 ---
 
-### Agent 1: ws-attio-gong
+### Agent 1: ws-attio
 
-**Output file:** `$WS/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/1. Call Summaries/ws_attio_gong_[company_slug].json`
+**Output file:** `$WS/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/1. Call Summaries/ws_attio_[company_slug].json`
 
 Pass this prompt to the agent (substitute actual values):
 
 ```
-You are the ws-attio-gong research agent for the Jolly deck workflow.
+You are the ws-attio research agent for the Jolly deck workflow.
 
 Company: [COMPANY_NAME]
 Company slug: [company_slug]
@@ -222,9 +149,11 @@ Client root (CLIENT_ROOT): [CLIENT_ROOT]
 Today's date: [YYYY-MM-DD]
 180 days ago: [YYYY-MM-DD]
 
-Your job: run Attio + Gong research and write a clean JSON output.
+Your job: run Attio CRM + call recording research and write a clean JSON output.
 
---- ATTIO (Branch A only -- if Branch B, skip all Attio calls and set all Attio fields to empty) ---
+TIMEOUT: If any single Attio MCP call takes longer than 60 seconds, abandon that call and continue with whatever data you have. Do not let a slow API block the entire workstream.
+
+--- ATTIO CRM (Branch A only -- if Branch B, skip all Attio calls and set all Attio fields to empty) ---
 
 **Preferred method: Attio REST API (faster, more reliable).** Check for ATTIO_API_KEY in the environment or .env file. If the key is available, use the REST API. If not, fall back to the MCP tools.
 
@@ -262,45 +191,32 @@ Fire all 4 Attio MCP calls in parallel:
 3. mcp__claude_ai_Attio__semantic-search-notes -- query: [COMPANY_NAME]
 4. mcp__claude_ai_Attio__search-emails-by-metadata -- query: [COMPANY_NAME]
 
-Extract from results: revenue mentions, headcount mentions, location counts, pain points, pricing signals, any campaigns mentioned.
+Extract from results: revenue mentions, headcount mentions, location counts, pain points, pricing signals, any campaigns mentioned. Record the company record ID for the call recording step below.
 
---- GONG (Branch A only -- if Branch B, skip and set all Gong fields to empty) ---
+--- ATTIO CALL RECORDINGS (Branch A only -- if Branch B, skip) ---
 
-First, read gong_integration from workspace config:
-  python3 -c "import json; c=json.load(open('[WS]/.claude/data/workspace_config.json')); print(c.get('gong_integration','none'))"
+After CRM data is collected, search for call recordings associated with the company.
 
-IF gong_integration = "rube":
-  Run RUBE recipe "gong_company_search" (it already exists -- do not recreate it):
-  - from_date: [180 days ago YYYY-MM-DD]
-  - to_date: [today YYYY-MM-DD]
-  From Pass 1 results, identify matched call IDs. Take the 6 most recent. Fire GONG_GET_CALL_TRANSCRIPT for each matched call ID in parallel (up to 6 simultaneous calls).
-  For each transcript retrieved:
-  - Extract: call date, call title, participants, key topics, verbatim quotes relevant to revenue, headcount, locations, turnover, pricing, and pain points.
+Use mcp__claude_ai_Attio__search-call-recordings-by-metadata:
+  - Filter by the company record ID found above
+  - Date range: [180 days ago] to [today]
+
+For each recording found (take the 6 most recent by date):
+  - Call mcp__claude_ai_Attio__get-call-recording to get the full transcript
+  - Extract: call date, call title, participants, key topics, verbatim quotes relevant to revenue, headcount, locations, turnover, pricing, and pain points
   - Write the transcript to: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/5. Call Transcripts/[YYYY-MM-DD]_[Call Title].md
-  After all transcripts are saved, write a consolidated insights file.
 
-IF gong_integration = "zapier":
-  The main skill already triggered the Zapier webhook and waited for the file.
-  Check for an existing gong_insights_*.json in [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/5. Call Transcripts/.
-  If found, read it and use the data in your output. Set gong_used = true.
-  If not found, set gong_used = false and continue.
+After all transcripts are saved, write a consolidated insights file to:
+[WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/1. Call Summaries/attio_call_insights_[today YYYY-MM-DD].json
 
-IF gong_integration = "manual" or "none":
-  Check for an existing gong_insights_*.json in [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/5. Call Transcripts/.
-  If found and ≤30 days old, read it and use the data. Set gong_used = true.
-  If not found, set gong_used = false and continue with empty Gong data.
-
-After all transcripts are saved (or if no Gong data), write a consolidated insights file to:
-[WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/1. Call Summaries/gong_insights_[today YYYY-MM-DD].json
-
-The gong_insights JSON schema:
+The call insights JSON schema:
 {
   "company": "[COMPANY_NAME]",
   "generated_date": "[YYYY-MM-DD]",
   "call_count": 0,
   "calls": [
     {
-      "call_id": "",
+      "recording_id": "",
       "date": "",
       "title": "",
       "participants": [],
@@ -324,18 +240,18 @@ Create output directory before writing (run immediately, before any research):
 
 Save findings immediately after each source completes -- do not wait until all sources are done.
 
-Write your output to: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/1. Call Summaries/ws_attio_gong_[company_slug].json
+Write your output to: [WS]/[CLIENT_ROOT]/[COMPANY_NAME]/4. Reports/1. Call Summaries/ws_attio_[company_slug].json
 
 Schema:
 {
-  "workstream": "attio_gong",
+  "workstream": "attio",
   "company": "[COMPANY_NAME]",
   "findings": {
     "attio_records_count": 0,
     "attio_notes_count": 0,
     "attio_emails_count": 0,
-    "gong_calls_found": 0,
-    "gong_calls_transcribed": 0,
+    "call_recordings_found": 0,
+    "call_recordings_transcribed": 0,
     "revenue": null,
     "revenue_source": "",
     "unit_count": null,
@@ -349,13 +265,13 @@ Schema:
   },
   "source_summary": {
     "attio_used": false,
-    "gong_used": false,
+    "calls_used": false,
     "transcript_files_written": [],
-    "gong_insights_file_written": ""
+    "call_insights_file_written": ""
   }
 }
 
-Populate all fields from your research. If branch is B, set attio_used and gong_used to false and leave findings empty. Write the file. Do not output a long summary -- just confirm the file path written.
+Populate all fields from your research. If branch is B, set attio_used and calls_used to false and leave findings empty. Write the file. Do not output a long summary -- just confirm the file path written.
 ```
 
 ---
@@ -545,7 +461,7 @@ Do not proceed until all 3 Task calls have returned. Once all agents have comple
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-cat "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/1. Call Summaries/ws_attio_gong_[company_slug].json"
+cat "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/1. Call Summaries/ws_attio_[company_slug].json"
 cat "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/3. Slack/ws_slack_[company_slug].json"
 cat "$WS/$CLIENT_ROOT/[COMPANY_NAME]/4. Reports/2. Public Filings/ws_public_[company_slug].json"
 ```
@@ -558,7 +474,7 @@ If any file is missing or invalid JSON, note it as a failed workstream and conti
 
 Consolidate all data from the 4 agent output files into a single field map. Apply the following source priority order (highest to lowest):
 
-1. Gong transcript (1st party)
+1. Attio call recording (1st party)
 2. Attio note (1st party)
 3. Slack (1st party)
 4. SEC filing (2nd party)
@@ -578,7 +494,7 @@ MERGED FIELD MAP -- [COMPANY NAME]
 
 Field                  | Value        | Source              | Tier
 -----------------------|--------------|---------------------|------
-Annual Revenue         | $XXX.XMM     | Gong (2025-11-14)   | 1st party
+Annual Revenue         | $XXX.XMM     | Attio call (2025-11-14) | 1st party
 Unit Count             | XXX          | SEC 10-K (2024)     | 2nd party
 Employee Count         | ~X,XXX       | LinkedIn estimate   | 3rd party
 ...
@@ -616,12 +532,12 @@ Present campaign recommendations and wait for explicit user confirmation. Do not
 
 ```
 CAMPAIGN RECOMMENDATIONS for [COMPANY NAME]
-Based on [N] Gong calls + [list other sources used]
+Based on [N] Attio call recordings + [list other sources used]
 Template campaigns (from config): [list all campaign names from template_config.json]
 
 RECOMMENDED (include in model + summary slide):
 1. [Campaign Name from config] -- HIGH priority
-   Evidence: "[exact verbatim quote]" (Gong, [YYYY-MM-DD])
+   Evidence: "[exact verbatim quote]" (Attio call, [YYYY-MM-DD])
    Client interest: Explicit
 
 2. [Campaign Name from config] -- HIGH priority
@@ -683,8 +599,8 @@ The JSON must conform to this schema:
   "branch": "",
   "research_date": "",
   "source_summary": {
-    "gong_calls_found": 0,
-    "gong_calls_transcribed": 0,
+    "call_recordings_found": 0,
+    "call_recordings_transcribed": 0,
     "attio_records": 0,
     "attio_notes": 0,
     "slack_messages": 0,
@@ -694,7 +610,7 @@ The JSON must conform to this schema:
   },
   "slack_insights": [],
   "attio_insights": {},
-  "gong_insights": {},
+  "call_insights": {},
   "company_basics": {
     "annual_revenue": null,
     "annual_revenue_source": "",
@@ -748,8 +664,7 @@ Tell the user:
 Research complete for [COMPANY NAME].
 
 Source breakdown:
-- Gong: [N] calls found, [N] transcribed
-- Attio: [N] records, [N] notes
+- Attio: [N] records, [N] notes, [N] call recordings transcribed
 - Slack: [N] messages
 - SEC filings: [used / not applicable]
 - Comp benchmarks: [used / stale -- flag for refresh]

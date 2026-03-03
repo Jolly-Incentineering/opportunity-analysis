@@ -44,6 +44,7 @@ RED = RGBColor(0xFF, 0x00, 0x00)
 PLACEHOLDER_RE = re.compile(r"\[.*?\]")
 RAW_DOLLAR_RE = re.compile(r"\$[\d,]{5,}")
 UPPERCASE_K_RE = re.compile(r"\$\d+K\b")
+ZERO_VALUE_RE = re.compile(r"\$0(?![.\d])")  # matches $0 but NOT $0.25, $0.50, etc.
 
 
 def find_file(company: str, subfolder: str, pattern: str) -> str:
@@ -157,7 +158,7 @@ def check_ppt(company: str) -> dict:
         print(f"  {FAIL} vF deck not found: {e}"); return {}
 
     prs = Presentation(vf_path)
-    red_runs, placeholders, raw_dollars, uppercase_k = [], [], [], []
+    red_runs, placeholders, raw_dollars, uppercase_k, zero_values = [], [], [], [], []
     banner_ok = False
 
     for slide in prs.slides:
@@ -169,6 +170,7 @@ def check_ppt(company: str) -> dict:
                 placeholders.append(text[:60])
             raw_dollars.extend(RAW_DOLLAR_RE.findall(text))
             uppercase_k.extend(UPPERCASE_K_RE.findall(text))
+            zero_values.extend(ZERO_VALUE_RE.findall(text))
             if not banner_ok and ("MM" in text or "k" in text) and "quantified" in text:
                 if "$[ ]" not in text and "[ ] quantified" not in text:
                     banner_ok = True
@@ -190,6 +192,8 @@ def check_ppt(company: str) -> dict:
          "{n} raw dollar amounts: {s}"),
         ("lowercase_k", uppercase_k, "No uppercase $K (all lowercase $k)",
          "Uppercase $K found: {s} (should be lowercase)"),
+        ("zero_values", zero_values, "No stray $0 values",
+         "{n} stray $0 values found (check campaign slides): {s}"),
     ]:
         if not items:
             print(f"  {PASS} {pass_msg}"); results[key] = True

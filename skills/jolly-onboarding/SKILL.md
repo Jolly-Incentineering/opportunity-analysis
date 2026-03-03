@@ -77,7 +77,7 @@ If this fails, try `pip3` instead of `pip`. If you get a "pip not found" error:
 
 **Mac:** Try: `python3 -m pip install openpyxl python-pptx requests`
 
-Optional packages (for SEC filings and cheat sheet PDFs — skip if unsure):
+Optional packages (for SEC filings and PDF metadata — skip if unsure):
 ```bash
 pip install edgartools pypdf
 ```
@@ -170,8 +170,6 @@ Run:
 
 Claude will:
 - Scan your Jolly folder for client templates
-- Detect your Gong integration setting (if you use Gong for call transcripts)
-- Ask one question about Rube (optional manual Gong setup)
 - Save everything to your workspace config
 
 Takes about 30 seconds.

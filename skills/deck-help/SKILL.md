@@ -51,11 +51,11 @@ CONTEXT
 
   Pre-call
     Use before a call has happened. Includes Slack + Public research only.
-    No Attio/Gong transcripts. Fast turnaround (~8–12 minutes).
+    No Attio call recordings. Fast turnaround (~8–12 minutes).
 
   Post-call
-    Use after a call has happened. Includes full Attio/Gong research with
-    transcripts, plus Slack and Public data. Comprehensive (~14–20 minutes).
+    Use after a call has happened. Includes full Attio research with
+    call recordings, plus Slack and Public data. Comprehensive (~14–20 minutes).
 
   At the start of every deck, Claude asks which context applies.
 
