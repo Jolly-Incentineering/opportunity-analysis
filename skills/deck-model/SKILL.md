@@ -15,6 +15,21 @@ HARD RULES — NEVER VIOLATE:
 
 ---
 
+### Executive Audience Rule
+
+Campaign descriptions written to `campaign_details` in the research
+output JSON will appear verbatim on client-facing slides. Never include:
+- References to calls, meetings, or conversations
+- References to internal research steps or data sourcing
+- Hedging language ("we believe", "we think", "it appears")
+- Any language revealing the deck was built by an automated process
+
+Write every description as a confident, client-facing strategic
+recommendation. The reader is a C-suite executive seeing this material
+for the first time with no prior context.
+
+---
+
 You are executing the `deck-model` phase of the Jolly intro deck workflow. Follow every step exactly as written. Do not skip steps. Do not write to any Excel cell without explicit user approval.
 
 **Model:** Use Haiku for standard Excel population tasks. If the model structure is unusually complex, row/column mappings are ambiguous, or campaign logic requires intricate validation, pause and tell the user you need to handle this with Sonnet to ensure accuracy. Do not attempt complex Excel logic with Haiku.

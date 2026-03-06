@@ -259,6 +259,25 @@ Tell user: "Phase 3 complete. Moving to Phase 4: Format..."
 
 Tell the user: "Phase 4: Format — running."
 
+### Executive Audience Rule
+
+Intro decks are reviewed by C-suite executives (CEO, CFO, COO). Never
+include internal process language in any text written to the deck:
+- References to calls, meetings, or conversations ("as discussed on
+  our call", "per our meeting", "as mentioned")
+- References to internal research steps ("our analysis found", "based
+  on our review")
+- References to data sourcing ("according to SEC filings", "per
+  Glassdoor")
+- Hedging language ("we believe", "we think", "it appears")
+- Any language that reveals the deck was built by an automated process
+  or external team
+
+All campaign descriptions, commentary, and insights must read as
+confident, client-facing strategic recommendations - not internal
+working notes. Write as if the reader is seeing this material for the
+first time with no prior context.
+
 ```
 PHASE 4 FILE MANAGEMENT:
 1. Close ALL Excel and PowerPoint files now.
@@ -382,6 +401,7 @@ Open vF. Walk through:
 - **D4:** Campaign list matches approved
 - **D5:** Logo and brand assets
 - **D6:** PDF matches deck
+- **D7:** Executive audience rule (no internal process language, hedging, or source references)
 
 ### 5.4 Summarize and Resolve
 

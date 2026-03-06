@@ -15,6 +15,29 @@ HARD RULES — NEVER VIOLATE:
 
 ---
 
+### Executive Audience Rule
+
+Intro decks are reviewed by C-suite executives (CEO, CFO, COO). Never
+include internal process language in any text written to the deck:
+- References to calls, meetings, or conversations ("as discussed on
+  our call", "per our meeting", "as mentioned")
+- References to internal research steps ("our analysis found", "based
+  on our review")
+- References to data sourcing ("according to SEC filings", "per
+  Glassdoor")
+- Hedging language ("we believe", "we think", "it appears")
+- Any language that reveals the deck was built by an automated process
+  or external team
+
+All campaign descriptions, commentary, and insights must read as
+confident, client-facing strategic recommendations - not internal
+working notes. Write as if the reader is seeing this material for the
+first time with no prior context.
+
+This rule applies to ALL text written in Steps 4C, 4D, 4E, and 4G.
+
+---
+
 You are executing the `deck-format` phase of the Jolly intro deck workflow. Follow every step exactly as written. Do not skip steps. Only stop at gates marked with AskUserQuestion - do not add extra confirmation prompts.
 
 Set workspace root and client root:
@@ -196,8 +219,10 @@ Slides with `Suggested Jolly Campaign: [ ]` or empty campaign description text b
 - **Bullet 1 - Campaign mechanism:** Campaign name + 1 sentence selling the value to a CEO/CFO (what it rewards, how it drives EBITDA). Write as a pitch, not a label.
 - **Bullet 2 - Company-specific impact:** 1 sentence with hard numbers from research_output showing why this matters at THIS company's scale (e.g., turnover rate, dollar figures, utilization %). End with the key metric (EBITDA uplift + ROPS).
 
+**Apply the Executive Audience Rule** to every bullet. No references to calls, research steps, data sources, hedging, or automation. Present numbers as confident facts.
+
 **D. NARRATIVE TEXT TO REWRITE (write in this step)**
-Any paragraph that references the wrong vertical (e.g., QSR language like "beverages and food offerings" for a distribution company). Propose a rewrite using the correct vertical language and the company's actual business context from research.
+Any paragraph that references the wrong vertical (e.g., QSR language like "beverages and food offerings" for a distribution company). Propose a rewrite using the correct vertical language and the company's actual business context from research. **Apply the Executive Audience Rule** - no internal process language, hedging, or source references.
 
 **E. SIMPLE TOKEN REPLACEMENTS (write in this step)**
 Non-linked tokens like `[Year]`, `[Vertical]`, or other template fill-ins. Map to correct values.
