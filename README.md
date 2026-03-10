@@ -1,21 +1,17 @@
 # Opportunity Analysis
 
-The Jolly Opportunity Analysis plugin for Claude. Give it a company name and it handles the research, builds the financial model, and formats the presentation — start to finish.
+The Jolly Opportunity Analysis plugin for Claude. Give it a company name and it handles the research, builds the financial model, and formats the presentation - start to finish.
 
 > **Internal tool.** Maintained by the Incentineering team. Requires access to the private `Jolly-Incentineering/opportunity-analysis` repo and the Jolly shared workspace.
 
-**Intro Deck workflow** — a streamlined template that works for both pre-call and post-call contexts. Claude captures whether it's pre-call or post-call to inform the research phase, but uses the same workflow and template throughout (~10–15 min). **Two ways to run it:** automatically with `/deck-auto [Company]`, or step-by-step yourself. Both are covered below.
+**Intro Deck workflow** - a streamlined template that works for both pre-call and post-call contexts. Claude captures whether it's pre-call or post-call to inform the research phase, but uses the same workflow and template throughout (~10-15 min). **Two ways to run it:** automatically with `/deck-auto [Company]`, or step-by-step yourself. Both are covered below.
 
-**Latest features (v3.6.0):**
-- **48% fewer user stops:** Gates reduced from ~23 to ~12 per build. Removed redundant confirmations, collapsed checklists, auto-proceed Branch B campaigns. Only stops for physical actions and real decisions.
-- **Systems of record detection:** Research agent extracts named software systems (POS, HRIS, CRM, etc.) from Attio call transcripts/notes, then pulls logos via Brandfetch. Deck-format updates the "You Can Reward Any Trackable Data" slide with actual system logos or names.
-- **`format-all` consolidated action:** `deck_engine.py format-all` runs fill-banners + format-dollars + find-placeholders in a single file open/save cycle. Saves ~700 tokens and 2 tool calls per build.
-- **Two-bullet Campaign Insights:** Campaign descriptions now require two bullets - (1) CEO/CFO-selling pitch, (2) company-specific hard numbers with EBITDA/ROPS metric.
-- **Campaign mechanic maps:** Vertical template configs now document the formula mechanic each campaign uses, enabling faster cross-vertical template adaptation.
-- **Fill-banners bug fix:** Bracket token replacement now preserves per-run formatting (bold, italic, color) instead of collapsing paragraphs. Unknown `[...]` tokens are reported instead of silently replaced.
-- **De-personalized:** Removed hardcoded personal emails and names. Plugin is now team-generic.
+**Latest features (v3.9.0):**
+- **Hooks for guardrail enforcement:** MCP read-only rule is now enforced deterministically via a PreToolUse hook - Claude is blocked from calling any MCP create/update/delete/send operation, not just advised against it.
+- **disable-model-invocation:** All side-effect skills (deck-auto, deck-start, deck-research, deck-model, deck-format, deck-qa, deck-new-template, deck-setup, deck-continue) now require explicit `/command` invocation. Claude won't auto-trigger them from conversation context.
+- **Stale marketplace.json removed:** The internal copy was stuck at v3.7.0. Registry now lives exclusively in `jolly-marketplace`.
 
-**[-> See full v3.6.0 release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v3.6.0)**
+**[-> See full v3.9.0 release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v3.9.0)**
 
 ---
 
@@ -44,13 +40,13 @@ The Jolly Opportunity Analysis plugin for Claude. Give it a company name and it 
 │                │  in the background.                       │  in background         │
 ├────────────────┼───────────────────────────────────────────┼────────────────────────┤
 │ /deck-research │  Pulls everything Claude can find about   │  Research summary,     │
-│                │  the company — CRM records, emails,       │  campaign list for     │
+│                │  the company - CRM records, emails,       │  campaign list for     │
 │                │  Slack messages, public data. Proposes    │  your approval         │
 │                │  a campaign list for your approval.       │                        │
 ├────────────────┼───────────────────────────────────────────┼────────────────────────┤
 │ /deck-model    │  Fills in the Excel model with the        │  Populated Excel model │
 │                │  research data. Shows you the full plan   │  with source notes     │
-│                │  first — you approve before it writes     │  on every cell         │
+│                │  first - you approve before it writes     │  on every cell         │
 │                │  anything.                                │                        │
 ├────────────────┼───────────────────────────────────────────┼────────────────────────┤
 │ /deck-format   │  Pulls in brand assets, fills in the      │  Formatted PowerPoint, │
@@ -70,13 +66,13 @@ The Jolly Opportunity Analysis plugin for Claude. Give it a company name and it 
 
 ## Two ways to work
 
-### Automatic mode — `/deck-auto [Company]`
+### Automatic mode - `/deck-auto [Company]`
 
 This is the recommended way to run the workflow. Type `/deck-auto Firebirds` (or whatever company name), and Claude takes it from there.
 
-Claude will run every phase in order — research, model, formatting, QA. Along the way it will pause and ask you questions, like which template to use or whether the campaign list looks right. There are also three steps only you can do (like manually refreshing a link in PowerPoint) — Claude will stop, give you clear instructions, wait for you to finish, and then continue.
+Claude will run every phase in order - research, model, formatting, QA. Along the way it will pause and ask you questions, like which template to use or whether the campaign list looks right. There are also three steps only you can do (like manually refreshing a link in PowerPoint) - Claude will stop, give you clear instructions, wait for you to finish, and then continue.
 
-When it stops, it saves your progress automatically. Think of this like a bookmark — if you need to close your laptop and come back later, just run `/deck-auto [Company]` again and it picks up exactly where it left off. You do not lose any work.
+When it stops, it saves your progress automatically. Think of this like a bookmark - if you need to close your laptop and come back later, just run `/deck-auto [Company]` again and it picks up exactly where it left off. You do not lose any work.
 
 ### Step-by-step mode
 
@@ -149,13 +145,13 @@ You only need to do this once, on each computer you use.
 /jolly-onboarding
 ```
 
-This walks you through everything step-by-step in plain language — no technical knowledge needed. It guides you through connecting Slack and Attio, setting your workspace path, and running the one-time setup. Takes about 10 minutes total.
+This walks you through everything step-by-step in plain language - no technical knowledge needed. It guides you through connecting Slack and Attio, setting your workspace path, and running the one-time setup. Takes about 10 minutes total.
 
 ### Or set up manually:
 
-**Step 1 — Tell Claude where your Jolly folder is**
+**Step 1 - Tell Claude where your Jolly folder is**
 
-Claude needs to know where the Jolly shared folder lives on your computer. This is called your "workspace path" — set it as a System environment variable (on Windows) or export it in your shell (on Mac).
+Claude needs to know where the Jolly shared folder lives on your computer. This is called your "workspace path" - set it as a System environment variable (on Windows) or export it in your shell (on Mac).
 
 Windows:
 - Press Windows key, type "environment variables"
@@ -171,7 +167,7 @@ Mac:
 - Run: `echo 'export JOLLY_WORKSPACE="/Users/YourName/Jolly - Documents"' >> ~/.zshrc`
 - Close Terminal and **restart Claude Code**
 
-**Step 2 — Run setup**
+**Step 2 - Run setup**
 
 Once the folder path is configured, type this in Claude:
 
@@ -189,7 +185,7 @@ Claude will find your client folder, confirm the location, and save it so all fu
 
 **What it does:** Finds your Jolly client folder and saves its location. All other commands depend on this running first.
 
-**What you do:** Nothing — just run it.
+**What you do:** Nothing - just run it.
 
 **What Claude does:** Scans your workspace for the client folder. If it finds more than one possible match, it will ask you to confirm which one to use.
 
@@ -207,12 +203,12 @@ Claude will find your client folder, confirm the location, and save it so all fu
 
 **What Claude does:**
 - Checks whether you already have an active session for this company (and stops if you do, to avoid duplicates)
-- Asks whether this is pre-call or post-call — this determines which research sources to use (post-call includes call transcripts; pre-call uses public data only)
-- Lists available Intro Deck templates grouped by industry — you pick the number
+- Asks whether this is pre-call or post-call - this determines which research sources to use (post-call includes call transcripts; pre-call uses public data only)
+- Lists available Intro Deck templates grouped by industry - you pick the number
 - Copies the Excel model and PowerPoint presentation to the right client folder with dated naming (YYYY.MM.DD)
 - Creates the numbered subfolder structure (1. Logos/, 2. Swag/, 1. Call Summaries/, 2. Public Filings/, 3. Slack/)
 - Opens both files on your screen
-- Figures out whether this is an existing client (has prior calls, emails, or CRM records) or a brand-new prospect — this affects how research runs later
+- Figures out whether this is an existing client (has prior calls, emails, or CRM records) or a brand-new prospect - this affects how research runs later
 - Starts downloading logos and swag images in the background
 
 **Output:** Templates in the client folder, assets downloading in the background.
@@ -228,19 +224,19 @@ Claude will find your client folder, confirm the location, and save it so all fu
 
 **What it does:** Pulls together information about the company based on context and branch, proposes a campaign list, and asks you to confirm before moving on.
 
-**What you do:** Review the proposed campaign list and type "confirm" to proceed. If anything looks off — a campaign is missing, or one shouldn't be included — say so before confirming.
+**What you do:** Review the proposed campaign list and type "confirm" to proceed. If anything looks off - a campaign is missing, or one shouldn't be included - say so before confirming.
 
 **What Claude does:** Research scope depends on context:
 
 **Pre-call path (faster):**
-- **Slack research** — searches Slack for messages about the company (existing clients only)
-- **Public research** — looks up SEC filings, industry benchmarks, LinkedIn headcount, etc.
+- **Slack research** - searches Slack for messages about the company (existing clients only)
+- **Public research** - looks up SEC filings, industry benchmarks, LinkedIn headcount, etc.
 - No Attio lookup (no call recordings needed)
 
 **Post-call path (comprehensive):**
-- **CRM and call research** — checks Attio for records, notes, emails; pulls call recording transcripts if existing client
-- **Slack research** — searches Slack for messages about the company (existing clients only)
-- **Public research** — looks up SEC filings, industry benchmarks, LinkedIn headcount, etc.
+- **CRM and call research** - checks Attio for records, notes, emails; pulls call recording transcripts if existing client
+- **Slack research** - searches Slack for messages about the company (existing clients only)
+- **Public research** - looks up SEC filings, industry benchmarks, LinkedIn headcount, etc.
 
 All applicable tasks run in parallel and report back with their findings. Claude combines everything, flags any conflicts between sources, and presents a clean summary. If any required information is missing, it will tell you before asking for campaign confirmation.
 
@@ -252,7 +248,7 @@ All applicable tasks run in parallel and report back with their findings. Claude
 
 ### `/deck-model`
 
-**What it does:** Fills in the Excel financial model using the research data. Before writing anything, it shows you the full plan — every value it intends to enter, with the source — and waits for your approval.
+**What it does:** Fills in the Excel financial model using the research data. Before writing anything, it shows you the full plan - every value it intends to enter, with the source - and waits for your approval.
 
 **What you do:** Review the plan Claude presents. If everything looks right, type "approve." If something needs to change, tell Claude what to adjust before approving.
 
@@ -277,7 +273,7 @@ All applicable tasks run in parallel and report back with their findings. Claude
 **What you do:** There are a few manual steps only you can do in PowerPoint (like refreshing a data link). Claude will stop at each one, give you clear step-by-step instructions, and wait for you to type "done" before moving on.
 
 **What Claude does:**
-- Scans every slide for placeholder text (like `[Company Name]` or `[Revenue]`) and replaces with correct values and narrative. Formats all dollar amounts correctly — under $1M shows as `$516k`, $1M and above shows as `$1.9MM`.
+- Scans every slide for placeholder text (like `[Company Name]` or `[Revenue]`) and replaces with correct values and narrative. Formats all dollar amounts correctly - under $1M shows as `$516k`, $1M and above shows as `$1.9MM`.
 - Presents the replacement plan and waits for your approval before writing
 - Walks through placing logos, swag images, and banner graphics
 - Exports the final PDF to the Presentations folder and opens it for your review
@@ -318,9 +314,9 @@ After all checks pass, Claude cleans up any temporary lock files and gives you t
 
 ## How it works
 
-When you run `/deck-research`, Claude sends out three parallel research agents — one for CRM and call recordings (Attio), one for Slack, and one for public data. Each task runs on its own and reports back with its findings. Claude then combines everything into one summary, flags any conflicts between sources, and asks you to confirm the campaign list before moving on.
+When you run `/deck-research`, Claude sends out three parallel research agents - one for CRM and call recordings (Attio), one for Slack, and one for public data. Each task runs on its own and reports back with its findings. Claude then combines everything into one summary, flags any conflicts between sources, and asks you to confirm the campaign list before moving on.
 
-Progress is saved after every phase. That saved progress file (think of it as a bookmark) lives in the `.claude/data/` folder in your workspace. If a session gets interrupted — you close Claude, your laptop dies, anything — just run the same command again and Claude reads the bookmark and picks up where it left off. Nothing is lost.
+Progress is saved after every phase. That saved progress file (think of it as a bookmark) lives in the `.claude/data/` folder in your workspace. If a session gets interrupted - you close Claude, your laptop dies, anything - just run the same command again and Claude reads the bookmark and picks up where it left off. Nothing is lost.
 
 ---
 
@@ -379,13 +375,13 @@ This means you already started an Opportunity Analysis for this company. You hav
 You did not lose anything. Run `/deck-auto [Company]` again (or the specific step command you were on) and Claude will read the saved bookmark and resume from where it stopped.
 
 **"The logos or swag images are missing"**
-The asset download runs in the background during `/deck-start`. It sometimes finishes after you have already moved on. Check the `3. Company Resources/Logos` and `3. Company Resources/Swag` folders — the files may already be there. If not, ask Incentineering to run the asset gatherer manually.
+The asset download runs in the background during `/deck-start`. It sometimes finishes after you have already moved on. Check the `3. Company Resources/Logos` and `3. Company Resources/Swag` folders - the files may already be there. If not, ask Incentineering to run the asset gatherer manually.
 
 **"A manual step in `/deck-format` is confusing"**
 Each manual step comes with detailed instructions in the chat. Read them carefully, complete the step in PowerPoint, then come back to Claude and type "done" to continue.
 
 **"A command is taking a long time"**
-The research step pulls from multiple sources and can take 2–6 minutes depending on context. Pre-call (Slack + Public) is faster. Post-call (Attio + Slack + Public) is slower due to call recording and CRM lookups. The model step can also take a minute or two if there are many campaigns. If it has been more than 15 minutes with no response, something may have gone wrong — ask Incentineering.
+The research step pulls from multiple sources and can take 2–6 minutes depending on context. Pre-call (Slack + Public) is faster. Post-call (Attio + Slack + Public) is slower due to call recording and CRM lookups. The model step can also take a minute or two if there are many campaigns. If it has been more than 15 minutes with no response, something may have gone wrong - ask Incentineering.
 
 **"Should I choose pre-call or post-call?"**
 Choose **pre-call** if you have not spoken to the company yet (cold outreach). It skips Attio lookups and uses Slack + Public data only (~8–12 minutes total). Choose **post-call** if you have had a call with the company or have internal notes. It includes full Attio research with call recordings and completes in ~14–20 minutes total. Both use the same Intro Deck template.
@@ -396,7 +392,7 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 
 **Run commands from anywhere in your Jolly workspace.** Claude resolves all file paths from the saved workspace config, so you do not need to be in any specific folder.
 
-**New computer or new team member?** Ask Incentineering to configure your workspace path when you first install. Do not skip this — nothing else will work without it.
+**New computer or new team member?** Ask Incentineering to configure your workspace path when you first install. Do not skip this - nothing else will work without it.
 
 **Context and branch both matter.** You choose context (pre-call vs post-call) at the start. Claude detects branch automatically during `/deck-start` by checking for prior calls, emails, or CRM records. The research path is determined by **both**:
 - **Pre-call context** → Slack + Public (no Attio lookups, faster)
@@ -409,6 +405,29 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 ---
 
 ## Changelog
+
+### v3.9.0 (Mar 10, 2026)
+
+- **PreToolUse hooks:** MCP read-only rule enforced deterministically via `hooks/block_mcp_writes.sh`. Blocks any MCP tool containing create, update, delete, upsert, save, send, schedule, or respond. Client folder boundary hook (`hooks/enforce_client_folder.sh`) blocks misplaced client data writes to `.claude/data/`.
+- **disable-model-invocation:** Added `disable-model-invocation: true` frontmatter to 9 side-effect skills. Only `deck-help` and `jolly-onboarding` remain auto-invocable. Prevents Claude from accidentally triggering workflow skills from conversation context.
+- **Stale marketplace.json removed:** Deleted `.claude-plugin/marketplace.json` (was stuck at v3.7.0). The jolly-marketplace repo is the sole registry.
+- **Em dash cleanup:** Replaced em dashes with hyphens in plugin.json description and deck-continue skill description.
+
+**[-> Release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v3.9.0)**
+
+### v3.8.0 (Mar 5, 2026)
+
+- **Consolidated QA script:** All programmatic checks (M1-M6, D1-D2, D2b, D2c, D4, D7, cross-validation) now run via single `qa_check.py` invocation.
+- **New checks:** M2 (empty cells), M3 (ROPS range), M4 (accretion ceiling), M5 (hiring cost cap), D2b (Macabacus range blanks), D2c (raw integers in narrative), D7 (executive audience rule violations).
+
+**[-> Release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v3.8.0)**
+
+### v3.7.0 (Mar 4, 2026)
+
+- **Executive audience rule:** All client-facing text must read as confident strategic recommendations. No references to calls, research steps, data sources, hedging language, or automation.
+- **Two-stage deck formatting:** Banner placeholders intentionally left on master, filled only on vF after Macabacus refresh + link break.
+
+**[-> Release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v3.7.0)**
 
 ### v3.6.0 (Mar 3, 2026)
 
@@ -424,7 +443,7 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 
 ### v3.5.1 (Mar 3, 2026)
 
-- **Goody scraper split:** Replaced 470-line `goody_scraper.py` monolith with two focused scripts — `goody_auto.py` (fully automated domain→download) and `goody_manual.py` (opens browser for user interaction, then auto-downloads mockups). Removed logo_compositor fallback, capture_templates, and force_local complexity.
+- **Goody scraper split:** Replaced 470-line `goody_scraper.py` monolith with two focused scripts - `goody_auto.py` (fully automated domain→download) and `goody_manual.py` (opens browser for user interaction, then auto-downloads mockups). Removed logo_compositor fallback, capture_templates, and force_local complexity.
 
 **[-> Release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v3.5.1)**
 
@@ -452,10 +471,10 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 
 ### v3.3.0 (Feb 27, 2026)
 
-- **Playwright and WeasyPrint removed:** No longer dependencies. Setup installs 5 packages only — `openpyxl python-pptx requests edgartools pypdf`. No browser install step.
+- **Playwright and WeasyPrint removed:** No longer dependencies. Setup installs 5 packages only - `openpyxl python-pptx requests edgartools pypdf`. No browser install step.
 - **Cheatsheet removed:** `cheatsheet_gen.py` deleted entirely. Removed from deck-auto, deck-format, setup.bat, and requirements.
 - **Library check in `/deck-start`:** Checks required (`openpyxl`, `python-pptx`, `requests`) and optional (`edgartools`, `pypdf`) packages on every run. Stops cleanly on missing required packages with install instructions; warns on missing optional.
-- **`sec_filings.py --save-pdf`:** Saves the most recent 10-K as `.html` for human reference — open in browser and print to PDF manually.
+- **`sec_filings.py --save-pdf`:** Saves the most recent 10-K as `.html` for human reference - open in browser and print to PDF manually.
 
 **[→ Release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v3.3.0)**
 
@@ -465,10 +484,10 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 
 ### v3.2.1 (Feb 27, 2026)
 
-- **cheatsheet source fix:** The new cheatsheet rewrite from v3.2.0 was placed in the wrong directory — fresh installs were getting the old broken version. Fixed.
+- **cheatsheet source fix:** The new cheatsheet rewrite from v3.2.0 was placed in the wrong directory - fresh installs were getting the old broken version. Fixed.
 - **`config_install.py` (new):** Version-aware stamp-and-skip helper for template configs. Tracks `plugin_version` + `installed_hash` per file; saves `.plugin_update.json` on conflict so user edits are never overwritten.
 - **`sec_filings.py --include-text`:** Extracts MD&A and business sections via edgartools `filing.obj()`, fixing 403 errors that occurred when trying to download raw files from `sec.gov/Archives/`.
-- **`excel_editor.py` class stripped:** Removed ~270 lines of dead `ExcelEditor` class code — CLI-only now. Added `sheet` key support to `write-cells` action.
+- **`excel_editor.py` class stripped:** Removed ~270 lines of dead `ExcelEditor` class code - CLI-only now. Added `sheet` key support to `write-cells` action.
 - **`deck_engine.py`:** Fixed `fill-banners` leaving empty XML run nodes; added existence checks for `set-pdf-title`.
 - **`qa_check.py`:** PLACEHOLDER_RE broadened from `[  \w]*` to `.*?` to catch numbers and special characters in placeholder names.
 - **`template_scanner.py`:** Removed unused import; added path traversal guard; added `--threshold` bounds check.
@@ -486,7 +505,7 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 
 ### v3.1.2 (Feb 26, 2026)
 
-- **Gate checklists:** All 6 skills print a `Gates this phase:` checklist on start. Claude marks each gate ✓ in text as it is confirmed — zero extra tool calls.
+- **Gate checklists:** All 6 skills print a `Gates this phase:` checklist on start. Claude marks each gate ✓ in text as it is confirmed - zero extra tool calls.
 
 ### v3.1.1 (Feb 26, 2026)
 
@@ -501,7 +520,7 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 - **Critical bug fixes:** Missing `--action write-cells` flag in deck-model Step 5 (would fail at runtime). Broken heredoc invocations in deck-qa D2b/D2c checks (path argument on wrong line). Cyrillic `у` in `vertical_benchmarks.json` keys replaced with ASCII `u`.
 - **Dead code removed:** Brandfetch GUI class (540 lines), dead template refs in jolly_utils (Automotive Services, Taxis), `__pycache__` removed from tracking.
 - **Retail vertical support:** Added to `jolly_utils.py` (template paths, formula counts placeholder), `qa_check.py` (detect_industry), and plugin.json keywords.
-- **Optional imports in goody scraper:** selenium/Pillow wrapped in try/except — no crash on import if not installed.
+- **Optional imports in goody scraper:** selenium/Pillow wrapped in try/except - no crash on import if not installed.
 - **Portable SEC identity:** `sec_filings.py` reads from env/config instead of hardcoded email.
 - **deck-format steps renumbered:** Sequential order (3b, 7a–7d, 8) replacing old non-sequential (3.5, 8a–8d, 7).
 - **deck-continue fixed:** "14 quality checks" → "11 quality checks".
@@ -511,7 +530,7 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 
 ### v3.0.3 (Feb 26, 2026)
 
-- **Read-only MCP guardrail:** Added hard rule 11 to all 9 skills — Attio, Slack, and other MCP tools are explicitly read-only. No create, update, or delete actions permitted.
+- **Read-only MCP guardrail:** Added hard rule 11 to all 9 skills - Attio, Slack, and other MCP tools are explicitly read-only. No create, update, or delete actions permitted.
 
 ### v3.0.2 (Feb 25, 2026)
 
@@ -524,7 +543,7 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 ### v3.0.0 (Feb 25, 2026)
 
 - **`deck_engine.py` built:** Consolidated CLI tool (7 actions) replacing all inline python-pptx/openpyxl in skill prompts. Skills call it via bash instead of embedding 20+ line heredocs.
-- **`/deck-continue` command:** Resume dispatcher — reads session state, shows phase progress, hands off to the correct phase skill. Accepts "go", "phase N", or "restart".
+- **`/deck-continue` command:** Resume dispatcher - reads session state, shows phase progress, hands off to the correct phase skill. Accepts "go", "phase N", or "restart".
 - **`/deck-help` updated:** Two primary commands (deck-auto, deck-continue) at the top; individual phase commands moved to Advanced section.
 - **Portable path resolution:** `jolly_utils.py` reads `JOLLY_WORKSPACE` env var + `workspace_config.json` instead of hardcoded developer path. `qa_check.py` does the same. Works on any machine after `/deck-setup`.
 - **CLI interfaces added:** `excel_editor.py` (argparse: scan-formulas, write-cells, read-summary) and `template_scanner.py` (argparse: --file, --configs-dir, --threshold, --create, --output). Fixed `excel_editor.py` relative import (`from .jolly_utils` → `from jolly_utils`).
@@ -544,7 +563,7 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 
 ### v2.2.0 (Feb 25, 2026)
 
-- **Inbox Feed Generator:** New Step 6b in deck-format generates branded push notification copy for the Figma inbox feed frame — titles, subtitles, and point values derived from campaign incentive costs (200 pts/$, sorted by points descending)
+- **Inbox Feed Generator:** New Step 6b in deck-format generates branded push notification copy for the Figma inbox feed frame - titles, subtitles, and point values derived from campaign incentive costs (200 pts/$, sorted by points descending)
 - **Script efficiency overhaul:** `qa_check.py` rewritten with single-pass slide iteration and shared utils (340→261 lines); `cheatsheet_gen.py` deduplicated format functions, CSS, and Claude API calls (2167→2125 lines); `goody_scraper.py` rewritten with parallel downloads and context manager (614→458 lines)
 - **Brandfetch CLI mode:** `brandfetch_downloader.py` now supports headless `--api-key`/`--brand`/`--output` flags for automated use, with lazy GUI imports and parallel downloads
 - **Direct swag downloads:** Goody scraper `--output` flag downloads directly to client folder, eliminating the intermediate `~/Downloads/` copy step
@@ -569,7 +588,7 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 - deck-format: programmatic banner scan/write runs before opening files (new Step 3a)
 - deck-qa: openpyxl checks (M1–M6) run before opening model (new Step 3b), python-pptx checks (D2b/D2c) run before opening vF (new Step 4b)
 
-**Release notes** — [View on GitHub](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v2.0.2)
+**Release notes** - [View on GitHub](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v2.0.2)
 
 ### v2.0.1 (Feb 23, 2026)
 
@@ -577,10 +596,10 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 
 ### v2.0.0 (Feb 23, 2026)
 
-**Release notes** — [View on GitHub](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v2.0.0)
+**Release notes** - [View on GitHub](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v2.0.0)
 
 - Bundled all scripts, agents, template configs, and tools with plugin (fully self-contained)
-- Added template config system via `template_scanner.py` — auto-matches models, extracts campaign names/cell addresses/formula counts
+- Added template config system via `template_scanner.py` - auto-matches models, extracts campaign names/cell addresses/formula counts
 - Added guardrails block to every skill (8 hard rules; 9 for agent-dispatching skills)
 - Fixed deck-auto: 3 agents (not 4), Haiku model, correct folder names, correct step order, template config
 - Fixed deck-format step order: 7a→7b→7c→7d→8→9
@@ -592,7 +611,7 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 
 ### v1.3.0 (Feb 23, 2025)
 
-**Release notes** — [View on GitHub](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v1.3.0)
+**Release notes** - [View on GitHub](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v1.3.0)
 
 - Aligned versioning across all plugins
 - No feature changes from v1.2.0
