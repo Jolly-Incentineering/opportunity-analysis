@@ -13,13 +13,13 @@ Print the following help text exactly. Do not add, remove, or summarize anything
 COMMANDS
 ────────────────────────────────────────────────────────────────────────────────
 
-  /deck-auto [Company Name]
+  /deck-start [Company Name]
     ★ START HERE — runs the full workflow automatically.
     Give it a company name and Claude handles research, model population, deck
     formatting, and QA. Pauses only when it needs your input or when there is a
     manual step only you can do in PowerPoint.
 
-    Example: /deck-auto Firebirds
+    Example: /deck-start Firebirds
 
   /deck-continue
     ★ RESUME — picks up where you left off.
@@ -35,12 +35,16 @@ COMMANDS
   /deck-new-template [Vertical Name]
     Create a new vertical template (campaigns, model, deck, config).
 
+  /deck-figma [Company Name]
+    Generate campaign text and points for Figma app screens.
+    Paste a screenshot of the Figma layout - Claude outputs ready-to-paste text
+    with campaign names, descriptions, and point values (200 pts/$1).
+
   ADVANCED — Individual Phase Commands
   · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ·
-  These run a single phase. You don't need them — /deck-auto and /deck-continue
+  These run a single phase. You don't need them — /deck-start and /deck-continue
   handle everything. Use only if you want to re-run or debug a specific step.
 
-    /deck-start [Company Name]    Phase 1: Create folders, copy templates
     /deck-research                Phase 2: Research + campaign selection
     /deck-model                   Phase 3: Populate Excel model
     /deck-format                  Phase 4: Populate deck, export PDF
@@ -66,7 +70,7 @@ TYPICAL WORKFLOW
     1. /deck-setup
 
   Every new Opportunity Analysis:
-    2. /deck-auto [Company Name]   ← starts the workflow
+    2. /deck-start [Company Name]   ← starts the workflow
 
   Interrupted or returning later:
     3. /deck-continue              ← resumes from where you left off

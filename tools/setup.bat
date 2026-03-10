@@ -52,7 +52,7 @@ echo  Setup complete!
 echo.
 echo  Next steps in Claude Code:
 echo    /deck-setup   ^<-- run once to configure your workspace
-echo    /deck-auto [Company Name]   ^<-- start an Opportunity Analysis
+echo    /deck-start [Company Name]   ^<-- start an Opportunity Analysis
 echo.
 pause
 endlocal

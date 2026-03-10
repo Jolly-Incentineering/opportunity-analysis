@@ -4,15 +4,7 @@ description: Run final quality checks on the Excel model and PowerPoint deck bef
 disable-model-invocation: true
 ---
 
-HARD RULES - NEVER VIOLATE:
-1. Do NOT generate or invent campaign names. Read them from the template config JSON.
-2. Do NOT make tool calls or add steps not listed in these instructions.
-3. Do NOT write to formula cells under any circumstances.
-4. Do NOT skip gates - wait for user confirmation at every gate.
-5. Do NOT open files you are about to write to programmatically. Keep them closed during writes.
-6. Do NOT proceed past a failed step - stop and report. Do NOT retry more than once.
-7. Keep all client-specific data in the client folder under 4. Reports/. Never write client data to .claude/data/.
-8. All Attio, Slack, and other MCP tools are READ-ONLY. Never use create, update, or delete MCP actions.
+Read and follow all rules in skills/shared-preamble.md before proceeding.
 
 ---
 
@@ -20,10 +12,7 @@ You are executing the `deck-qa` phase of the Jolly intro deck workflow. This is 
 
 Set workspace root and client root:
 
-```bash
-WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-source "$WS/.claude/scripts/ws_env.sh"
-```
+Set workspace root using the bash preamble from shared-preamble.md.
 
 If `workspace_config.json` does not exist, tell the user: "Workspace is not configured. Run /deck-setup first." Then stop.
 
@@ -33,24 +22,7 @@ If `workspace_config.json` does not exist, tell the user: "Workspace is not conf
 
 Read the most recent session state file:
 
-```python
-python3 -c "
-import json, glob, os
-ws = os.environ.get('JOLLY_WORKSPACE', '.')
-files = sorted(glob.glob(f'{ws}/.claude/data/session_state_*.json'))
-if not files: raise SystemExit('No session state found')
-data = json.load(open(files[-1], encoding='utf-8'))
-print('company_name:', data['company_name'])
-print('client_root:', data['client_root'])
-print('vertical:', data['vertical'])
-print('branch:', data['branch'])
-print('context:', data['context'])
-print('session_date:', data['session_date'])
-print('phase_4_status:', data['phase_checklist']['phase_4_deck_formatting'])
-print('campaigns_selected:', json.dumps(data['campaigns_selected']))
-print('template_paths:', json.dumps(data['template_paths']))
-"
-```
+Load session state using the standard loader from shared-preamble.md.
 
 If `phase_4_status != 'complete'`, tell the user:
 
@@ -72,31 +44,28 @@ Context: [Pre-call / Post-call]
 
 ---
 
-## Step 2: Run Automated QA (all programmatic checks)
+## Step 2: Run Final Verification
 
-Ensure both Excel model and vF deck are **closed** before running (openpyxl/python-pptx cannot read files locked by Office on Windows).
+Automated deck checks already passed on the master during deck-format (Step 6). This final pass verifies the vF copy and cross-validates against the model.
 
 Tell the user:
 
 ```
-Close Excel and PowerPoint if open -- I need both files closed for automated checks.
+Close Excel and PowerPoint if open - I need both files closed for final checks.
 ```
 
-Pause 3 seconds, then run the full automated checklist:
+Pause 3 seconds, then run:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 python3 "$WS/.claude/scripts/qa_check.py" --company "[COMPANY_NAME]"
 ```
 
-This single script runs all programmatic checks:
-- **M1-M6:** Formula integrity, empty cells, ROPS range, accretion ceiling, hiring cost cap, comment coverage
-- **D1-D2:** Placeholders, dollar formatting, uppercase K, stray $0
-- **D2b:** Macabacus range blanks
-- **D2c:** Raw integers in narrative
-- **D4:** Red text (live Macabacus links)
-- **D7:** Executive audience rule violations
-- **Cross-validation:** Excel vs PPT value matches
+Focus on these results:
+- **Must pass (vF-specific):** D1 (no tokens), D2 (dollar formatting), D3 (banners filled), D4 (no red text/links broken)
+- **Must pass (cross-validation):** Banner values match model, campaign list matches approved
+- **Must pass (deliverables):** D6 (PDF matches deck)
+- **Report all:** M1-M6 results (should already pass from Phase 3, flag if regression)
 
 Read the script output. Report every failure and warning to the user with exact details. Do not silently skip.
 
@@ -104,7 +73,7 @@ Read the script output. Report every failure and warning to the user with exact 
 
 ## Step 3: Manual Verification
 
-Automated checks are complete. Now open both files for the user to verify the items that require human judgment:
+Open both files for the user to verify items requiring human judgment:
 
 ```bash
 WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
@@ -115,24 +84,20 @@ start "" "$WS/$CLIENT_ROOT/[COMPANY_NAME]/[deck_folder]/[vf_deck_filename]"
 
 Tell the user: "Both files opened for manual verification."
 
-Present one combined checklist for user confirmation:
+Present one combined checklist:
 
 ```
-MANUAL CHECKS (automated checks already passed/flagged above):
-
-Model:
-  M1-M6 results look correct when viewed in Excel?
-
-Deck:
-  D3  Banner values match the model (spot-check 2-3 numbers)
-  D4  Campaign list matches approved: [list from session state]
-  D5  Company logo on title slide, no placeholder images
-  D6  PDF at [deck_folder]/[pdf_filename] matches the vF deck
+FINAL MANUAL CHECKS:
+  - Banner values match model (spot-check 2-3 numbers)
+  - Campaign list matches approved: [list from session state]
+  - Company logo on title slide, no placeholder images
+  - PDF at [deck_folder]/[pdf_filename] matches the vF deck
+  - Model M1-M6 results look correct in Excel
 ```
 
-Use AskUserQuestion with 2 questions:
-1. "Model checks (M1-M6) - results look correct in Excel?" - Options: ["All good", "Found issues"]
-2. "Deck checks D3-D6 - banners match, campaigns correct, logo placed, PDF matches?" - Options: ["All pass", "Found issues"]
+Use AskUserQuestion:
+- Question: "Final manual checks - all items above check out?"
+- Options: ["All pass", "Found issues"]
 
 If issues found, walk the user through fixes and re-check the specific items.
 

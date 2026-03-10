@@ -4,14 +4,16 @@ The Jolly Opportunity Analysis plugin for Claude. Give it a company name and it 
 
 > **Internal tool.** Maintained by the Incentineering team. Requires access to the private `Jolly-Incentineering/opportunity-analysis` repo and the Jolly shared workspace.
 
-**Intro Deck workflow** - a streamlined template that works for both pre-call and post-call contexts. Claude captures whether it's pre-call or post-call to inform the research phase, but uses the same workflow and template throughout (~10-15 min). **Two ways to run it:** automatically with `/deck-auto [Company]`, or step-by-step yourself. Both are covered below.
+**Intro Deck workflow** - a streamlined template that works for both pre-call and post-call contexts. Claude captures whether it's pre-call or post-call to inform the research phase, but uses the same workflow and template throughout (~10-15 min). Run it with `/deck-start [Company]` - Claude handles everything end-to-end, pausing only when it needs your input.
 
-**Latest features (v3.9.0):**
-- **Hooks for guardrail enforcement:** MCP read-only rule is now enforced deterministically via a PreToolUse hook - Claude is blocked from calling any MCP create/update/delete/send operation, not just advised against it.
-- **disable-model-invocation:** All side-effect skills (deck-auto, deck-start, deck-research, deck-model, deck-format, deck-qa, deck-new-template, deck-setup, deck-continue) now require explicit `/command` invocation. Claude won't auto-trigger them from conversation context.
-- **Stale marketplace.json removed:** The internal copy was stuck at v3.7.0. Registry now lives exclusively in `jolly-marketplace`.
+**Latest features (v3.10.0):**
+- **Single command:** `/deck-start` is now the only entry point - runs all 5 phases end-to-end, delegating to phase skills directly. No more `/deck-auto` vs `/deck-start` confusion.
+- **Shared preamble:** Hard rules, bash preamble, and executive audience rule extracted to `skills/shared-preamble.md` - single source of truth, no more drift across 8 skills.
+- **Pre-vF QA gate:** `deck-format` now runs automated QA on the master deck before creating the vF copy. Catches issues early so you don't redo the Macabacus/copy/link-break cycle.
+- **`/deck-figma`:** New skill - paste a screenshot of Figma app screens and get ready-to-paste campaign text + points (200 pts/$1).
+- **Fewer gates:** Model review consolidated from 4 questions to 1 checklist. QA manual checks from 2 gates to 1.
 
-**[-> See full v3.9.0 release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v3.9.0)**
+**[-> See full v3.10.0 release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v3.10.0)**
 
 ---
 
@@ -23,7 +25,7 @@ The Jolly Opportunity Analysis plugin for Claude. Give it a company name and it 
 ├────────────────┬───────────────────────────────────────────┬────────────────────────┤
 │   Command      │  What it does                             │  Output                │
 ├────────────────┼───────────────────────────────────────────┼────────────────────────┤
-│ /deck-auto     │  Runs the whole workflow automatically,   │  Completed Opportunity │
+│ /deck-start    │  Runs the whole workflow automatically,   │  Completed Opportunity │
 │  [Company]     │  pausing only when it needs your input.   │  Analysis package      │
 │                │  Saves progress so you can stop and       │  ready to send         │
 │                │  resume any time.                         │                        │
@@ -31,13 +33,6 @@ The Jolly Opportunity Analysis plugin for Claude. Give it a company name and it 
 │ /deck-setup    │  First-time setup. Finds your Jolly       │  Saved workspace       │
 │   (once)       │  folder and saves its location so all     │  config file           │
 │                │  other commands know where to look.       │                        │
-├────────────────┼───────────────────────────────────────────┼────────────────────────┤
-│ /deck-start    │  Creates the client folder, copies the    │  Templates in place,   │
-│  [Company]     │  right template files, opens them,        │  branch detected       │
-│                │  detects whether this is an existing      │  (existing client or   │
-│                │  client or new prospect, and starts       │  new prospect),        │
-│                │  downloading logos and brand assets       │  assets downloading    │
-│                │  in the background.                       │  in background         │
 ├────────────────┼───────────────────────────────────────────┼────────────────────────┤
 │ /deck-research │  Pulls everything Claude can find about   │  Research summary,     │
 │                │  the company - CRM records, emails,       │  campaign list for     │
@@ -64,19 +59,13 @@ The Jolly Opportunity Analysis plugin for Claude. Give it a company name and it 
 
 ---
 
-## Two ways to work
+## How to run it
 
-### Automatic mode - `/deck-auto [Company]`
-
-This is the recommended way to run the workflow. Type `/deck-auto Firebirds` (or whatever company name), and Claude takes it from there.
+Type `/deck-start Firebirds` (or whatever company name), and Claude takes it from there.
 
 Claude will run every phase in order - research, model, formatting, QA. Along the way it will pause and ask you questions, like which template to use or whether the campaign list looks right. There are also three steps only you can do (like manually refreshing a link in PowerPoint) - Claude will stop, give you clear instructions, wait for you to finish, and then continue.
 
-When it stops, it saves your progress automatically. Think of this like a bookmark - if you need to close your laptop and come back later, just run `/deck-auto [Company]` again and it picks up exactly where it left off. You do not lose any work.
-
-### Step-by-step mode
-
-Run each command yourself in order: `/deck-start`, then `/deck-research`, then `/deck-model`, then `/deck-format`, then `/deck-qa`. This gives you more control and lets you review each phase before moving to the next. The rest of this guide covers each command in detail.
+When it stops, it saves your progress automatically. Think of this like a bookmark - if you need to close your laptop and come back later, just run `/deck-start [Company]` again and it picks up exactly where it left off. You do not lose any work.
 
 ---
 
@@ -111,7 +100,7 @@ flowchart LR
     style DONE fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
 ```
 
-The diagram shows how an Opportunity Analysis moves from setup through research, modeling, formatting, and QA. While all decks use the same "Intro Deck" template, **research adapts based on context**: Pre-call uses Slack + Public data (no call recordings), while post-call includes full Attio research with call recordings. Branch detection (existing client vs. new prospect) further refines the research scope. The orange diamond is a gate where the workflow pauses and waits for your input. QA uses 11 streamlined checks. `/deck-auto` is a wrapper that drives through the entire flow for you, so you only have to respond at the gate points rather than kick off each step manually.
+The diagram shows how an Opportunity Analysis moves from setup through research, modeling, formatting, and QA. While all decks use the same "Intro Deck" template, **research adapts based on context**: Pre-call uses Slack + Public data (no call recordings), while post-call includes full Attio research with call recordings. Branch detection (existing client vs. new prospect) further refines the research scope. The orange diamond is a gate where the workflow pauses and waits for your input. QA uses 11 streamlined checks. `/deck-start` drives through the entire flow, so you only respond at gate points.
 
 ---
 
@@ -197,21 +186,18 @@ Claude will find your client folder, confirm the location, and save it so all fu
 
 ### `/deck-start [Company Name]`
 
-**What it does:** Gets everything ready to start a new Opportunity Analysis. Creates the folder structure, copies the right template files, opens them on your screen, and starts downloading logos and brand assets in the background while you move on.
+**What it does:** Runs the full Opportunity Analysis workflow end-to-end. Creates folders, copies templates, researches the company, populates the financial model, formats the presentation, runs QA, and exports the final PDF. Saves progress after every phase so you can stop and resume any time.
 
-**What you do:** Provide the company name. Claude will ask you two questions before starting: whether it's pre-call or post-call (to determine research scope), and which template to use.
+**What you do:** Provide the company name. Claude walks you through the entire workflow, pausing only when it needs your input (template selection, campaign approval, model review) or when there is a manual step in PowerPoint.
 
-**What Claude does:**
-- Checks whether you already have an active session for this company (and stops if you do, to avoid duplicates)
-- Asks whether this is pre-call or post-call - this determines which research sources to use (post-call includes call transcripts; pre-call uses public data only)
-- Lists available Intro Deck templates grouped by industry - you pick the number
-- Copies the Excel model and PowerPoint presentation to the right client folder with dated naming (YYYY.MM.DD)
-- Creates the numbered subfolder structure (1. Logos/, 2. Swag/, 1. Call Summaries/, 2. Public Filings/, 3. Slack/)
-- Opens both files on your screen
-- Figures out whether this is an existing client (has prior calls, emails, or CRM records) or a brand-new prospect - this affects how research runs later
-- Starts downloading logos and swag images in the background
+**What Claude does across all 5 phases:**
+- **Phase 1 - Start:** Creates folder structure, copies templates, detects whether this is an existing client or new prospect, starts downloading logos in the background
+- **Phase 2 - Research:** Pulls data from Attio, Slack, and public sources in parallel, merges findings, proposes campaign list for your approval
+- **Phase 3 - Model:** Maps research data to Excel cells, shows you the full plan with sources, writes values after your approval, verifies no formulas were broken
+- **Phase 4 - Format:** Scans and replaces all placeholder text, walks you through manual PowerPoint steps (Macabacus refresh, link break), exports PDF
+- **Phase 5 - QA:** Runs 11 quality checks across model and deck, walks you through any fixes, delivers final files
 
-**Output:** Templates in the client folder, assets downloading in the background.
+**Output:** Completed Opportunity Analysis package - formatted PowerPoint (vF), populated Excel model, and exported PDF.
 
 **Example:**
 ```
@@ -369,10 +355,10 @@ When a new version is available, run:
 Run `/deck-setup` first. This is the one-time setup that tells Claude where your Jolly folder is. You need to do it before any other command will work.
 
 **"Claude says a session already exists for this company"**
-This means you already started an Opportunity Analysis for this company. You have two options: continue from where you left off by running `/deck-auto [Company]` (or the next step command), or delete the session file if you want to start over from scratch. To start over, ask Incentineering to delete the session state file for that company.
+This means you already started an Opportunity Analysis for this company. You have two options: continue from where you left off by running `/deck-start [Company]` (or the next step command), or delete the session file if you want to start over from scratch. To start over, ask Incentineering to delete the session state file for that company.
 
 **"I closed Claude and lost my progress"**
-You did not lose anything. Run `/deck-auto [Company]` again (or the specific step command you were on) and Claude will read the saved bookmark and resume from where it stopped.
+You did not lose anything. Run `/deck-start [Company]` again (or the specific step command you were on) and Claude will read the saved bookmark and resume from where it stopped.
 
 **"The logos or swag images are missing"**
 The asset download runs in the background during `/deck-start`. It sometimes finishes after you have already moved on. Check the `3. Company Resources/Logos` and `3. Company Resources/Swag` folders - the files may already be there. If not, ask Incentineering to run the asset gatherer manually.
@@ -405,6 +391,19 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 ---
 
 ## Changelog
+
+### v3.10.0 (Mar 10, 2026)
+
+- **`/deck-auto` merged into `/deck-start`:** Single entry point for the full workflow. `deck-start` is now a thin orchestrator that runs Phase 1 (setup) itself, then invokes `/deck-research`, `/deck-model`, `/deck-format`, `/deck-qa` in sequence. Eliminates summary drift - each phase has one source of truth.
+- **Shared preamble:** Hard rules (8 copies), bash preamble (25+ copies), executive audience rule (3 copies), and session state loader pattern extracted to `skills/shared-preamble.md`. All 9 skills reference it instead of duplicating.
+- **Pre-vF automated QA:** New Step 6 in deck-format runs `qa_check.py` on the master deck before Macabacus refresh. Catches placeholder tokens, dollar formatting, and audience rule violations early - no more redoing the vF cycle to fix issues found in deck-qa.
+- **`/deck-figma` skill:** Paste a screenshot of Figma app screens, get structured campaign text and point values (200 pts/$1 conversion). Supports inbox feed cards, campaign details, rewards summaries, and leaderboards. Integrated as optional Step 5a in deck-format.
+- **Consolidated gates:** deck-model review reduced from 4 separate AskUserQuestion calls to 1 combined checklist. deck-qa manual checks reduced from 2 gates to 1. Net reduction of 4 user stops per build.
+- **Template config cached in session state:** Phase 1 writes the full template config into session state JSON. Downstream phases read from cache instead of re-reading `template_config.json` (eliminates 3 redundant file reads).
+- **Phase 1 bash blocks consolidated:** 8 mkdir commands merged to 1, copy + set-title + open merged from 3 blocks to 1.
+- **Token reduction:** deck-start reduced 39% (665 -> 403 lines), deck-qa reduced 14% (245 -> 210 lines). Total: 904 lines removed, 273 added across 14 files.
+
+**[-> Release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v3.10.0)**
 
 ### v3.9.0 (Mar 10, 2026)
 

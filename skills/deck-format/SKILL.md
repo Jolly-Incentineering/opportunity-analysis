@@ -4,49 +4,17 @@ description: Format the PowerPoint intro deck -- populate text, update banners, 
 disable-model-invocation: true
 ---
 
-HARD RULES — NEVER VIOLATE:
-1. Do NOT generate or invent campaign names. Read them from the template config JSON.
-2. Do NOT make tool calls or add steps not listed in these instructions.
-3. Do NOT write to formula cells under any circumstances.
-4. Do NOT skip gates marked with AskUserQuestion — but do NOT add extra gates. Only stop for physical actions and key decisions.
-5. Do NOT open files you are about to write to programmatically. Keep them closed during writes.
-6. Do NOT proceed past a failed step — stop and report. Do NOT retry more than once.
-7. Keep all client-specific data in the client folder under 4. Reports/. Never write client data to .claude/data/.
-8. All Attio, Slack, and other MCP tools are READ-ONLY. Never use create, update, or delete MCP actions.
+Read and follow all rules in skills/shared-preamble.md before proceeding.
 
 ---
 
-### Executive Audience Rule
-
-Intro decks are reviewed by C-suite executives (CEO, CFO, COO). Never
-include internal process language in any text written to the deck:
-- References to calls, meetings, or conversations ("as discussed on
-  our call", "per our meeting", "as mentioned")
-- References to internal research steps ("our analysis found", "based
-  on our review")
-- References to data sourcing ("according to SEC filings", "per
-  Glassdoor")
-- Hedging language ("we believe", "we think", "it appears")
-- Any language that reveals the deck was built by an automated process
-  or external team
-
-All campaign descriptions, commentary, and insights must read as
-confident, client-facing strategic recommendations - not internal
-working notes. Write as if the reader is seeing this material for the
-first time with no prior context.
-
-This rule applies to ALL text written in Steps 4C, 4D, 4E, and 4G.
+The Executive Audience Rule (see shared-preamble.md) applies to ALL text written in Steps 4C, 4D, 4E, and 4G.
 
 ---
 
 You are executing the `deck-format` phase of the Jolly intro deck workflow. Follow every step exactly as written. Do not skip steps. Only stop at gates marked with AskUserQuestion - do not add extra confirmation prompts.
 
-Set workspace root and client root:
-
-```bash
-WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-source "$WS/.claude/scripts/ws_env.sh"
-```
+Set workspace root using the bash preamble from shared-preamble.md.
 
 If `workspace_config.json` does not exist, tell the user: "Workspace is not configured. Run /deck-setup first." Then stop.
 
@@ -56,24 +24,7 @@ If `workspace_config.json` does not exist, tell the user: "Workspace is not conf
 
 Load the most recent session state file:
 
-```python
-python3 -c "
-import json, glob, os
-ws = os.environ.get('JOLLY_WORKSPACE', '.')
-files = sorted(glob.glob(f'{ws}/.claude/data/session_state_*.json'))
-if not files: raise SystemExit('No session state found')
-data = json.load(open(files[-1], encoding='utf-8'))
-print('company_name:', data['company_name'])
-print('client_root:', data['client_root'])
-print('vertical:', data['vertical'])
-print('branch:', data['branch'])
-print('context:', data['context'])
-print('session_date:', data['session_date'])
-print('phase_3_status:', data['phase_checklist']['phase_3_model_population'])
-print('template_paths:', json.dumps(data['template_paths']))
-print('campaigns_selected:', json.dumps(data['campaigns_selected']))
-"
-```
+Load session state using the standard loader from shared-preamble.md.
 
 Extract all printed fields. If `phase_3_status != 'complete'`, tell the user:
 
@@ -101,6 +52,7 @@ Starting Phase 4: Deck formatting.
 
 Gates this phase:
   □ Placeholder writes approved (C/D/E/G items)
+  □ Pre-vF QA passed
   □ Macabacus refresh complete
   □ vF links broken
   □ vF saved + PDF exported
@@ -112,8 +64,8 @@ After each gate is confirmed, echo "[Gate name] ✓" in your reply before procee
 
 Phase 4 scope:
 ```
-  WILL DO: Banner fill, text replacement, systems of record, Macabacus refresh, vF copy, link break, PDF export
-  WILL NOT: Custom UI design, app mockups, visual redesign
+  WILL DO: Banner fill, text replacement, systems of record, Figma app text, pre-vF QA, Macabacus refresh, vF copy, link break, PDF export
+  WILL NOT: Custom UI design, visual redesign
   MANUAL (3 stops): Macabacus refresh (~1 min), link break (~30 sec), PDF export (~15 sec)
 ```
 
@@ -308,6 +260,74 @@ While the deck is open, check:
 ```
 
 Do not gate on this - QA (D4/D5) will catch any misses. Proceed immediately.
+
+---
+
+## Step 5a: Figma App Screen Text (Optional)
+
+If the deck includes app mockup screens in Figma, offer to generate the text now while campaign data is fresh.
+
+Tell the user:
+
+```
+If you have Figma app screens to fill (inbox feed, campaign details, rewards summary):
+  - Paste a screenshot of the Figma layout and I'll generate campaign text + points.
+  - Or type "skip" to continue without Figma text.
+```
+
+Use AskUserQuestion:
+- Question: "Generate Figma app screen text?"
+- Options: ["Yes - let me paste a screenshot", "Skip - no Figma screens needed"]
+
+If "Yes": invoke the `/deck-figma` skill. When the user is done generating text for all screens, continue to Step 6.
+
+If "Skip": continue to Step 6.
+
+---
+
+## Step 6: Pre-vF Quality Check (Automated)
+
+Before creating the vF, run automated QA on the master deck to catch issues early. The user should close the master deck for this check.
+
+Tell the user:
+
+```
+Running pre-vF quality check on the master deck.
+Close the master deck (Ctrl+S first), then tell me when it's closed.
+```
+
+Use AskUserQuestion:
+- Question: "Master deck saved and closed?"
+- Options: ["Closed", "Give me a moment"]
+
+Then run:
+
+```bash
+WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
+python3 "$WS/.claude/scripts/qa_check.py" --company "[COMPANY_NAME]"
+```
+
+Only report deck-related results (D1, D2, D2b, D2c, D7). Ignore model checks here since the model was already verified in Phase 3.
+
+**If any deck checks FAIL:**
+
+```
+PRE-VF CHECK FAILED:
+  [list each failure with slide number and description]
+
+Fix these in the master deck before proceeding.
+After fixing, save, close, and tell me to re-run the check.
+```
+
+Loop: re-run qa_check.py after each fix round until all deck checks pass.
+
+**If all deck checks PASS:**
+
+```
+Pre-vF check passed. Master deck is clean - proceeding to Macabacus refresh.
+```
+
+Continue to Step 7a.
 
 ---
 

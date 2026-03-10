@@ -16,7 +16,7 @@ WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
 1. **Error handling**: What happens when things fail?
    - Do skills gracefully handle missing files, failed API calls, empty results?
    - Are error messages clear enough for a non-technical user?
-   - Does deck-auto resume correctly after each type of failure?
+   - Does deck-start resume correctly after each type of failure?
 
 2. **User experience at gates**: Are approval gates clear and helpful?
    - Does each gate explain what happens next?

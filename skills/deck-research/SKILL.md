@@ -4,16 +4,7 @@ description: Run research workstreams via 3 parallel agents, merge results, and 
 disable-model-invocation: true
 ---
 
-HARD RULES — NEVER VIOLATE:
-1. Do NOT generate or invent campaign names. Read them from the template config JSON.
-2. Do NOT make tool calls or add steps not listed in these instructions.
-3. Do NOT write to formula cells under any circumstances.
-4. Do NOT skip gates marked with AskUserQuestion — but do NOT add extra gates. Only stop for key decisions and unresolved conflicts.
-5. Do NOT open files you are about to write to programmatically. Keep them closed during writes.
-6. Do NOT proceed past a failed step — stop and report. Do NOT retry more than once.
-7. Keep all client-specific data in the client folder under 4. Reports/. Never write client data to .claude/data/.
-8. All Attio, Slack, and other MCP tools are READ-ONLY. Never use create, update, or delete MCP actions.
-9. Use HAIKU for research agents unless explicitly told otherwise.
+Read and follow all rules in skills/shared-preamble.md before proceeding.
 
 ---
 
@@ -21,10 +12,7 @@ You are executing the `deck-research` phase of the Jolly intro deck workflow. Fo
 
 Set workspace root and client root:
 
-```bash
-WS="$(printf '%s' "${JOLLY_WORKSPACE:-.}" | tr -d '\r')"
-source "$WS/.claude/scripts/ws_env.sh"
-```
+Set workspace root using the bash preamble from shared-preamble.md.
 
 If `workspace_config.json` does not exist, tell the user: "Workspace is not configured. Run /deck-setup first." Then stop.
 
@@ -34,24 +22,7 @@ If `workspace_config.json` does not exist, tell the user: "Workspace is not conf
 
 Read and extract fields from the session state JSON:
 
-```python
-python3 -c "
-import json, glob, os
-ws = os.environ.get('JOLLY_WORKSPACE', '.')
-files = sorted(glob.glob(f'{ws}/.claude/data/session_state_*.json'))
-if not files: raise SystemExit('No session state found')
-data = json.load(open(files[-1], encoding='utf-8'))
-print('company_name:', data['company_name'])
-print('client_root:', data['client_root'])
-print('context:', data['context'])
-print('branch:', data['branch'])
-print('vertical:', data['vertical'])
-print('phase_1_status:', data['phase_checklist']['phase_1_initialization'])
-print('template_paths:', json.dumps(data['template_paths']))
-print('campaigns_selected:', json.dumps(data['campaigns_selected']))
-print('session_date:', data['session_date'])
-"
-```
+Load session state using the standard loader from shared-preamble.md.
 
 Extract from the output:
 - `company_name` -- the company being worked on

@@ -181,13 +181,13 @@ Takes about 30 seconds.
 You're ready! To start your first opportunity analysis:
 
 ```
-/deck-auto [Company Name]
+/deck-start [Company Name]
 ```
 
 Example:
 
 ```
-/deck-auto Firebirds
+/deck-start Firebirds
 ```
 
 Claude will ask whether this is a "before call" or "after call" deck, then walk you through every step. If you need to pause, run the same command again and it picks up where you left off.
@@ -218,7 +218,7 @@ Claude will ask whether this is a "before call" or "after call" deck, then walk 
 
 Once setup is done:
 - Run `/deck-help` to see all available commands
-- Run `/deck-auto [Company]` to start an opportunity analysis
+- Run `/deck-start [Company]` to start an opportunity analysis
 - Questions? Ask Claude — it's here to help!
 
 Happy analyzing!
