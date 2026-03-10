@@ -1,6 +1,7 @@
 ---
 name: deck-research
 description: Run research workstreams via 3 parallel agents, merge results, and select campaigns for an in-progress intro deck.
+disable-model-invocation: true
 ---
 
 HARD RULES — NEVER VIOLATE:

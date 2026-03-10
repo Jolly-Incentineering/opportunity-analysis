@@ -1,6 +1,7 @@
 ---
 name: deck-format
 description: Format the PowerPoint intro deck -- populate text, update banners, apply brand colors, and export PDF.
+disable-model-invocation: true
 ---
 
 HARD RULES — NEVER VIOLATE:

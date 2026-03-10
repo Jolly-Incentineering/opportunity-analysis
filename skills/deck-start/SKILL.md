@@ -1,6 +1,7 @@
 ---
 name: deck-start
 description: Initialize a new intro deck engagement -- verify folder, copy templates, detect branch, and launch asset gathering.
+disable-model-invocation: true
 ---
 
 HARD RULES — NEVER VIOLATE:

@@ -1,6 +1,7 @@
 ---
 name: deck-qa
 description: Run final quality checks on the Excel model and PowerPoint deck before client delivery.
+disable-model-invocation: true
 ---
 
 HARD RULES - NEVER VIOLATE:

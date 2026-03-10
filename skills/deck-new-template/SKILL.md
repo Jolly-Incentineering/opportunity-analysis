@@ -1,6 +1,7 @@
 ---
 name: deck-new-template
 description: Create a new vertical template (Excel model + PowerPoint deck + JSON config) by adapting an existing template.
+disable-model-invocation: true
 ---
 
 HARD RULES - NEVER VIOLATE:

@@ -1,6 +1,7 @@
 ---
 name: deck-auto
 description: Run the full intro deck workflow automatically for a company. Saves progress after every phase and resumes if interrupted. Usage: /deck-auto [Company Name].
+disable-model-invocation: true
 ---
 
 HARD RULES — NEVER VIOLATE:

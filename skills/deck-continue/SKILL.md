@@ -1,6 +1,7 @@
 ---
 name: deck-continue
-description: Resume the most recent deck workflow from where it left off. No arguments needed — reads session state automatically.
+description: Resume the most recent deck workflow from where it left off. No arguments needed - reads session state automatically.
+disable-model-invocation: true
 ---
 
 HARD RULES — NEVER VIOLATE:

@@ -1,6 +1,7 @@
 ---
 name: deck-setup
 description: Run once per workspace to detect or create the client folder root and write workspace_config.json.
+disable-model-invocation: true
 ---
 
 HARD RULES — NEVER VIOLATE:

@@ -1,6 +1,7 @@
 ---
 name: deck-model
 description: Populate the Excel intro model with researched values -- assumptions, campaign inputs, and sensitivities.
+disable-model-invocation: true
 ---
 
 HARD RULES — NEVER VIOLATE:
