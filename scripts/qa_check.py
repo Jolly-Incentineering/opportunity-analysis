@@ -47,6 +47,28 @@ UPPERCASE_K_RE = re.compile(r"\$\d+K\b")
 ZERO_VALUE_RE = re.compile(r"\$0(?![.\d])")  # matches $0 but NOT $0.25, $0.50, etc.
 
 
+def _iter_shape_paragraphs(shape):
+    """Yield every paragraph in a shape, covering text frames and tables."""
+    if shape.has_text_frame:
+        yield from shape.text_frame.paragraphs
+    if shape.has_table:
+        for row in shape.table.rows:
+            for cell in row.cells:
+                yield from cell.text_frame.paragraphs
+
+
+def _get_shape_text(shape):
+    """Return concatenated text from a shape (text frame + table cells)."""
+    parts = []
+    if shape.has_text_frame:
+        parts.append(shape.text_frame.text)
+    if shape.has_table:
+        for row in shape.table.rows:
+            for cell in row.cells:
+                parts.append(cell.text_frame.text)
+    return " ".join(parts)
+
+
 def find_file(company: str, subfolder: str, pattern: str) -> str:
     """Find the most-recent file matching *pattern* inside the client folder."""
     folder = CLIENTS_DIR / company / subfolder
@@ -163,9 +185,9 @@ def check_ppt(company: str) -> dict:
 
     for slide in prs.slides:
         for shape in slide.shapes:
-            if not shape.has_text_frame:
+            text = _get_shape_text(shape)
+            if not text:
                 continue
-            text = shape.text_frame.text
             if PLACEHOLDER_RE.search(text):
                 placeholders.append(text[:60])
             raw_dollars.extend(RAW_DOLLAR_RE.findall(text))
@@ -174,7 +196,7 @@ def check_ppt(company: str) -> dict:
             if not banner_ok and ("MM" in text or "k" in text) and "quantified" in text:
                 if "$[ ]" not in text and "[ ] quantified" not in text:
                     banner_ok = True
-            for para in shape.text_frame.paragraphs:
+            for para in _iter_shape_paragraphs(shape):
                 for run in para.runs:
                     try:
                         if run.font.color.rgb == RED:
@@ -232,8 +254,8 @@ def check_cross_validation(company: str) -> dict:
     try:
         prs = Presentation(find_vf_deck(company))
         ppt_text = " ".join(
-            shape.text_frame.text for slide in prs.slides
-            for shape in slide.shapes if shape.has_text_frame
+            _get_shape_text(shape) for slide in prs.slides
+            for shape in slide.shapes
         )
     except Exception as e:
         print(f"  {WARN} Could not read PPT: {e}"); return {}

@@ -78,6 +78,31 @@ RAW_DOLLAR_RE = re.compile(r'\$[\d,]{5,}(?:\.\d+)?')
 
 
 # ---------------------------------------------------------------------------
+# Shape helpers — iterate paragraphs from text frames AND table cells
+# ---------------------------------------------------------------------------
+def _iter_shape_paragraphs(shape):
+    """Yield every paragraph in a shape, covering text frames and tables."""
+    if shape.has_text_frame:
+        yield from shape.text_frame.paragraphs
+    if shape.has_table:
+        for row in shape.table.rows:
+            for cell in row.cells:
+                yield from cell.text_frame.paragraphs
+
+
+def _get_shape_text(shape):
+    """Return concatenated text from a shape (text frame + table cells)."""
+    parts = []
+    if shape.has_text_frame:
+        parts.append(shape.text_frame.text)
+    if shape.has_table:
+        for row in shape.table.rows:
+            for cell in row.cells:
+                parts.append(cell.text_frame.text)
+    return " ".join(parts)
+
+
+# ---------------------------------------------------------------------------
 # Actions
 # ---------------------------------------------------------------------------
 def _replace_in_runs(runs, old_pattern, new_text):
@@ -165,9 +190,7 @@ def action_fill_banners(args):
     skipped = []
     for slide_idx, slide in enumerate(prs.slides, 1):
         for shape in slide.shapes:
-            if not shape.has_text_frame:
-                continue
-            for para in shape.text_frame.paragraphs:
+            for para in _iter_shape_paragraphs(shape):
                 full_text = "".join(run.text for run in para.runs)
                 if not BRACKET_RE.search(full_text):
                     continue
@@ -222,9 +245,7 @@ def action_format_dollars(args):
         if i in skip_slides:
             continue
         for shape in slide.shapes:
-            if not shape.has_text_frame:
-                continue
-            for para in shape.text_frame.paragraphs:
+            for para in _iter_shape_paragraphs(shape):
                 for run in para.runs:
                     matches = RAW_DOLLAR_RE.findall(run.text)
                     if not matches:
@@ -254,9 +275,7 @@ def action_find_placeholders(args):
     results = []
     for i, slide in enumerate(prs.slides, 1):
         for shape in slide.shapes:
-            if not shape.has_text_frame:
-                continue
-            for para in shape.text_frame.paragraphs:
+            for para in _iter_shape_paragraphs(shape):
                 text = "".join(run.text for run in para.runs)
                 for m in BRACKET_RE.finditer(text):
                     results.append({
@@ -311,9 +330,7 @@ def action_format_all(args):
     skipped_tokens = []
     for slide_idx, slide in enumerate(prs.slides, 1):
         for shape in slide.shapes:
-            if not shape.has_text_frame:
-                continue
-            for para in shape.text_frame.paragraphs:
+            for para in _iter_shape_paragraphs(shape):
                 full_text = "".join(run.text for run in para.runs)
                 if not BRACKET_RE.search(full_text):
                     continue
@@ -338,9 +355,7 @@ def action_format_all(args):
         if i in skip_slides:
             continue
         for shape in slide.shapes:
-            if not shape.has_text_frame:
-                continue
-            for para in shape.text_frame.paragraphs:
+            for para in _iter_shape_paragraphs(shape):
                 for run in para.runs:
                     matches = RAW_DOLLAR_RE.findall(run.text)
                     if not matches:
@@ -364,9 +379,7 @@ def action_format_all(args):
     remaining_placeholders = []
     for i, slide in enumerate(prs2.slides, 1):
         for shape in slide.shapes:
-            if not shape.has_text_frame:
-                continue
-            for para in shape.text_frame.paragraphs:
+            for para in _iter_shape_paragraphs(shape):
                 text = "".join(run.text for run in para.runs)
                 for m in BRACKET_RE.finditer(text):
                     remaining_placeholders.append({
