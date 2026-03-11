@@ -1,0 +1,83 @@
+{
+  "template_type": "Healthcare",
+  "labels": {
+    "Inputs": 2,
+    "COMPANY BASICS": 4,
+    "Company Name": 5,
+    "Total Annual Revenue": 6,
+    "Number of Locations": 7,
+    "Visits Per Location Per Day": 8,
+    "Total Employees (Clinical)": 9,
+    "CAMPAIGN ECONOMICS": 11,
+    "Revenue per Incremental Visit": 12,
+    "Revenue per Recovered Visit": 13,
+    "Mileage Reimbursement Rate": 14,
+    "After-Hours Visit Premium": 15,
+    "CAMPAIGN SETTINGS": 17,
+    "Campaign 1": 18,
+    "Campaign 2": 19,
+    "Campaign 3": 20,
+    "Campaign 3a": 21,
+    "Campaign 3b": 22,
+    "Campaign 3c": 23,
+    "Campaign 4": 24,
+    "Campaign 5": 25,
+    "Campaign 6": 26,
+    "SCENARIO ASSUMPTIONS": 28,
+    "=\"Campaign 1: \"&C18": 30,
+    "Current Avg Visits per Clinician per Day": 31,
+    "Jolly Visit Increase %": 32,
+    "=\"Campaign 2: \"&C19": 34,
+    "Current Unstaffed/Underutilized Rate %": 35,
+    "Jolly Staffing Recovery %": 36,
+    "=\"Campaign 3: \"&C20": 38,
+    "Turnover Rate": 39,
+    "Referral Success Rate": 40,
+    "Hiring Cost": 41,
+    "=\"Campaign 4: \"&C24": 43,
+    "Retention Improvement Rate": 44,
+    "Avg Milestones per Employee/Yr": 45,
+    "=\"Campaign 5: \"&C25": 47,
+    "Annual Miles Driven": 48,
+    "Route Optimization Impact %": 49,
+    "=\"Campaign 6: \"&C26": 51,
+    "After-Hours Overflow %": 52,
+    "Jolly Overflow Reduction %": 53
+  },
+  "scenarios": [
+    "C",
+    "D",
+    "E"
+  ],
+  "structure_hash": "4cdae7282bd2474d",
+  "last_updated": "2026-03-11",
+  "vertical": "Healthcare",
+  "description": "Standard Healthcare Intro Model Template",
+  "system_slot_defaults": [
+    {
+      "rank": 1,
+      "label": "EHR",
+      "full_name": "Electronic Health Record"
+    },
+    {
+      "rank": 2,
+      "label": "WFM",
+      "full_name": "Workforce Management"
+    },
+    {
+      "rank": 3,
+      "label": "HCM",
+      "full_name": "Human Capital Management"
+    },
+    {
+      "rank": 4,
+      "label": "CRM",
+      "full_name": "Customer Relationship Management"
+    },
+    {
+      "rank": 5,
+      "label": "Payroll",
+      "full_name": "Payroll System"
+    }
+  ]
+}

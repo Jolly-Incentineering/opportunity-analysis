@@ -1,0 +1,70 @@
+{
+  "template_type": "Rideshare",
+  "labels": {
+    "Inputs": 2,
+    "COMPANY BASICS": 4,
+    "Company Name": 5,
+    "Total Annual Revenue": 6,
+    "Number of Stores": 7,
+    "Calls per Day": 8,
+    "Total Employees": 9,
+    "Number of Customers": 10,
+    "CAMPAIGN SETTINGS": 12,
+    "Campaign 1": 13,
+    "Campaign 2": 14,
+    "Campaign 2a": 15,
+    "Campaign 2b": 16,
+    "Campaign 2c": 17,
+    "Campaign 3": 18,
+    "SCENARIO ASSUMPTIONS": 21,
+    "Campaign 1: Satisfaction Scores": 23,
+    "Day Volume of Rides": 24,
+    "Sales Uplift from Satisfaction Scores": 25,
+    "Ride EBITDA contribution Margin": 26,
+    "Campaign 2: Employee Referrals": 28,
+    "Turnover Rate": 29,
+    "Referral Success Rate": 30,
+    "Hiring Cost": 31,
+    "Campaign 3: Employee Timeliness": 33,
+    "Total Hours per Employee/Yr": 34,
+    "Hours Lost to Tardiness %": 35,
+    "Campaign Reduction %": 36,
+    "EBITDA per Hour Saved": 37
+  },
+  "scenarios": [
+    "C",
+    "D",
+    "E"
+  ],
+  "structure_hash": "8879a055e0cf1ebd",
+  "last_updated": "2026-03-11",
+  "vertical": "Rideshare",
+  "description": "Standard Rideshare Intro Model Template",
+  "system_slot_defaults": [
+    {
+      "rank": 1,
+      "label": "Driver App",
+      "full_name": "Driver Application Platform"
+    },
+    {
+      "rank": 2,
+      "label": "CRM",
+      "full_name": "Customer Relationship Management"
+    },
+    {
+      "rank": 3,
+      "label": "HCM",
+      "full_name": "Human Capital Management"
+    },
+    {
+      "rank": 4,
+      "label": "Dispatch",
+      "full_name": "Dispatch System"
+    },
+    {
+      "rank": 5,
+      "label": "Payroll",
+      "full_name": "Payroll System"
+    }
+  ]
+}

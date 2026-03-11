@@ -184,10 +184,15 @@ Non-linked tokens like `[Year]`, `[Vertical]`, or other template fill-ins. Map t
 Dollar values like `$760,000` that need `$760k` or `$1.5MM` formatting. Show them so the user knows they will be fixed, but do NOT reformat here.
 
 **G. "YOU CAN REWARD ANY TRACKABLE DATA" SLIDE (write in this step)**
-Find the slide titled "You Can Reward Any Trackable Data" (or similar). Check `research_output.systems_of_record` for named systems with logos.
-- If systems have `logo_found: true`: replace the generic text labels with the company's actual system logos from `3. Company Resources/3. Systems of Record/`. Insert each logo as a picture shape, sized to fit the existing layout.
-- If systems were found but logos failed (`logo_found: false`): update the text labels to show the actual system names (e.g., replace "HRIS" with "Workday", "POS" with "Toast").
-- If `systems_of_record` is empty: leave the slide as-is with generic text labels. No changes needed.
+Find the slide titled "You Can Reward Any Trackable Data" (or similar). Check `research_output.systems_of_record` for named systems with logos. Also read `system_slot_defaults` from the template config JSON (in `data/templates/`) matched during deck-start.
+
+The slide has placeholder slots for system categories. Fill them using this priority:
+1. **Logo match:** If a system in `systems_of_record` has `logo_found: true`, replace the slot with the system's logo from `3. Company Resources/3. Systems of Record/`. Insert as a picture shape sized to fit the existing layout.
+2. **Text match:** If a system was found but its logo failed (`logo_found: false`), replace the slot text with the actual system name (e.g., "Workday", "Toast").
+3. **Industry default:** If no system was found for a slot, use the label from `system_slot_defaults` in the template config (ranked by importance). These are industry-appropriate fallback labels (e.g., "EHR" for healthcare instead of "POS").
+4. **No config fallback:** If no template config or `system_slot_defaults` is available, keep the existing generic labels on the slide as-is.
+
+Fill up to 5 slots. Match found systems to the most relevant slot by category before falling back to defaults for remaining slots.
 
 Present the full audit to the user:
 
@@ -232,10 +237,13 @@ F. RAW DOLLARS (reformatted in Step 7d):
 
 G. SYSTEMS OF RECORD (will write now):
   Slide [N] | "You Can Reward Any Trackable Data"
+    Template config: [config name] | Industry defaults: [slot1], [slot2], [slot3], [slot4], [slot5]
     Systems found: Salesforce (logo), Workday (logo), ADP (text only)
-    Action: Replace generic labels with logos/names
+    Slot 1: Salesforce logo (found) | Slot 2: Workday logo (found) | Slot 3: ADP text (found) | Slot 4: [default label] | Slot 5: [default label]
   [OR]
-    No systems identified — keeping generic labels.
+    No systems identified - using industry defaults from template config: [slot1], [slot2], [slot3], [slot4], [slot5]
+  [OR]
+    No systems identified, no template config - keeping generic labels.
 
 SUMMARY: [N] items to write now (C + D + E + G) | [N] deferred to Step 7d (B + F) | [N] skipped (A)
 ```
@@ -505,7 +513,7 @@ Deck formatting complete for [COMPANY NAME].
 
 Working deck:  [COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx  (master, retains live Macabacus links)
 vF (delivery): [COMPANY_NAME] Intro Deck (YYYY.MM.DD) - vF.pptx  (static delivery copy)
-PDF:           [COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf
+PDF:           [COMPANY_NAME] Intro Deck (YYYY.MM.DD) - vF.pdf
 
 Session state saved. Next: run /deck-qa for final quality check before delivery.
 ```

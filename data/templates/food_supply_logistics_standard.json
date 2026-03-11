@@ -1,0 +1,85 @@
+{
+  "template_type": "Food Supply Logistics",
+  "labels": {
+    "Inputs": 2,
+    "COMPANY BASICS": 4,
+    "Company Name": 5,
+    "Total Annual Revenue": 6,
+    "Number of Retail Stores Served": 7,
+    "Visits per Employee per Year": 8,
+    "Total Employees (Merchandisers)": 9,
+    "Working Days per Year": 10,
+    "PM Tasks per Employee per Week": 11,
+    "MERCHANDISING ECONOMICS": 13,
+    "Average Savings per Scheduling Error ($)": 14,
+    "Average Order Value per Visit ($)": 15,
+    "CAMPAIGN SETTINGS": 17,
+    "Campaign 1": 18,
+    "Campaign 2": 19,
+    "Campaign 3": 20,
+    "Campaign 4": 21,
+    "Campaign 5": 22,
+    "Campaign 6": 23,
+    "SCENARIO ASSUMPTIONS": 25,
+    "=B18&\": \"&C18": 27,
+    "Total Annual Events (Visits)": 40,
+    "Current Compliance %": 41,
+    "Target Compliance %": 42,
+    "Savings Per Compliant Event ($)": 37,
+    "=B19&\": \"&C19": 33,
+    "=B20&\": \"&C20": 39,
+    "Incremental Revenue Per Event ($)": 43,
+    "=B21&\": \"&C21": 45,
+    "Annual Hires Needed": 46,
+    "Referral Rate (Current)": 47,
+    "Referral Rate (Target)": 48,
+    "Savings Per Referral Hire ($)": 49,
+    "=B22&\": \"&C22": 51,
+    "Total Employees": 52,
+    "Training Modules Per Year": 53,
+    "Current On-Time Completion %": 54,
+    "Target On-Time Completion %": 55,
+    "Savings Per On-Time Completion ($)": 56,
+    "=B23&\": \"&C23": 58,
+    "Annual Voluntary Departures": 59,
+    "Boomerang Rehire Rate (Current)": 60,
+    "Boomerang Rehire Rate (Target)": 61,
+    "Savings Per Boomerang Hire ($)": 62
+  },
+  "scenarios": [
+    "C",
+    "D",
+    "E"
+  ],
+  "structure_hash": "91df56401e0c603d",
+  "last_updated": "2026-03-11",
+  "vertical": "Logistics",
+  "description": "Standard Food Supply Logistics Intro Model Template",
+  "system_slot_defaults": [
+    {
+      "rank": 1,
+      "label": "TMS",
+      "full_name": "Transport Management System"
+    },
+    {
+      "rank": 2,
+      "label": "WMS",
+      "full_name": "Warehouse Management System"
+    },
+    {
+      "rank": 3,
+      "label": "ERP",
+      "full_name": "Enterprise Resource Planning"
+    },
+    {
+      "rank": 4,
+      "label": "HCM",
+      "full_name": "Human Capital Management"
+    },
+    {
+      "rank": 5,
+      "label": "WFM",
+      "full_name": "Workforce Management"
+    }
+  ]
+}

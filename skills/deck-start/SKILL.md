@@ -184,7 +184,7 @@ Naming conventions:
 - Deck subfolder: `1. [COMPANY_NAME] Intro Deck (YYYY.MM.DD)/`
 - Deck filename: `[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pptx`
 - vF filename: `[COMPANY_NAME] Intro Deck (YYYY.MM.DD) - vF.pptx`
-- PDF filename: `[COMPANY_NAME] Intro Deck (YYYY.MM.DD).pdf`
+- PDF filename: `[COMPANY_NAME] Intro Deck (YYYY.MM.DD) - vF.pdf`
 
 ### 1.4 Scan Template and Load Config
 
@@ -394,7 +394,7 @@ Accretion: [X]% of EBITDA
 Files:
   PPT:   [full path to vF.pptx]
   Model: [full path to model .xlsx]
-  PDF:   [full path to .pdf]
+  PDF:   [full path to vF.pdf]
 
 QA: [PASS / PASS with notes]
 All phases complete. Ready for delivery.

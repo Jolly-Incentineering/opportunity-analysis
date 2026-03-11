@@ -1,0 +1,82 @@
+{
+  "template_type": "Hospitality & C-Stores",
+  "labels": {
+    "Inputs": 2,
+    "COMPANY BASICS": 4,
+    "Company Name": 51,
+    "Total Annual Revenue": 52,
+    "Number of Stores": 53,
+    "Orders Per Store Per Day": 54,
+    "Total Employees": 55,
+    "CAMPAIGN ECONOMICS": 11,
+    "Cost Per Beverage Upsell": 59,
+    "Cost Per Impulse Buy Upsell": 13,
+    "CAMPAIGN SETTINGS": 15,
+    "Campaign 1": 16,
+    "Campaign 2": 17,
+    "Campaign 3": 18,
+    "Campaign 3a": 19,
+    "Campaign 3b": 20,
+    "Campaign 3c": 21,
+    "Campaign 4": 22,
+    "Campaign 5": 23,
+    "SCENARIO ASSUMPTIONS": 26,
+    "=\"Campaign 1: \"&C16": 28,
+    "Sales Uplift %": 33,
+    "Contribution Margin %": 34,
+    "=\"Campaign 2: \"&C17": 32,
+    "=\"Campaign 3: \"&C18": 36,
+    "Turnover Rate": 37,
+    "Referral Success Rate": 38,
+    "Hiring Cost": 39,
+    "=\"Campaign 4: \"&C22": 41,
+    "Total Hours per Employee/Yr": 42,
+    "Hours Lost to Tardiness %": 43,
+    "Campaign Reduction %": 44,
+    "EBITDA per Hour Saved": 45,
+    "=\"Campaign 5: \"&C23": 47,
+    "Input Field": 49,
+    "Employee Turnover Rate": 56,
+    "Hiring Cost Per Employee": 57,
+    "Social Media Interactions/Day": 58,
+    "Cost Per Food Upsell": 60,
+    "\ud83d\udca1 Pro Tip: Ask Claude to research these values": 62,
+    "Example prompt:": 63
+  },
+  "scenarios": [
+    "C",
+    "D",
+    "E"
+  ],
+  "structure_hash": "d27d93cbad67b468",
+  "last_updated": "2026-03-11",
+  "vertical": "Hospitality",
+  "description": "Standard Hospitality & C-Stores Intro Model Template",
+  "system_slot_defaults": [
+    {
+      "rank": 1,
+      "label": "POS",
+      "full_name": "Point of Sale"
+    },
+    {
+      "rank": 2,
+      "label": "PMS",
+      "full_name": "Property Management System"
+    },
+    {
+      "rank": 3,
+      "label": "HCM",
+      "full_name": "Human Capital Management"
+    },
+    {
+      "rank": 4,
+      "label": "WFM",
+      "full_name": "Workforce Management"
+    },
+    {
+      "rank": 5,
+      "label": "CRM",
+      "full_name": "Customer Relationship Management"
+    }
+  ]
+}

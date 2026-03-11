@@ -1,0 +1,71 @@
+{
+  "template_type": "Healthcare - ABA Therapy",
+  "labels": {
+    "Inputs": 2,
+    "COMPANY BASICS": 4,
+    "Company Name": 5,
+    "Total Annual Revenue": 6,
+    "Total Employees": 7,
+    "Weekly Hours": 8,
+    "Annual Hours": 9,
+    "Annual Hours Available": 10,
+    "Current Utilization Rate": 11,
+    "Current Billable Hours": 12,
+    "Billing Rate per Hour": 13,
+    "Labor Cost per Hour": 14,
+    "EBITDA per Hour": 15,
+    "Contribution Margin": 16,
+    "Average Session Lenth": 17,
+    "Annual Sessions": 18,
+    "CAMPAIGN SETTINGS": 21,
+    "Campaign 1": 22,
+    "Campaign 2": 23,
+    "Campaign 3": 24,
+    "SCENARIO ASSUMPTIONS": 27,
+    "Campaign 1: Employee Referrals": 29,
+    "Jolly Backfills": 30,
+    "Hiring Cost": 31,
+    "Campaign 2: Weekly Shift Utilization": 33,
+    "Reduction in Ufilled Hours": 34,
+    "Full Shift Completion": 35,
+    "Campaign 3: Employee Timeliness": 37,
+    "Hours Lost to Tardiness": 38,
+    "Reduction in Lost Hours": 39
+  },
+  "scenarios": [
+    "C",
+    "D",
+    "E"
+  ],
+  "structure_hash": "327b2c89fa277ead",
+  "last_updated": "2026-03-11",
+  "vertical": "Healthcare",
+  "description": "ABA Therapy Healthcare Intro Model Template",
+  "system_slot_defaults": [
+    {
+      "rank": 1,
+      "label": "EMR",
+      "full_name": "Electronic Medical Record"
+    },
+    {
+      "rank": 2,
+      "label": "Practice Mgmt",
+      "full_name": "Practice Management System"
+    },
+    {
+      "rank": 3,
+      "label": "HCM",
+      "full_name": "Human Capital Management"
+    },
+    {
+      "rank": 4,
+      "label": "WFM",
+      "full_name": "Workforce Management"
+    },
+    {
+      "rank": 5,
+      "label": "Billing",
+      "full_name": "Billing System"
+    }
+  ]
+}

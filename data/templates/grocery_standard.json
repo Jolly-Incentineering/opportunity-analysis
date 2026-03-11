@@ -1,0 +1,75 @@
+{
+  "template_type": "Grocery",
+  "labels": {
+    "Inputs": 2,
+    "COMPANY BASICS": 4,
+    "Company Name": 5,
+    "Total Annual Revenue": 6,
+    "Number of Stores": 7,
+    "Orders Per Store Per Day": 8,
+    "Total Employees": 9,
+    "CAMPAIGN ECONOMICS": 11,
+    "Cost Per Beverage Upsell": 12,
+    "Cost Per Single Food Upsell": 13,
+    "Cost Per Combo/Bundle Upsell": 14,
+    "Cost Per Seasonal/LTO Upsell": 15,
+    "CAMPAIGN SETTINGS": 17,
+    "Campaign 1": 18,
+    "Campaign 2": 19,
+    "Campaign 3": 20,
+    "Campaign 3a": 21,
+    "Campaign 3b": 22,
+    "Campaign 3c": 23,
+    "Campaign 4": 24,
+    "SCENARIO ASSUMPTIONS": 26,
+    "=\"Campaign 1: \"&C18": 28,
+    "Sales Uplift %": 33,
+    "Contribution Margin %": 34,
+    "=\"Campaign 2: \"&C19": 32,
+    "=\"Campaign 3: \"&C20": 36,
+    "Turnover Rate": 37,
+    "Referral Success Rate": 38,
+    "Hiring Cost": 39,
+    "=\"Campaign 4: \"&C24": 41,
+    "Total Hours per Employee/Yr": 42,
+    "Hours Lost to Tardiness %": 43,
+    "Campaign Reduction %": 44,
+    "EBITDA per Hour Saved": 45
+  },
+  "scenarios": [
+    "C",
+    "D",
+    "E"
+  ],
+  "structure_hash": "58389bbaf8d22778",
+  "last_updated": "2026-03-11",
+  "vertical": "Grocery",
+  "description": "Standard Grocery Intro Model Template",
+  "system_slot_defaults": [
+    {
+      "rank": 1,
+      "label": "POS",
+      "full_name": "Point of Sale"
+    },
+    {
+      "rank": 2,
+      "label": "IMS",
+      "full_name": "Inventory Management System"
+    },
+    {
+      "rank": 3,
+      "label": "HCM",
+      "full_name": "Human Capital Management"
+    },
+    {
+      "rank": 4,
+      "label": "WFM",
+      "full_name": "Workforce Management"
+    },
+    {
+      "rank": 5,
+      "label": "CRM",
+      "full_name": "Customer Relationship Management"
+    }
+  ]
+}

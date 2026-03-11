@@ -167,6 +167,8 @@ Extract from results: revenue mentions, headcount mentions, location counts, pai
 
 Also extract **systems of record** - any named software platforms, tools, or data systems the company uses (e.g., Salesforce, Workday, ADP, Toast, UKG, Oracle). Look for mentions in call transcripts, notes, and emails of HR systems, POS systems, payroll providers, CRM platforms, scheduling tools, etc. Record the system name and its domain (e.g., "salesforce.com") when identifiable.
 
+Also determine the **client industry vertical** from the data (e.g., "QSR", "Healthcare", "Manufacturing", "Retail", "Hospitality", "Logistics", "Grocery", "Rideshare"). Use explicit mentions in Attio records, call transcripts, notes, or emails. If the industry is obvious from the company name or description (e.g., a hospital system), infer it. Record this as the `industry` field in the research output. If uncertain, leave it empty.
+
 --- ATTIO CALL RECORDINGS (Branch A only -- if Branch B, skip) ---
 
 After CRM data is collected, search for call recordings associated with the company.

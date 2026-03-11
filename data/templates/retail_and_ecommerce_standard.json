@@ -115,7 +115,14 @@
       "notes": "Reduces voluntary quits directly. Different from referrals (C2) which avoids hiring cost."
     }
   },
-  "last_updated": "2026-03-03",
+  "system_slot_defaults": [
+    {"rank": 1, "label": "POS", "full_name": "Point of Sale"},
+    {"rank": 2, "label": "IMS", "full_name": "Inventory Management System"},
+    {"rank": 3, "label": "HCM", "full_name": "Human Capital Management"},
+    {"rank": 4, "label": "WFM", "full_name": "Workforce Management"},
+    {"rank": 5, "label": "CRM", "full_name": "Customer Relationship Management"}
+  ],
+  "last_updated": "2026-03-11",
   "vertical_standards": {
     "hours_per_year": 1820,
     "hiring_cost_cap": null,

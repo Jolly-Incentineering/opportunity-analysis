@@ -7,7 +7,7 @@ Finds matching configs for templates or creates new ones for custom templates.
 
 import json
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple
 from openpyxl import load_workbook
 from difflib import SequenceMatcher
 

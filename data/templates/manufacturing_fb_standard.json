@@ -1,0 +1,87 @@
+{
+  "template_type": "Manufacturing - Food & Beverage",
+  "labels": {
+    "Inputs": 2,
+    "COMPANY BASICS": 4,
+    "Company Name": 5,
+    "Total Annual Revenue": 6,
+    "Number of Manufacturing Facilities": 7,
+    "Units Produced Per Facility Per Day": 8,
+    "Total Employees": 9,
+    "CAMPAIGN ECONOMICS": 11,
+    "Cost Per Waste Reduction Event": 12,
+    "Cost Per Cross-Training Certification": 13,
+    "Cost Per Referral Hire Incentive": 14,
+    "Cost Per Daily Attendance Incentive": 15,
+    "CAMPAIGN SETTINGS": 17,
+    "Campaign 1": 18,
+    "Campaign 2": 19,
+    "Campaign 3": 20,
+    "Campaign 3a": 21,
+    "Campaign 3b": 22,
+    "Campaign 3c": 23,
+    "Campaign 4": 24,
+    "Campaign 5": 25,
+    "Campaign 6": 26,
+    "SCENARIO ASSUMPTIONS": 28,
+    "=\"Campaign 1: \"&C18": 30,
+    "Waste Impact on Revenue %": 31,
+    "Waste Recovery Rate from Campaign %": 32,
+    "=\"Campaign 2: \"&C19": 34,
+    "Cross-Training Savings per Employee ($)": 35,
+    "Savings Realization Rate %": 53,
+    "=\"Campaign 3: \"&C20": 38,
+    "Turnover Rate": 39,
+    "Referral Success Rate": 40,
+    "Hiring Cost": 41,
+    "=\"Campaign 4: \"&C24": 43,
+    "Total Hours per Employee/Yr": 44,
+    "Hours Lost to Tardiness %": 45,
+    "Campaign Reduction %": 46,
+    "EBITDA per Hour Saved": 47,
+    "=\"Campaign 5: \"&C25": 49,
+    "Annual Compliance Inspections": 50,
+    "Compliance Improvement Rate %": 51,
+    "Value Per Compliance Improvement ($)": 52,
+    "=\"Campaign 6: \"&C26": 55,
+    "Annual Voluntary Quit Rate %": 56,
+    "Quit Rate Reduction %": 57,
+    "Replacement Cost per Employee": 58
+  },
+  "scenarios": [
+    "C",
+    "D",
+    "E"
+  ],
+  "structure_hash": "ec1c5d833d9f0f04",
+  "last_updated": "2026-03-11",
+  "vertical": "Manufacturing",
+  "description": "Food & Beverage Manufacturing Intro Model Template",
+  "system_slot_defaults": [
+    {
+      "rank": 1,
+      "label": "ERP",
+      "full_name": "Enterprise Resource Planning"
+    },
+    {
+      "rank": 2,
+      "label": "MES",
+      "full_name": "Manufacturing Execution System"
+    },
+    {
+      "rank": 3,
+      "label": "HCM",
+      "full_name": "Human Capital Management"
+    },
+    {
+      "rank": 4,
+      "label": "WFM",
+      "full_name": "Workforce Management"
+    },
+    {
+      "rank": 5,
+      "label": "QMS",
+      "full_name": "Quality Management System"
+    }
+  ]
+}

@@ -6,14 +6,13 @@ The Jolly Opportunity Analysis plugin for Claude. Give it a company name and it 
 
 **Intro Deck workflow** - a streamlined template that works for both pre-call and post-call contexts. Claude captures whether it's pre-call or post-call to inform the research phase, but uses the same workflow and template throughout (~10-15 min). Run it with `/deck-start [Company]` - Claude handles everything end-to-end, pausing only when it needs your input.
 
-**Latest features (v3.10.0):**
-- **Single command:** `/deck-start` is now the only entry point - runs all 5 phases end-to-end, delegating to phase skills directly. No more `/deck-auto` vs `/deck-start` confusion.
-- **Shared preamble:** Hard rules, bash preamble, and executive audience rule extracted to `skills/shared-preamble.md` - single source of truth, no more drift across 8 skills.
-- **Pre-vF QA gate:** `deck-format` now runs automated QA on the master deck before creating the vF copy. Catches issues early so you don't redo the Macabacus/copy/link-break cycle.
-- **`/deck-figma`:** New skill - paste a screenshot of Figma app screens and get ready-to-paste campaign text + points (200 pts/$1).
-- **Fewer gates:** Model review consolidated from 4 questions to 1 checklist. QA manual checks from 2 gates to 1.
+**Latest features (v3.11.0):**
+- **Industry-aware system slots:** "You Can Reward Any Trackable Data" slide now uses vertical-specific fallback labels (e.g., EHR/WFM/HCM for healthcare, ERP/MES/HCM for manufacturing) instead of generic POS/ERP/HCM. 5 ranked slots per vertical, stored in template configs.
+- **13 template configs:** Scanned and created JSON configs for all verticals - QSR, Retail (2), Healthcare (2), Hospitality & C-Stores, Manufacturing (4), Food Supply Logistics, Grocery, Rideshare. Each includes `system_slot_defaults`.
+- **Auto industry detection:** Research agent now detects client industry from Attio data and populates the `industry` field in research output.
+- **New template flow updated:** `/deck-new-template` now asks for system slot defaults when creating a new vertical, and writes them to the config automatically.
 
-**[-> See full v3.10.0 release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v3.10.0)**
+**[-> See full v3.11.0 release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v3.11.0)**
 
 ---
 
@@ -391,6 +390,17 @@ Choose **pre-call** if you have not spoken to the company yet (cold outreach). I
 ---
 
 ## Changelog
+
+### v3.11.0 (Mar 11, 2026)
+
+- **Industry-aware system slot defaults:** Each template config now includes `system_slot_defaults` - 5 ranked system category labels appropriate to the vertical. The "You Can Reward Any Trackable Data" slide uses these as fallback labels when no specific systems are found for a client. Healthcare gets EHR/WFM/HCM, Manufacturing gets ERP/MES/HCM, QSR keeps POS/ERP/HCM, etc.
+- **13 template configs:** Created JSON configs for all 11 verticals that previously lacked them (Retail Service & Specialty, Healthcare General, Healthcare ABA Therapy, Hospitality & C-Stores, Manufacturing General/F&B/Furniture/Custom, Food Supply Logistics, Grocery, Rideshare). All scanned from their Excel templates via `template_scanner.py`.
+- **Industry detection in research:** ws-attio agent now detects and records the client's industry vertical from Attio data (company records, call transcripts, notes, emails). Populates the `industry` field in `research_output.json`.
+- **deck-format Category G updated:** Slot fill priority is now: (1) system logo if found, (2) system name text if logo failed, (3) industry default from `system_slot_defaults`, (4) generic labels if no config available.
+- **deck-new-template updated:** Step 1 now asks for 5 ranked system slot defaults. Step 6 writes `system_slot_defaults` and `vertical` fields to the generated config.
+- **template_scanner.py fix:** Added missing `Tuple` import.
+
+**[-> Release notes](https://github.com/Jolly-Incentineering/opportunity-analysis/releases/tag/v3.11.0)**
 
 ### v3.10.0 (Mar 10, 2026)
 

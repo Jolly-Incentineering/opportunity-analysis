@@ -110,7 +110,14 @@
       "notes": "Operations campaign. Relabel 'tardiness' to match vertical (e.g., 'underutilization' for healthcare, 'shrink' for retail)."
     }
   },
-  "last_updated": "2026-03-03",
+  "system_slot_defaults": [
+    {"rank": 1, "label": "POS", "full_name": "Point of Sale"},
+    {"rank": 2, "label": "HCM", "full_name": "Human Capital Management"},
+    {"rank": 3, "label": "ERP", "full_name": "Enterprise Resource Planning"},
+    {"rank": 4, "label": "CRM", "full_name": "Customer Relationship Management"},
+    {"rank": 5, "label": "Payroll", "full_name": "Payroll System"}
+  ],
+  "last_updated": "2026-03-11",
   "vertical_standards": {
     "hours_per_year": 1820,
     "hiring_cost_cap": 3500,

@@ -45,7 +45,14 @@ I need a few things to build this template. Answer each question:
    Example (Referrals): Turnover Rate, Referral Success Rate, Traditional Hiring Cost
    Example (Timeliness): Hours Lost to Tardiness %, Campaign Reduction %, EBITDA per Hour Saved
 
-5. Which existing template is closest to what you need?
+5. What are the top 5 system categories for this vertical, ranked by importance?
+   These are the fallback labels shown on the "You Can Reward Any Trackable Data" slide
+   when no specific systems are found for a client.
+   Example (QSR): POS, HCM, ERP, CRM, Payroll
+   Example (Healthcare): EHR, WFM, HCM, CRM, Payroll
+   Example (Manufacturing): ERP, MES, HCM, WFM, QMS
+
+6. Which existing template is closest to what you need?
 ```
 
 Then list all available templates:
@@ -72,6 +79,7 @@ Wait for the user's full reply. Record:
 - `campaign_names` (list)
 - `company_basics` (list of field names)
 - `campaign_economics` (dict: campaign name -> list of assumption row labels)
+- `system_slot_defaults` (list of 5 system category labels ranked by importance)
 - `base_template` (which existing template to adapt)
 
 ---
@@ -256,7 +264,9 @@ After the scanner creates the base config, enhance it by adding:
 3. `scenario_definitions` mapping (C=Base, D=Upside, E=Downside)
 4. `description` with the vertical name and date
 5. `template_type` set to the vertical name
-6. `last_updated` set to today's date
+6. `vertical` set to the broad industry vertical (e.g., "Healthcare", "Manufacturing", "Retail")
+7. `system_slot_defaults` - array of 5 objects, each with `rank`, `label`, and `full_name` keys, from Step 1 question 5
+8. `last_updated` set to today's date
 
 Write the enhanced config:
 
@@ -291,7 +301,15 @@ config["campaigns"] = {
 
 config["scenario_definitions"] = {"C": "Base", "D": "Upside", "E": "Downside"}
 config["template_type"] = "[Vertical Name]"
+config["vertical"] = "[Broad Vertical]"
 config["description"] = "[Vertical Name] Intro Model Template (created [YYYY-MM-DD])"
+config["system_slot_defaults"] = [
+    {"rank": 1, "label": "[SLOT1]", "full_name": "[Full Name 1]"},
+    {"rank": 2, "label": "[SLOT2]", "full_name": "[Full Name 2]"},
+    {"rank": 3, "label": "[SLOT3]", "full_name": "[Full Name 3]"},
+    {"rank": 4, "label": "[SLOT4]", "full_name": "[Full Name 4]"},
+    {"rank": 5, "label": "[SLOT5]", "full_name": "[Full Name 5]"},
+]
 config["last_updated"] = "[YYYY-MM-DD]"
 
 with open(config_path, 'w') as f:
